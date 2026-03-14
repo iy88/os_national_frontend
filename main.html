@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>王者荣耀电竞文旅陪伴助手</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:微软雅黑,sans-serif}
+        body{background:#111;color:#fff;background:url(https://pic.baike.soso.com/ugc/baikepic2/26892/cut-20220824170004-556289498.jpg/0) center top / cover fixed}
+        .container{max-width:900px;margin:40px auto;background:rgba(0,0,0,0.75);padding:30px;border-radius:16px;backdrop-filter:blur(4px)}
+        .title{text-align:center;color:#ffd700;font-size:28px;margin-bottom:20px}
+        .tab{display:flex;gap:10px;margin-bottom:20px}
+        .tab button{flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer}
+        .tab button.active{background:#c8102e;color:#ffd700;font-weight:bold}
+        .page{display:none}
+        .page.active{display:block}
+        .chat-box{border:1px solid #444;border-radius:10px;height:400px;padding:16px;overflow-y:auto;margin-bottom:16px;background:rgba(0,0,0,0.5)}
+        .input-line{display:flex;gap:10px}
+        input{flex:1;padding:12px;border-radius:8px;border:none;background:#222;color:#fff}
+        button{padding:12px 20px;background:#c8102e;color:#fff;border:none;border-radius:8px}
+        .msg{margin:8px 0;padding:10px 14px;border-radius:12px;max-width:75%}
+        .msg.user{background:#444;margin-left:auto}
+        .msg.ai{background:#c8102e;color:#ffd700}
+        .card{background:#222;padding:20px;border-radius:12px;margin-bottom:16px}
+        .card h3{color:#ffd700;margin-bottom:10px}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="title">王者荣耀电竞文旅陪伴助手</div>
+    <div class="tab">
+        <button class="active" onclick="go(0)">AI对话陪伴</button>
+        <button onclick="go(1)">电竞文旅导览</button>
+        <button onclick="go(2)">选手羁绊互动</button>
+    </div>
+
+    <div class="page active" id="p0">
+        <div class="chat-box" id="chat"></div>
+        <div class="input-line">
+            <input id="text" placeholder="和王者荣耀AI对话...">
+            <button onclick="send()">发送</button>
+        </div>
+    </div>
+
+    <div class="page" id="p1">
+        <div class="card">
+            <h3>电竞文旅推荐路线</h3>
+            <p>• 王者荣耀电竞主题馆 → 电竞文创街区 → 赛事主场馆</p>
+            <p>• 城市电竞灯光秀 → 王者IP打卡点 → 周边商店</p>
+        </div>
+        <div class="card">
+            <h3>场景介绍</h3>
+            <p>结合城市地标打造沉浸式王者文旅体验，AI全程导览讲解。</p>
+        </div>
+    </div>
+
+    <div class="page" id="p2">
+        <div class="card">
+            <h3>我的羁绊卡片</h3>
+            <p>英雄：李白</p>
+            <p>羁绊语录：十步杀一人，千里不留行</p>
+            <p>应援任务：观看赛事、分享内容、完成互动</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let pages = document.querySelectorAll('.page')
+    let tabs = document.querySelectorAll('.tab button')
+    function go(i){
+        pages.forEach(p=>p.classList.remove('active'))
+        tabs.forEach(t=>t.classList.remove('active'))
+        pages[i].classList.add('active')
+        tabs[i].classList.add('active')
+    }
+    function send(){
+        let t = document.getElementById('text').value.trim()
+        if(!t)return
+        let chat = document.getElementById('chat')
+        chat.innerHTML += `<div class='msg user'>${t}</div>`
+        chat.innerHTML += `<div class='msg ai'>召唤师你好～我是王者荣耀AI助手，可为你讲解英雄故事、赛事知识、文旅路线哦！</div>`
+        document.getElementById('text').value = ''
+        chat.scrollTop = chat.scrollHeight
+    }
+</script>
+</body>
+</html>
