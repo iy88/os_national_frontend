@@ -87,9 +87,27 @@ const vbH = ref(SVG_HEIGHT)  // viewBox 高度
 // 初始大陆视图（用于重置）
 const initialMainlandView = ref({ x: 0, y: 0, w: SVG_WIDTH, h: SVG_HEIGHT })
 
+// 缩放范围（基于初始大陆视图宽度）
+const MIN_VIEW_WIDTH_RATIO = 0.35
+const MAX_VIEW_WIDTH_RATIO = 2.2
+
 // 计算当前viewBox字符串
 const computeViewBox = () => {
   return `${vbX.value} ${vbY.value} ${vbW.value} ${vbH.value}`
+}
+
+// 基于初始大陆视图计算当前设备下的动态缩放上下限
+const getZoomWidthLimits = () => {
+  const baseWidth = initialMainlandView.value?.w || SVG_WIDTH
+  return {
+    minW: baseWidth * MIN_VIEW_WIDTH_RATIO,
+    maxW: baseWidth * MAX_VIEW_WIDTH_RATIO
+  }
+}
+
+const clampViewWidth = (nextWidth) => {
+  const { minW, maxW } = getZoomWidthLimits()
+  return Math.max(minW, Math.min(maxW, nextWidth))
 }
 
 // 拖拽状态
@@ -243,7 +261,7 @@ const handleWheel = (e) => {
   // deltaY < 0 表示向上滚动 -> 缩小内容（viewBox变大）
   const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9
   const aspect = vbH.value / vbW.value
-  const newW = Math.max(SVG_WIDTH / 5, Math.min(SVG_WIDTH * 2, vbW.value * zoomFactor))
+  const newW = clampViewWidth(vbW.value * zoomFactor)
   const newH = newW * aspect
   const newScaleX = rect.width / newW
   const newScaleY = rect.height / newH
@@ -371,7 +389,7 @@ const handleTouchMove = (e) => {
       // 捏合缩小（newDistance < lastDistance），展开放大
       const scaleFactor = lastTouchDistance.value / newDistance
       const aspect = vbH.value / vbW.value
-      const newW = Math.max(SVG_WIDTH / 5, Math.min(SVG_WIDTH * 2, vbW.value * scaleFactor))
+      const newW = clampViewWidth(vbW.value * scaleFactor)
       const newH = newW * aspect
 
       // 以双指中心点为缩放中心
