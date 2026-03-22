@@ -11,7 +11,7 @@
         @mousemove="handleMouseMove"
         @mouseup="handleMouseUp"
         @mouseleave="handleMouseUp"
-        @touchstart.prevent="handleTouchStart"
+        @touchstart="handleTouchStart"
         @touchmove.prevent="handleTouchMove"
         @touchend="handleTouchEnd"
       >
@@ -38,6 +38,7 @@
               :transform="`translate(${marker.x}, ${marker.y})`"
               class="city-marker"
               @click="handleCityClick(marker.city)"
+              @touchend.stop.prevent="handleCityTouch(marker.city)"
             >
               <circle class="pulse-ring" r="10" />
               <circle class="marker-dot" r="5" />
@@ -304,6 +305,7 @@ const resetView = () => {
 const lastTouchDistance = ref(0)
 const lastTouchCenterX = ref(0)
 const lastTouchCenterY = ref(0)
+const ignoreNextClick = ref(false)
 
 // 计算双指距离
 const getTouchDistance = (touches) => {
@@ -415,6 +417,16 @@ const handleTouchEnd = (e) => {
 
 // 处理城市点击
 const handleCityClick = (cityKey) => {
+  if (ignoreNextClick.value) {
+    ignoreNextClick.value = false
+    return
+  }
+  emit('select-city', cityKey)
+}
+
+// 处理城市触摸，避免 touch 触发后的重复 click
+const handleCityTouch = (cityKey) => {
+  ignoreNextClick.value = true
   emit('select-city', cityKey)
 }
 
