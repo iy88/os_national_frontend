@@ -80,4 +80,16 @@ const emit = defineEmits(['update:modelValue'])
 .story-modal .el-dialog__body {
   padding: 20px;
 }
+
+@media (max-width: 768px) {
+  .story-modal.el-dialog {
+    width: 90% !important;
+    max-width: 90vw;
+    margin: 10px auto !important;
+  }
+
+  .story-modal .el-dialog__body {
+    padding: 16px;
+  }
+}
 </style>

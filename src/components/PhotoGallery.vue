@@ -221,4 +221,33 @@ watch(() => props.modelValue, (val) => {
 .photo-gallery-modal .el-dialog__body {
   padding: 20px;
 }
+
+@media (max-width: 768px) {
+  .photo-gallery-modal.el-dialog {
+    width: 95% !important;
+    max-width: 95vw;
+    margin: 10px auto !important;
+  }
+
+  .photo-gallery-modal .el-dialog__body {
+    padding: 12px;
+  }
+
+  .gallery-main {
+    gap: 8px;
+  }
+
+  .nav-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .photo-display {
+    max-height: 280px;
+  }
+
+  .photo-display img {
+    max-height: 280px;
+  }
+}
 </style>

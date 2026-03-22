@@ -8,8 +8,9 @@
       :title="currentCity?.name"
       width="800px"
       class="city-detail-modal"
+      ref="cityDialogRef"
     >
-      <div class="city-content" v-if="currentCity">
+      <div class="city-content" v-if="currentCity" ref="cityContentRef">
         <div class="content-left">
           <!-- 电竞选手 -->
           <div class="info-section">
@@ -160,7 +161,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
@@ -177,6 +178,8 @@ const showRouteResult = ref(false)
 
 const currentCity = ref(null)
 const showCityModal = ref(false)
+const cityDialogRef = ref(null)
+const cityContentRef = ref(null)
 
 const travelMessages = ref([
   { type: 'character', content: '欢迎来到电竞文旅助手！有什么关于电竞城市的问题可以问我哦～' }
@@ -185,6 +188,13 @@ const travelMessages = ref([
 const showCityDetail = (cityKey) => {
   currentCity.value = cityDataList[cityKey]
   showCityModal.value = true
+  // 滚动到顶部
+  nextTick(() => {
+    const dialogBody = document.querySelector('.city-detail-modal .el-dialog__body')
+    if (dialogBody) {
+      dialogBody.scrollTop = 0
+    }
+  })
 }
 
 const generateRoute = () => {
@@ -647,5 +657,44 @@ const sendTravelMessage = (text) => {
 .el-select-dropdown__item[selected] {
   background-color: rgba(240, 179, 68, 0.2) !important;
   color: #f0b344 !important;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .city-detail-modal.el-dialog {
+    width: 95% !important;
+    max-width: 95vw;
+    margin: 10px auto !important;
+  }
+
+  .city-detail-modal .el-dialog__body {
+    padding: 12px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .city-content {
+    flex-direction: column;
+  }
+
+  .content-left,
+  .content-right,
+  .content-full {
+    width: 100%;
+    padding: 0;
+  }
+
+  .info-section {
+    margin-bottom: 16px;
+  }
+
+  .info-section h3 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .tasks-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

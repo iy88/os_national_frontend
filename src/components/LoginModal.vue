@@ -338,4 +338,16 @@ const resetForms = () => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: none;
 }
+
+@media (max-width: 768px) {
+  .login-modal.el-dialog {
+    width: 90% !important;
+    max-width: 90vw;
+    margin: 10px auto !important;
+  }
+
+  .login-modal .el-dialog__body {
+    padding: 16px;
+  }
+}
 </style>
