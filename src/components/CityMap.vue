@@ -83,6 +83,9 @@ const vbY = ref(0)  // viewBox y起点
 const vbW = ref(SVG_WIDTH)   // viewBox 宽度
 const vbH = ref(SVG_HEIGHT)  // viewBox 高度
 
+// 初始大陆视图（用于重置）
+const initialMainlandView = ref({ x: 0, y: 0, w: SVG_WIDTH, h: SVG_HEIGHT })
+
 // 计算当前viewBox字符串
 const computeViewBox = () => {
   return `${vbX.value} ${vbY.value} ${vbW.value} ${vbH.value}`
@@ -125,7 +128,28 @@ const cityMarkers = Object.entries(cityMarkersData).map(([key, info]) => {
 // 省份路径数据
 const provincePaths = ref([])
 
-// 提取SVG路径数据
+// 大陆边界（排除海南岛后）
+const mainlandBounds = ref({ minX: 0, minY: 0, maxX: 795, maxY: 500 })
+
+// 从路径数据中提取坐标范围
+const extractPathBounds = (d) => {
+  const coords = d.match(/[\d.]+/g)
+  if (!coords) return null
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  for (let i = 0; i < coords.length; i += 2) {
+    const x = parseFloat(coords[i])
+    const y = parseFloat(coords[i + 1])
+    if (!isNaN(x) && !isNaN(y)) {
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
+    }
+  }
+  return { minX, minY, maxX, maxY }
+}
+
+// 提取SVG路径数据并计算大陆边界
 const extractSvgPaths = async () => {
   try {
     const response = await fetch('/China_map.svg')
@@ -133,10 +157,53 @@ const extractSvgPaths = async () => {
     const pathRegex = /<path[^>]*d="([^"]+)"[^>]*>/g
     const paths = []
     let match
+
+    // 海南岛的Y坐标阈值（大于此值认为是岛屿）
+    const HAINAN_Y_THRESHOLD = 380
+
+    // 计算所有大陆路径的边界
+    let mainlandMinX = Infinity, mainlandMinY = Infinity
+    let mainlandMaxX = -Infinity, mainlandMaxY = -Infinity
+
     while ((match = pathRegex.exec(svgText)) !== null) {
-      paths.push(match[1])
+      const pathD = match[1]
+      paths.push(pathD)
+
+      const bounds = extractPathBounds(pathD)
+      if (bounds) {
+        // 计算路径质心的Y坐标
+        const centroidY = (bounds.minY + bounds.maxY) / 2
+        // 如果路径质心在阈值以上，认为是岛屿（海南），跳过
+        if (centroidY > HAINAN_Y_THRESHOLD) continue
+        // 否则纳入大陆边界计算
+        mainlandMinX = Math.min(mainlandMinX, bounds.minX)
+        mainlandMinY = Math.min(mainlandMinY, bounds.minY)
+        mainlandMaxX = Math.max(mainlandMaxX, bounds.maxX)
+        mainlandMaxY = Math.max(mainlandMaxY, bounds.maxY)
+      }
     }
+
+    // 如果没有找到大陆路径，使用默认值
+    if (mainlandMinX === Infinity) {
+      mainlandMinX = 50
+      mainlandMinY = 20
+      mainlandMaxX = 750
+      mainlandMaxY = 400
+    }
+
+    // 添加一定padding
+    const padding = 25
+    mainlandBounds.value = {
+      minX: mainlandMinX - padding,
+      minY: mainlandMinY - padding,
+      maxX: mainlandMaxX + padding,
+      maxY: mainlandMaxY + padding
+    }
+
     provincePaths.value = paths
+
+    // 初始化视图到大陆区域
+    initializeMainlandView()
   } catch (error) {
     console.error('Failed to load SVG paths:', error)
   }
@@ -164,28 +231,25 @@ const handleWheel = (e) => {
   const rect = container.getBoundingClientRect()
   const mouseX = e.clientX - rect.left
   const mouseY = e.clientY - rect.top
-
-  // 鼠标在SVG坐标系中的位置（缩放前）
   const { scaleX, scaleY } = getContainerScale()
-  const svgX = mouseX / scaleX + vbX.value
-  const svgY = mouseY / scaleY + vbY.value
 
-  // 计算新的缩放比例 - 向前滚动放大，向后滚动缩小
+  // 鼠标在SVG坐标系中的绝对位置
+  const svgX = vbX.value + mouseX / scaleX
+  const svgY = vbY.value + mouseY / scaleY
+
+  // 计算缩放因子
+  // deltaY > 0 表示向下滚动（手指向前滑动）-> 放大内容（viewBox变小）
+  // deltaY < 0 表示向上滚动 -> 缩小内容（viewBox变大）
   const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9
+  const aspect = vbH.value / vbW.value
   const newW = Math.max(SVG_WIDTH / 5, Math.min(SVG_WIDTH * 2, vbW.value * zoomFactor))
-  const newH = newW * (SVG_HEIGHT / SVG_WIDTH) // 保持宽高比
-
-  // 缩放后，让鼠标位置仍然是同一个SVG坐标
-  // newSvgX = mouseX / newScaleX + newVbX = svgX
-  // newVbX = svgX - mouseX / newScaleX
+  const newH = newW * aspect
   const newScaleX = rect.width / newW
   const newScaleY = rect.height / newH
 
-  const newVbX = svgX - mouseX / newScaleX
-  const newVbY = svgY - mouseY / newScaleY
-
-  vbX.value = newVbX
-  vbY.value = newVbY
+  // 计算新的viewBox起点，使鼠标位置保持不变
+  vbX.value = svgX - mouseX / newScaleX
+  vbY.value = svgY - mouseY / newScaleY
   vbW.value = newW
   vbH.value = newH
 }
@@ -227,10 +291,11 @@ const handleMouseUp = () => {
 
 // 恢复初始视图
 const resetView = () => {
-  vbX.value = 0
-  vbY.value = 0
-  vbW.value = SVG_WIDTH
-  vbH.value = SVG_HEIGHT
+  const init = initialMainlandView.value
+  vbX.value = init.x
+  vbY.value = init.y
+  vbW.value = init.w
+  vbH.value = init.h
 }
 
 // ===== 移动端触摸支持 =====
@@ -300,19 +365,30 @@ const handleTouchMove = (e) => {
     const newDistance = getTouchDistance(e.touches)
     const center = getTouchCenter(e.touches)
 
-    if (lastTouchDistance.value > 0) {
+    if (lastTouchDistance.value > 0 && newDistance > 0) {
       // 捏合缩小（newDistance < lastDistance），展开放大
       const scaleFactor = lastTouchDistance.value / newDistance
+      const aspect = vbH.value / vbW.value
       const newW = Math.max(SVG_WIDTH / 5, Math.min(SVG_WIDTH * 2, vbW.value * scaleFactor))
-      const newH = newW * (SVG_HEIGHT / SVG_WIDTH)
+      const newH = newW * aspect
 
       // 以双指中心点为缩放中心
-      const rect = containerRef.value.getBoundingClientRect()
-      const centerSvgX = (center.x - rect.left) / (rect.width / vbW.value) + vbX.value
-      const centerSvgY = (center.y - rect.top) / (rect.height / newH) + vbY.value
+      const container = containerRef.value
+      if (!container) return
+      const rect = container.getBoundingClientRect()
+      const oldScaleX = rect.width / vbW.value
+      const oldScaleY = rect.height / vbH.value
+      const newScaleX = rect.width / newW
+      const newScaleY = rect.height / newH
 
-      vbX.value = centerSvgX - (center.x - rect.left) / (rect.width / newW)
-      vbY.value = centerSvgY - (center.y - rect.top) / (rect.height / newH)
+      // 计算双指中心点在旧缩放下的SVG坐标（保持此位置不动）
+      const centerSvgX = (center.x - rect.left) / oldScaleX + vbX.value
+      const centerSvgY = (center.y - rect.top) / oldScaleY + vbY.value
+
+      // 缩放后，让中心SVG点保持在新视图的同一位置
+      // newScaleX * (centerSvgX - newVbX) = oldScaleX * (centerSvgX - oldVbX)
+      vbX.value = centerSvgX - (oldScaleX / newScaleX) * (centerSvgX - vbX.value)
+      vbY.value = centerSvgY - (oldScaleY / newScaleY) * (centerSvgY - vbY.value)
       vbW.value = newW
       vbH.value = newH
     }
@@ -340,6 +416,48 @@ const handleTouchEnd = (e) => {
 // 处理城市点击
 const handleCityClick = (cityKey) => {
   emit('select-city', cityKey)
+}
+
+// 初始化视图，使大陆区域居中并适应容器
+const initializeMainlandView = () => {
+  const container = containerRef.value
+  if (!container) return
+
+  const rect = container.getBoundingClientRect()
+  const containerAspect = rect.width / rect.height
+  const bounds = mainlandBounds.value
+
+  // 计算大陆边界尺寸
+  const boundsWidth = bounds.maxX - bounds.minX
+  const boundsHeight = bounds.maxY - bounds.minY
+  const boundsAspect = boundsWidth / boundsHeight
+
+  let newW, newH
+
+  // 根据容器宽高比和大陆边界宽高比决定如何适应
+  if (containerAspect > boundsAspect) {
+    // 容器更宽，以高度为准
+    newH = boundsHeight
+    newW = newH * containerAspect
+  } else {
+    // 容器更高，以宽度为准
+    newW = boundsWidth
+    newH = newW / containerAspect
+  }
+
+  // 设置viewBox使大陆居中
+  vbX.value = bounds.minX - (newW - boundsWidth) / 2
+  vbY.value = bounds.minY - (newH - boundsHeight) / 2
+  vbW.value = newW
+  vbH.value = newH
+
+  // 存储初始大陆视图用于重置
+  initialMainlandView.value = {
+    x: vbX.value,
+    y: vbY.value,
+    w: vbW.value,
+    h: vbH.value
+  }
 }
 
 onMounted(() => {
