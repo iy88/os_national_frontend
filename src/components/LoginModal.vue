@@ -85,7 +85,7 @@ import { ref, computed } from 'vue'
 import { useUserStore } from '../stores/user'
 import { ElMessage } from 'element-plus'
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: Boolean,
     default: false

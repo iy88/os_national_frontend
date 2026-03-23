@@ -83,12 +83,12 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import CharacterCard from '../components/CharacterCard.vue'
 import ChatBox from '../components/ChatBox.vue'
 import StoryModal from '../components/StoryModal.vue'
 import PhotoGallery from '../components/PhotoGallery.vue'
-import { characterData, categoryInfo, getCharacterWelcome, getReplyContent, mockStreamReply } from '../data/characters'
+import { characterData, categoryInfo, getCharacterWelcome, mockStreamReply } from '../data/characters'
 
 const activeCategory = ref('hero')
 const activeCharacter = ref(null)
@@ -307,6 +307,7 @@ const sendMessage = (text) => {
     inset 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
+/*noinspection CssUnusedSymbol*/
 .category-card.active {
   background: linear-gradient(145deg, rgba(240, 179, 68, 0.18) 0%, rgba(230, 57, 70, 0.18) 100%);
   border-color: var(--cat-color);

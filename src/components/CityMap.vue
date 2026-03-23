@@ -74,7 +74,6 @@ import { ref, onMounted } from 'vue'
 const emit = defineEmits(['select-city'])
 
 // SVG原始viewBox
-const ORIGIN_VIEW_BOX = '0 0 795 500'
 const SVG_WIDTH = 795
 const SVG_HEIGHT = 500
 
@@ -500,6 +499,7 @@ onMounted(() => {
 })
 </script>
 
+<!--suppress CssInvalidPropertyValue -->
 <style scoped>
 .city-map {
   background: rgba(30, 45, 80, 0.5);

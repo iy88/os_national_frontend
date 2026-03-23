@@ -245,14 +245,7 @@ export const cityDataList = {
 // 城市标记点 - 基于SVG路径坐标线性回归计算
 // 转换模型: X = 7.242*lon - 366.12, Y = -10.06*lat + 540.06
 // SVG viewBox: 795 x 500
-export const cityMarkers = [
-  { city: 'xian',      name: '西安',   left: 53.20, top: 39.06 },
-  { city: 'chengdu',   name: '成都',   left: 48.75, top: 46.33 },
-  { city: 'shanghai',  name: '上海',   left: 64.60, top: 45.18 },
-  { city: 'wuhan',     name: '武汉',   left: 58.07, top: 46.49 },
-  { city: 'guangzhou', name: '广州',   left: 57.14, top: 61.48 },
-  { city: 'hangzhou',  name: '杭州',   left: 63.40, top: 47.07 }
-]
+
 
 export const cityMap = {
   xian: '西安',

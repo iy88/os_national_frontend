@@ -291,7 +291,7 @@ const sendTravelMessage = (text) => {
     const cityName = selectedCity.value ? cityMap[selectedCity.value] : ''
     const hasPlanningInfo = cityName || travelDays.value || travelPeople.value || travelRelationship.value || favoriteHero.value
 
-    let promptTemplate = ''
+    let promptTemplate
     if (hasPlanningInfo) {
         promptTemplate = `【电竞文旅规划请求】
 目标城市：${cityName || '未指定'}
@@ -532,7 +532,7 @@ ${text}
 </style>
 
 <style>
-.city-detail-modal.el-dialog {
+.city-detail-modal .el-dialog {
     background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
     border: 1px solid rgba(240, 179, 68, 0.25);
     border-radius: 10px;
@@ -645,9 +645,7 @@ ${text}
 }
 
 .el-select-dropdown__item {
-    background: transparent !important;
-    background-color: transparent !important;
-    background-image: none !important;
+    background: transparent none !important;
 }
 
 .el-scrollbar__wrap {
@@ -676,7 +674,7 @@ ${text}
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-    .city-detail-modal.el-dialog {
+    .city-detail-modal .el-dialog {
         width: 95% !important;
         max-width: 95vw;
         margin: 10px auto !important;

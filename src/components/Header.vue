@@ -129,6 +129,7 @@ const handleLoginClick = () => {
 }
 </script>
 
+<!--suppress CssUnusedSymbol -->
 <style scoped>
 .app-header {
   background: rgba(20, 30, 55, 0.95);

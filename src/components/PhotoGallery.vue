@@ -170,6 +170,7 @@ watch(() => props.modelValue, (val) => {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
+/*noinspection CssUnusedSymbol*/
 .thumbnail.active {
   border-color: #f0b344;
   box-shadow: 0 0 10px rgba(240, 179, 68, 0.3);
@@ -188,6 +189,7 @@ watch(() => props.modelValue, (val) => {
 }
 </style>
 
+<!--suppress CssUnusedSymbol -->
 <style>
 .photo-gallery-modal.el-dialog {
   background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);

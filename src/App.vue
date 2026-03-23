@@ -16,6 +16,7 @@ import { useUserStore } from './stores/user'
 const userStore = useUserStore()
 </script>
 
+<!--suppress CssUnusedSymbol -->
 <style>
 * {
   margin: 0;

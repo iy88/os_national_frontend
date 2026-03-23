@@ -222,8 +222,7 @@ defineExpose({
     background: rgba(74, 158, 255, 0.15);
     border: 1px solid rgba(74, 158, 255, 0.3);
     padding: 10px 14px;
-    border-radius: 12px;
-    border-bottom-right-radius: 4px;
+    border-radius: 12px 12px 4px 12px;
     max-width: 40%;
     color: rgba(255, 255, 255, 0.9);
 }

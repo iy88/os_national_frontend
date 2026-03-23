@@ -47,6 +47,7 @@ const emit = defineEmits(['update:modelValue'])
 }
 </style>
 
+<!--suppress CssUnusedSymbol -->
 <style>
 .story-modal.el-dialog {
   background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);

@@ -49,6 +49,7 @@ defineEmits(['select', 'show-story', 'show-photos'])
 const accentColor = computed(() => categoryInfo[props.category]?.color || '#f0b344')
 </script>
 
+<!--suppress CssUnresolvedCustomProperty -->
 <style scoped>
 .character-card {
   display: flex;
@@ -84,6 +85,7 @@ const accentColor = computed(() => categoryInfo[props.category]?.color || '#f0b3
     inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/*noinspection CssUnusedSymbol*/
 .character-card.active {
   background: linear-gradient(135deg, rgba(240, 179, 68, 0.15) 0%, rgba(230, 57, 70, 0.15) 100%);
   border-color: var(--accent-color);

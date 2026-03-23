@@ -109,19 +109,6 @@ const genderOptions = [
 const editingField = reactive({})
 const editForm = reactive({})
 const isEditing = ref(false)
-
-const toggleEdit = (key, field) => {
-  if (editingField[key]) {
-    userStore.updateField(key, editForm[key])
-    editingField[key] = false
-    ElMessage.success('保存成功')
-  } else {
-    editForm[key] = userInfo.value?.[key]
-    editingField[key] = true
-    isEditing.value = true
-  }
-}
-
 const toggleEditAll = () => {
   Object.keys(editableFields).forEach(key => {
     editForm[key] = userInfo.value?.[key]
@@ -300,6 +287,7 @@ const saveAll = () => {
   gap: 8px;
 }
 
+/*noinspection CssUnusedSymbol*/
 .info-item.full-width {
   grid-column: span 2;
 }
@@ -374,7 +362,8 @@ const saveAll = () => {
     grid-template-columns: 1fr;
   }
 
-  .info-item.full-width {
+    /*noinspection CssUnusedSymbol*/
+    .info-item.full-width {
     grid-column: span 1;
   }
 
@@ -385,6 +374,7 @@ const saveAll = () => {
 }
 </style>
 
+<!--suppress CssUnusedSymbol -->
 <style>
 /* Element Plus 覆盖样式 */
 .basic-info .el-input__wrapper,

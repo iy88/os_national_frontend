@@ -152,14 +152,7 @@ export const categoryInfo = {
   }
 }
 
-export const getWelcomeMsg = (category) => {
-  const msgMap = {
-    hero: '欢迎召唤师！本将在此，有何指教？',
-    player: '你好！很高兴能和你交流电竞心得～',
-    celebrity: '哈喽！想聊点什么电竞趣事？'
-  }
-  return msgMap[category] || '你好！'
-}
+
 
 export const getCharacterWelcome = (charId) => {
   const msgMap = {
@@ -176,16 +169,7 @@ export const getCharacterWelcome = (charId) => {
   return msgMap[charId] || '你好！很高兴认识你～'
 }
 
-export const getReplyContent = () => {
-  const replies = [
-    '你的问题很有深度，让我好好思考一下～',
-    '这个点确实很关键，我来详细解答一下...',
-    '哈哈，这个问题问得好！其实答案很简单～',
-    '根据我的经验，我建议你可以这样做...',
-    '这个话题很有趣，我们可以深入聊聊～'
-  ]
-  return replies[Math.floor(Math.random() * replies.length)]
-}
+
 
 // 模拟流式输出的长回复
 export const mockStreamReply = `这个问题问得非常好！让我来为你详细解答一下。
