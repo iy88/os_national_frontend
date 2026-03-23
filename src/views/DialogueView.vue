@@ -56,6 +56,7 @@
       </div>
 
       <ChatBox
+        ref="chatBoxRef"
         :messages="messages"
         :placeholder="`与 ${activeCharacter.name} 对话...`"
         @send="sendMessage"
@@ -82,20 +83,98 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import CharacterCard from '../components/CharacterCard.vue'
 import ChatBox from '../components/ChatBox.vue'
 import StoryModal from '../components/StoryModal.vue'
 import PhotoGallery from '../components/PhotoGallery.vue'
-import { characterData, categoryInfo, getWelcomeMsg, getCharacterWelcome, getReplyContent } from '../data/characters'
+import { characterData, categoryInfo, getCharacterWelcome, getReplyContent, mockStreamReply } from '../data/characters'
 
 const activeCategory = ref('hero')
 const activeCharacter = ref(null)
 const messages = ref([])
+const chatBoxRef = ref(null)
 
 const showStoryModal = ref(false)
 const showPhotosModal = ref(false)
 const selectedCharacter = ref(null)
+
+// 外部页面滚动控制
+let isFirstRequest = true
+let isScrollDetectionActive = false
+let userHasScrolledPage = false
+let lastScrollTime = 0
+let lastChatHeight = 0
+let scrollCheckInterval = null
+let previousPageScrollTop = 0 // 上一次的页面滚动位置
+
+const handlePageScroll = () => {
+    if (!isScrollDetectionActive) return
+
+    // 检查是否在程序滚动后的短时间内（50ms），如果是则跳过
+    const now = Date.now()
+    if (now - lastScrollTime < 50) return
+
+    const scrollTop = window.scrollY || document.documentElement.scrollTop
+
+    // 如果向上滚动（scrollTop < previous），判定为用户滚动
+    if (scrollTop < previousPageScrollTop) {
+        userHasScrolledPage = true
+        stopAutoScrollPage()
+    }
+
+    previousPageScrollTop = scrollTop
+}
+
+const stopAutoScrollPage = () => {
+    if (scrollCheckInterval) {
+        clearInterval(scrollCheckInterval)
+        scrollCheckInterval = null
+    }
+}
+
+const startAutoScrollPage = () => {
+    lastChatHeight = 0
+    isScrollDetectionActive = true
+
+    scrollCheckInterval = setInterval(() => {
+        if (userHasScrolledPage) {
+            stopAutoScrollPage()
+            return
+        }
+
+        // 检查聊天框高度
+        const chatMessages = document.querySelector('.dialogue-area .chat-messages')
+        if (chatMessages) {
+            const maxHeight = 400 // 与 ChatBox 的 max-height 一致
+            const currentHeight = chatMessages.clientHeight
+
+            // 达到最大可见高度，停止滚动
+            if (currentHeight >= maxHeight) {
+                stopAutoScrollPage()
+                return
+            }
+
+            lastChatHeight = currentHeight
+
+            // 滚动到页面底部
+            lastScrollTime = Date.now()
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'instant'
+            })
+        }
+    }, 100)
+}
+
+onMounted(() => {
+    window.addEventListener('scroll', handlePageScroll, { passive: true })
+})
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handlePageScroll)
+    stopAutoScrollPage()
+})
 
 const currentCharacters = computed(() => characterData[activeCategory.value] || [])
 
@@ -126,12 +205,46 @@ const openPhotos = (character) => {
 const sendMessage = (text) => {
   messages.value.push({ type: 'user', content: text })
 
+  // 模拟流式输出过程
+  // 1. 先显示正在思考状态
+  chatBoxRef.value?.setStatus('thinking')
+
+  // 2. 1秒后切换到正在输出状态，并开始流式输出
   setTimeout(() => {
-    messages.value.push({
-      type: 'character',
-      content: `${activeCharacter.value?.name || '智能体'}：${getReplyContent()}`
-    })
-  }, 800)
+    chatBoxRef.value?.setStatus('streaming')
+
+    // 第一次请求时，流式输出开始后启动外部页面滚动
+    if (isFirstRequest) {
+      userHasScrolledPage = false
+      startAutoScrollPage()
+    }
+
+    // 添加一条空消息用于流式填充
+    const msgIndex = messages.value.length
+    const characterName = activeCharacter.value?.name || '智能体'
+    messages.value.push({ type: 'character', content: `${characterName}：` })
+
+    // 3. 模拟逐字输出
+    let charIndex = 0
+    const streamInterval = setInterval(() => {
+      if (charIndex < mockStreamReply.length) {
+        messages.value[msgIndex].content += mockStreamReply[charIndex]
+        charIndex++
+      } else {
+        clearInterval(streamInterval)
+        // 4. 输出完成后恢复空闲状态
+        setTimeout(() => {
+          chatBoxRef.value?.setStatus('idle')
+          // 第一次请求完成，停止外部页面滚动
+          if (isFirstRequest) {
+            isFirstRequest = false
+            isScrollDetectionActive = false
+            stopAutoScrollPage()
+          }
+        }, 300)
+      }
+    }, 15) // 每15ms输出一个字符
+  }, 1000)
 }
 </script>
 
@@ -174,6 +287,7 @@ const sendMessage = (text) => {
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --cat-color: #f0b344;
 }
 
 .category-card:hover {

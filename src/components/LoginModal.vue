@@ -11,8 +11,8 @@
     <div class="login-container">
       <!-- 登录表单 -->
       <el-form v-if="isLogin" :model="loginForm" label-position="top">
-        <el-form-item label="用户名/手机号">
-          <el-input v-model="loginForm.username" placeholder="请输入用户名或手机号" />
+        <el-form-item label="用户名/邮箱">
+          <el-input v-model="loginForm.username" placeholder="请输入用户名或邮箱" />
         </el-form-item>
         <el-form-item label="密码">
           <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" />
@@ -24,8 +24,16 @@
         <el-form-item label="用户名">
           <el-input v-model="registerForm.username" placeholder="请输入用户名" />
         </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="registerForm.phone" placeholder="请输入手机号" />
+        <el-form-item label="邮箱">
+          <el-input v-model="registerForm.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="验证码">
+          <div class="verification-row">
+            <el-input v-model="registerForm.verifyCode" placeholder="请输入验证码" class="verify-code-input" />
+            <el-button @click="sendVerifyCode" :disabled="verifyCodeSent" class="send-code-btn">
+              {{ verifyCodeSent ? `${countdown}s后重发` : '发送验证码' }}
+            </el-button>
+          </div>
         </el-form-item>
         <el-form-item label="性别">
           <el-select v-model="registerForm.gender" placeholder="请选择性别" style="width: 100%">
@@ -99,12 +107,34 @@ const loginForm = ref({
 
 const registerForm = ref({
   username: '',
-  phone: '',
+  email: '',
+  verifyCode: '',
   gender: '',
   age: 18,
   basicInfo: '',
   intro: ''
 })
+
+const verifyCodeSent = ref(false)
+const countdown = ref(0)
+let countdownTimer = null
+
+const sendVerifyCode = () => {
+  if (!registerForm.value.email) {
+    ElMessage.warning('请先输入邮箱')
+    return
+  }
+  verifyCodeSent.value = true
+  countdown.value = 60
+  ElMessage.success('验证码已发送')
+  countdownTimer = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      verifyCodeSent.value = false
+      clearInterval(countdownTimer)
+    }
+  }, 1000)
+}
 
 const handleSubmit = () => {
   if (isLogin.value) {
@@ -117,7 +147,7 @@ const handleSubmit = () => {
       ElMessage.warning('请填写完整信息')
     }
   } else {
-    if (registerForm.value.username && registerForm.value.phone) {
+    if (registerForm.value.username && registerForm.value.email && registerForm.value.verifyCode) {
       userStore.register(registerForm.value)
       ElMessage.success('注册成功！')
       emit('update:modelValue', false)
@@ -137,7 +167,7 @@ const handleLogout = () => {
 
 const resetForms = () => {
   loginForm.value = { username: '', password: '' }
-  registerForm.value = { username: '', phone: '', gender: '', age: 18, basicInfo: '', intro: '' }
+  registerForm.value = { username: '', email: '', verifyCode: '', gender: '', age: 18, basicInfo: '', intro: '' }
   isLogin.value = true
 }
 </script>
@@ -233,6 +263,35 @@ const resetForms = () => {
 
 .submit-btn:hover {
   background: linear-gradient(180deg, #ffbe4a 0%, #e4a630 100%);
+}
+
+.verification-row {
+  display: flex;
+  gap: 10px;
+}
+
+.verify-code-input {
+  flex: 1;
+}
+
+.send-code-btn {
+  background: rgba(240, 179, 68, 0.1);
+  border: 1px solid rgba(240, 179, 68, 0.25);
+  color: #f0b344;
+  border-radius: 6px;
+  padding: 0 16px;
+  height: 32px;
+  white-space: nowrap;
+}
+
+.send-code-btn:hover:not(:disabled) {
+  background: rgba(240, 179, 68, 0.2);
+  border-color: rgba(240, 179, 68, 0.4);
+}
+
+.send-code-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>
 

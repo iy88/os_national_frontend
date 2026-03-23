@@ -1,19 +1,19 @@
 <template>
   <div class="app-container">
-    <Header @open-login="showLoginModal = true" />
+    <Header @open-login="userStore.showLoginModal = true" />
     <main class="main-content">
       <router-view />
     </main>
-    <LoginModal v-model="showLoginModal" />
+    <LoginModal v-model="userStore.showLoginModal" />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import Header from './components/Header.vue'
 import LoginModal from './components/LoginModal.vue'
+import { useUserStore } from './stores/user'
 
-const showLoginModal = ref(false)
+const userStore = useUserStore()
 </script>
 
 <style>

@@ -1,700 +1,715 @@
 <template>
-  <div class="travel-view">
-    <CityMap @select-city="showCityDetail" />
+    <div class="travel-view">
+        <CityMap @select-city="showCityDetail"/>
 
-    <!-- 城市详情弹窗 -->
-    <el-dialog
-      v-model="showCityModal"
-      :title="currentCity?.name"
-      width="800px"
-      class="city-detail-modal"
-      ref="cityDialogRef"
-    >
-      <div class="city-content" v-if="currentCity" ref="cityContentRef">
-        <div class="content-left">
-          <!-- 电竞选手 -->
-          <div class="info-section">
-            <h3>🏆 电竞选手</h3>
-            <div v-for="player in currentCity.players" :key="player.name" class="player-card">
-              <strong>{{ player.name }}</strong> - {{ player.hero }}
-              <br />
-              <small>{{ player.team }}</small>
-              <p>{{ player.desc }}</p>
+        <!-- 城市详情弹窗 -->
+        <el-dialog
+            v-model="showCityModal"
+            :title="currentCity?.name"
+            width="800px"
+            class="city-detail-modal"
+            ref="cityDialogRef"
+        >
+            <div class="city-content" v-if="currentCity" ref="cityContentRef">
+                <div class="content-left">
+                    <!-- 电竞选手 -->
+                    <div class="info-section">
+                        <h3>🏆 电竞选手</h3>
+                        <div v-for="player in currentCity.players" :key="player.name" class="player-card">
+                            <strong>{{ player.name }}</strong> - {{ player.hero }}
+                            <br/>
+                            <small>{{ player.team }}</small>
+                            <p>{{ player.desc }}</p>
+                        </div>
+                    </div>
+
+                    <!-- 代表英雄 -->
+                    <div class="info-section">
+                        <h3>🎮 代表英雄</h3>
+                        <div v-for="hero in currentCity.heroes" :key="hero.name" class="hero-card">
+                            <strong>{{ hero.name }}</strong> ({{ hero.role }})
+                            <br/>
+                            <small>风格：{{ hero.style }}</small>
+                            <p>{{ hero.desc }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-right">
+                    <!-- 电竞特色 -->
+                    <div class="info-section">
+                        <h3>⚡ 电竞特色</h3>
+                        <ul>
+                            <li v-for="(info, idx) in currentCity.eSportsInfo" :key="idx">{{ info }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- 特色美食 -->
+                    <div class="info-section">
+                        <h3>🍜 特色美食</h3>
+                        <ul>
+                            <li v-for="(food, idx) in currentCity.food" :key="idx">{{ food }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- 出行建议 -->
+                    <div class="info-section">
+                        <h3>💡 出行建议</h3>
+                        <ul>
+                            <li v-for="(tip, idx) in currentCity.travelTips" :key="idx">{{ tip }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-full">
+                    <!-- 电竞羁绊打卡任务 -->
+                    <div class="info-section">
+                        <h3>📍 电竞羁绊打卡任务</h3>
+                        <div class="tasks-grid">
+                            <div v-for="task in currentCity.tasks" :key="task.title" class="task-card">
+                                <strong>{{ task.title }}</strong>
+                                <p>{{ task.desc }}</p>
+                                <span class="task-reward">奖励：{{ task.reward }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 推荐行程 -->
+                    <div class="info-section">
+                        <h3>🗓️ 推荐行程</h3>
+                        <div v-for="(route, idx) in currentCity.recommendedRoutes" :key="idx" class="route-item">
+                            {{ route }}
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
+        </el-dialog>
 
-          <!-- 代表英雄 -->
-          <div class="info-section">
-            <h3>🎮 代表英雄</h3>
-            <div v-for="hero in currentCity.heroes" :key="hero.name" class="hero-card">
-              <strong>{{ hero.name }}</strong> ({{ hero.role }})
-              <br />
-              <small>风格：{{ hero.style }}</small>
-              <p>{{ hero.desc }}</p>
+        <!-- 电竞文旅助手 -->
+        <div class="travel-chat-section">
+            <h2 class="section-title">电竞文旅助手</h2>
+
+            <!-- 快速规划选项 -->
+            <div class="quick-planners">
+                <div class="planner-item">
+                    <label>目标城市</label>
+                    <el-select v-model="selectedCity" placeholder="可选" clearable style="width: 100%">
+                        <el-option
+                            v-for="(name, key) in cityMap"
+                            :key="key"
+                            :label="name"
+                            :value="key"
+                        />
+                    </el-select>
+                </div>
+                <div class="planner-item">
+                    <label>旅行天数</label>
+                    <el-select v-model="travelDays" placeholder="可选" clearable style="width: 100%">
+                        <el-option label="1天" :value="1"/>
+                        <el-option label="2天" :value="2"/>
+                        <el-option label="3天" :value="3"/>
+                        <el-option label="4天" :value="4"/>
+                        <el-option label="5天" :value="5"/>
+                        <el-option label="6天" :value="6"/>
+                        <el-option label="7天" :value="7"/>
+                    </el-select>
+                </div>
+                <div class="planner-item">
+                    <label>出行人数</label>
+                    <el-select v-model="travelPeople" placeholder="可选" clearable style="width: 100%">
+                        <el-option label="1人" :value="1"/>
+                        <el-option label="2人" :value="2"/>
+                        <el-option label="3-5人" :value="3"/>
+                        <el-option label="5-10人" :value="5"/>
+                        <el-option label="10人以上" :value="10"/>
+                    </el-select>
+                </div>
+                <div class="planner-item">
+                    <label>关系类型</label>
+                    <el-select v-model="travelRelationship" placeholder="可选" clearable style="width: 100%">
+                        <el-option label="好友同行" value="好友同行"/>
+                        <el-option label="情侣出游" value="情侣出游"/>
+                        <el-option label="家庭出行" value="家庭出行"/>
+                        <el-option label="独自旅行" value="独自旅行"/>
+                    </el-select>
+                </div>
+                <div class="planner-item">
+                    <label>本命英雄</label>
+                    <el-select v-model="favoriteHero" placeholder="可选" clearable style="width: 100%">
+                        <el-option label="李白" value="李白"/>
+                        <el-option label="武则天" value="武则天"/>
+                        <el-option label="诸葛亮" value="诸葛亮"/>
+                    </el-select>
+                </div>
             </div>
-          </div>
+
+            <ChatBox
+                ref="chatBoxRef"
+                :messages="travelMessages"
+                placeholder="请输入..."
+                @send="sendTravelMessage"
+            />
         </div>
-
-        <div class="content-right">
-          <!-- 电竞特色 -->
-          <div class="info-section">
-            <h3>⚡ 电竞特色</h3>
-            <ul>
-              <li v-for="(info, idx) in currentCity.eSportsInfo" :key="idx">{{ info }}</li>
-            </ul>
-          </div>
-
-          <!-- 特色美食 -->
-          <div class="info-section">
-            <h3>🍜 特色美食</h3>
-            <ul>
-              <li v-for="(food, idx) in currentCity.food" :key="idx">{{ food }}</li>
-            </ul>
-          </div>
-
-          <!-- 出行建议 -->
-          <div class="info-section">
-            <h3>💡 出行建议</h3>
-            <ul>
-              <li v-for="(tip, idx) in currentCity.travelTips" :key="idx">{{ tip }}</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="content-full">
-          <!-- 电竞羁绊打卡任务 -->
-          <div class="info-section">
-            <h3>📍 电竞羁绊打卡任务</h3>
-            <div class="tasks-grid">
-              <div v-for="task in currentCity.tasks" :key="task.title" class="task-card">
-                <strong>{{ task.title }}</strong>
-                <p>{{ task.desc }}</p>
-                <span class="task-reward">奖励：{{ task.reward }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 推荐行程 -->
-          <div class="info-section">
-            <h3>🗓️ 推荐行程</h3>
-            <div v-for="(route, idx) in currentCity.recommendedRoutes" :key="idx" class="route-item">
-              {{ route }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </el-dialog>
-
-    <!-- AI 路线规划 -->
-    <div class="ai-route-planner">
-      <h2 class="section-title">AI 电竞文旅路线规划</h2>
-      <div class="planner-form">
-        <div class="form-row">
-          <div class="form-item">
-            <label>目标城市</label>
-            <el-select v-model="selectedCity" placeholder="请选择城市" style="width: 100%">
-              <el-option
-                v-for="(name, key) in cityMap"
-                :key="key"
-                :label="name"
-                :value="key"
-              />
-            </el-select>
-          </div>
-          <div class="form-item">
-            <label>旅行天数</label>
-            <el-input-number v-model="travelDays" :min="1" :max="7" style="width: 100%" />
-          </div>
-          <div class="form-item">
-            <label>出行人数</label>
-            <el-input-number v-model="travelPeople" :min="1" :max="10" style="width: 100%" />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-item">
-            <label>关系类型</label>
-            <el-select v-model="travelRelationship" placeholder="请选择" style="width: 100%">
-              <el-option label="好友同行" value="好友同行" />
-              <el-option label="情侣出游" value="情侣出游" />
-              <el-option label="家庭出行" value="家庭出行" />
-              <el-option label="独自旅行" value="独自旅行" />
-            </el-select>
-          </div>
-          <div class="form-item">
-            <label>喜爱英雄</label>
-            <el-select v-model="favoriteHero" placeholder="请选择" style="width: 100%">
-              <el-option label="李白" value="libai" />
-              <el-option label="武则天" value="wuzetian" />
-              <el-option label="诸葛亮" value="zhuge" />
-            </el-select>
-          </div>
-          <div class="form-item">
-            <label>喜爱选手</label>
-            <el-select v-model="favoritePlayer" placeholder="请选择" style="width: 100%">
-              <el-option label="Fly" value="fly" />
-              <el-option label="Cat" value="cat" />
-              <el-option label="一诺" value="yinuo" />
-            </el-select>
-          </div>
-        </div>
-        <el-button type="primary" @click="generateRoute" class="generate-btn">
-          生成专属路线
-        </el-button>
-      </div>
-
-      <div v-if="showRouteResult" class="route-result">
-        <div v-html="routeResult"></div>
-      </div>
     </div>
-
-    <!-- 电竞文旅对话 -->
-    <div class="travel-chat-section">
-      <h2 class="section-title">电竞文旅助手</h2>
-      <ChatBox
-        :messages="travelMessages"
-        title="文旅助手"
-        placeholder="咨询电竞文旅相关信息..."
-        @send="sendTravelMessage"
-      />
-    </div>
-  </div>
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
-import { ElMessage } from 'element-plus'
+import {nextTick, onMounted, onUnmounted, ref} from 'vue'
 import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
-import { cityDataList, cityMap } from '../data/cities'
+import {cityDataList, cityMap} from '../data/cities'
 
 const selectedCity = ref('')
-const travelDays = ref(3)
-const travelPeople = ref(2)
+const travelDays = ref(null)
+const travelPeople = ref(null)
 const travelRelationship = ref('')
 const favoriteHero = ref('')
-const favoritePlayer = ref('')
-const routeResult = ref('')
-const showRouteResult = ref(false)
 
 const currentCity = ref(null)
 const showCityModal = ref(false)
 const cityDialogRef = ref(null)
 const cityContentRef = ref(null)
+const chatBoxRef = ref(null)
+
+// 外部页面滚动控制
+let isFirstRequest = true
+let isScrollDetectionActive = false
+let userHasScrolledPage = false
+let lastScrollTime = 0
+let lastChatHeight = 0
+let scrollCheckInterval = null
+let previousPageScrollTop = 0 // 上一次的页面滚动位置
+
+const handlePageScroll = () => {
+    if (!isScrollDetectionActive) return
+
+    // 检查是否在程序滚动后的短时间内（50ms），如果是则跳过
+    const now = Date.now()
+    if (now - lastScrollTime < 50) return
+
+    const scrollTop = window.scrollY || document.documentElement.scrollTop
+
+    // 如果向上滚动（scrollTop < previous），判定为用户滚动
+    if (scrollTop < previousPageScrollTop) {
+        userHasScrolledPage = true
+        stopAutoScrollPage()
+    }
+
+    previousPageScrollTop = scrollTop
+}
+
+const stopAutoScrollPage = () => {
+    if (scrollCheckInterval) {
+        clearInterval(scrollCheckInterval)
+        scrollCheckInterval = null
+    }
+}
+
+const startAutoScrollPage = () => {
+    lastChatHeight = 0
+    isScrollDetectionActive = true
+
+    scrollCheckInterval = setInterval(() => {
+        if (userHasScrolledPage) {
+            stopAutoScrollPage()
+            return
+        }
+
+        // 检查聊天框高度
+        const chatMessages = document.querySelector('.chat-messages')
+        if (chatMessages) {
+            const maxHeight = 400 // 与 ChatBox 的 max-height 一致
+            const currentHeight = chatMessages.clientHeight
+
+            // 达到最大可见高度，停止滚动
+            if (currentHeight >= maxHeight) {
+                stopAutoScrollPage()
+                return
+            }
+
+            lastChatHeight = currentHeight
+
+            // 滚动到页面底部
+            lastScrollTime = Date.now()
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'instant'
+            })
+        }
+    }, 100)
+}
+
+onMounted(() => {
+    window.addEventListener('scroll', handlePageScroll, {passive: true})
+})
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handlePageScroll)
+    stopAutoScrollPage()
+})
 
 const travelMessages = ref([
-  { type: 'character', content: '欢迎来到电竞文旅助手！有什么关于电竞城市的问题可以问我哦～' }
+    {
+        type: 'character', content: `欢迎来到电竞文旅助手！🎮
+
+我是您的专属电竞文旅规划师，熟悉各大电竞城市特色、KPL赛事资讯以及王者荣耀联动打卡点。无论您是想规划路线、了解电竞文化还是获取观赛攻略，都可以告诉我！`
+    }
 ])
 
 const showCityDetail = (cityKey) => {
-  currentCity.value = cityDataList[cityKey]
-  showCityModal.value = true
-  // 滚动到顶部
-  nextTick(() => {
-    const dialogBody = document.querySelector('.city-detail-modal .el-dialog__body')
-    if (dialogBody) {
-      dialogBody.scrollTop = 0
-    }
-  })
+    currentCity.value = cityDataList[cityKey]
+    showCityModal.value = true
+    nextTick(() => {
+        const dialogBody = document.querySelector('.city-detail-modal .el-dialog__body')
+        if (dialogBody) {
+            dialogBody.scrollTop = 0
+        }
+    })
 }
 
-const generateRoute = () => {
-  if (!selectedCity.value) {
-    ElMessage.warning('请选择旅行城市！')
-    return
-  }
+// 模拟流式输出的长回复
+const mockStreamResponse = `根据您的需求，我为您规划了一条从上海出发的3天电竞文旅路线，非常适合和女朋友一起体验：
 
-  const cityName = cityMap[selectedCity.value]
-  const heroNames = { libai: '李白', wuzetian: '武则天', zhuge: '诸葛亮' }
-  const playerNames = { fly: 'Fly', cat: 'Cat', yinuo: '一诺' }
+🏟️ 第一天：
+上午前往上海电竞中心，这里是KPL季后赛的举办地之一，可以参观选手训练室和荣誉墙。中午在附近的海底捞电竞主题店用餐。下午前往浦东新区的主题电竞馆体验VR游戏。
 
-  routeResult.value = `
-    <p>🎉 为您定制<strong>${cityName}</strong>${travelDays.value}天电竞文旅路线：</p>
-    <p>👥 同行人数：${travelPeople.value}人（${travelRelationship.value || '好友同行'}）</p>
-    <p>⚔️ 本命英雄：${favoriteHero.value ? heroNames[favoriteHero.value] : '未选择'}</p>
-    <p>🎮 喜爱选手：${favoritePlayer.value ? playerNames[favoritePlayer.value] : '未选择'}</p>
-    <br>
-    <p><strong>Day 1：</strong>${cityName}电竞主题场馆打卡 → 本地特色电竞餐厅体验</p>
-    <p><strong>Day 2：</strong>${cityName}历史文化景点（王者荣耀联动点）→ 电竞周边商城购物</p>
-    <p><strong>Day 3：</strong>${cityName}KPL赛事观赛（如有）→ 电竞主题酒吧交流</p>
-    <br>
-    <p>💡 贴士：建议提前预订${cityName}电竞酒店，携带王者荣耀周边增加体验感！</p>
-  `
-  showRouteResult.value = true
-}
+🎮 第二天：
+上午参观王者荣耀线下体验店，购买限定周边。中午在网红电竞餐厅"英雄的厨房"用餐。下午前往上海体育馆观看KPL比赛（如有赛事安排）。
+
+🌆 第三天：
+上午游览外滩和豫园，感受海派文化。中午品尝上海特色美食。下午前往电竞主题咖啡厅休息，享受悠闲的下午茶时光。
+
+💡 贴心建议：
+1. 提前在官网预约KPL比赛门票
+2. 携带王者荣耀游戏ID可享受部分商家折扣
+3. 建议入住电竞主题酒店体验
+4. 不要错过王者荣耀限定周边商店
+
+祝您和女朋友有一个难忘的电竞文旅体验！🎉`
 
 const sendTravelMessage = (text) => {
-  travelMessages.value.push({ type: 'user', content: text })
+    const cityName = selectedCity.value ? cityMap[selectedCity.value] : ''
+    const hasPlanningInfo = cityName || travelDays.value || travelPeople.value || travelRelationship.value || favoriteHero.value
 
-  setTimeout(() => {
-    const replies = [
-      '您想了解哪个城市的电竞文旅信息呢？',
-      '根据您的喜好，我推荐去上海看比赛～',
-      '这个话题很有趣，让我来为您解答...',
-      '建议您关注KPL赛事日历，获取最新资讯。'
-    ]
-    travelMessages.value.push({
-      type: 'character',
-      content: replies[Math.floor(Math.random() * replies.length)]
-    })
-  }, 800)
+    let promptTemplate = ''
+    if (hasPlanningInfo) {
+        promptTemplate = `【电竞文旅规划请求】
+目标城市：${cityName || '未指定'}
+旅行天数：${travelDays.value ? `${travelDays.value}天` : '未指定'}
+出行人数：${travelPeople.value ? `${travelPeople.value}人` : '未指定'}
+关系类型：${travelRelationship.value || '未指定'}
+本命英雄：${favoriteHero.value || '未指定'}
+
+【用户需求】
+${text}
+
+请根据以上信息，为用户推荐合适的电竞文旅路线或解答相关问题。`
+    } else {
+        promptTemplate = text
+    }
+
+    travelMessages.value.push({type: 'user', content: promptTemplate})
+
+    // 模拟流式输出过程
+    // 1. 先显示正在思考状态
+    chatBoxRef.value?.setStatus('thinking')
+
+    // 2. 1秒后切换到正在输出状态，并开始流式输出
+    setTimeout(() => {
+        chatBoxRef.value?.setStatus('streaming')
+
+        // 第一次请求时，流式输出开始后启动外部页面滚动
+        if (isFirstRequest) {
+            userHasScrolledPage = false
+            startAutoScrollPage()
+        }
+
+        // 添加一条空消息用于流式填充
+        const msgIndex = travelMessages.value.length
+        travelMessages.value.push({type: 'character', content: ''})
+
+        // 3. 模拟逐字输出
+        let charIndex = 0
+        const streamInterval = setInterval(() => {
+            if (charIndex < mockStreamResponse.length) {
+                travelMessages.value[msgIndex].content += mockStreamResponse[charIndex]
+                charIndex++
+            } else {
+                clearInterval(streamInterval)
+                // 4. 输出完成后恢复空闲状态
+                setTimeout(() => {
+                    chatBoxRef.value?.setStatus('idle')
+                    // 第一次请求完成，停止外部页面滚动
+                    if (isFirstRequest) {
+                        isFirstRequest = false
+                        isScrollDetectionActive = false
+                        stopAutoScrollPage()
+                    }
+                }, 300)
+            }
+        }, 15) // 每15ms输出一个字符
+    }, 1000)
 }
 </script>
 
 <style scoped>
 .travel-view {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .section-title {
-  color: #fff;
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* AI 路线规划 */
-.ai-route-planner {
-  background: rgba(30, 45, 80, 0.5);
-  border-radius: 10px;
-  padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+/* 快速规划选项 */
+.quick-planners {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.planner-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.planner-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+.planner-item label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
 }
 
-.form-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+@media (max-width: 900px) {
+    .quick-planners {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
-.form-item label {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-}
-
-.generate-btn {
-  margin-top: 12px;
-  background: linear-gradient(145deg, #f0b344 0%, #d4962e 100%);
-  border: none;
-  padding: 12px 28px;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  box-shadow:
-    0 2px 8px rgba(240, 179, 68, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: all 0.2s;
-}
-
-.generate-btn:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 4px 14px rgba(240, 179, 68, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.generate-btn:active {
-  transform: translateY(0);
-  box-shadow:
-    0 1px 4px rgba(240, 179, 68, 0.3),
-    inset 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.route-result {
-  margin-top: 18px;
-  padding: 18px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 8px;
-  border: 1px solid rgba(240, 179, 68, 0.2);
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.8;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-.route-result :deep(p) {
-  margin: 5px 0;
+@media (max-width: 600px) {
+    .quick-planners {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* 电竞文旅对话 */
 .travel-chat-section {
-  background: rgba(30, 45, 80, 0.5);
-  border-radius: 10px;
-  padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.2),
+    background: rgba(30, 45, 80, 0.5);
+    border-radius: 10px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 /* 城市详情弹窗 */
 .city-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
 }
 
 .content-full {
-  grid-column: 1 / -1;
+    grid-column: 1 / -1;
 }
 
 .info-section {
-  background: rgba(0, 0, 0, 0.15);
-  padding: 14px;
-  border-radius: 6px;
-  margin-bottom: 14px;
-  border-left: 3px solid #f0b344;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    background: rgba(0, 0, 0, 0.15);
+    padding: 14px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    border-left: 3px solid #f0b344;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .info-section h3 {
-  color: #f0b344;
-  margin: 0 0 10px 0;
-  font-size: 0.95rem;
-  font-weight: 600;
+    color: #f0b344;
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
 }
 
 .info-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .info-section li {
-  padding: 5px 0;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.88rem;
+    padding: 5px 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.88rem;
 }
 
 .player-card, .hero-card {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 10px 12px;
-  border-radius: 6px;
-  margin-bottom: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
 }
 
 .player-card strong, .hero-card strong {
-  color: #f0b344;
+    color: #f0b344;
 }
 
 .player-card small, .hero-card small {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
 }
 
 .player-card p, .hero-card p {
-  margin: 5px 0 0 0;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+    margin: 5px 0 0 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .tasks-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
 }
 
 .task-card {
-  background: linear-gradient(145deg, rgba(240, 179, 68, 0.08) 0%, rgba(230, 57, 70, 0.08) 100%);
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(240, 179, 68, 0.2);
+    background: linear-gradient(145deg, rgba(240, 179, 68, 0.08) 0%, rgba(230, 57, 70, 0.08) 100%);
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(240, 179, 68, 0.2);
 }
 
 .task-card strong {
-  color: #fff;
-  font-weight: 500;
+    color: #fff;
+    font-weight: 500;
 }
 
 .task-card p {
-  margin: 5px 0;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+    margin: 5px 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .task-reward {
-  display: inline-block;
-  background: linear-gradient(145deg, #2a9d8f 0%, #238b7e 100%);
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 0.78rem;
-  margin-top: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    background: linear-gradient(145deg, #2a9d8f 0%, #238b7e 100%);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    margin-top: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .route-item {
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  margin-bottom: 8px;
-  font-size: 0.88rem;
-  color: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 @media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
+    .city-content {
+        grid-template-columns: 1fr;
+    }
 
-  .city-content {
-    grid-template-columns: 1fr;
-  }
-
-  .tasks-grid {
-    grid-template-columns: 1fr;
-  }
+    .tasks-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 
 <style>
 .city-detail-modal.el-dialog {
-  background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
-  border: 1px solid rgba(240, 179, 68, 0.25);
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  margin-top: 0 !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
+    background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
+    border: 1px solid rgba(240, 179, 68, 0.25);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    margin-top: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
 }
 
 .city-detail-modal .el-dialog__header {
-  border-bottom: 1px solid rgba(240, 179, 68, 0.15);
-  padding: 18px 20px;
+    border-bottom: 1px solid rgba(240, 179, 68, 0.15);
+    padding: 18px 20px;
 }
 
 .city-detail-modal .el-dialog__title {
-  color: #f0b344;
-  font-size: 1.1rem;
-  font-weight: 600;
+    color: #f0b344;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .city-detail-modal .el-dialog__headerbtn .el-dialog__close {
-  color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .city-detail-modal .el-dialog__body {
-  padding: 20px;
-  max-height: 60vh;
-  overflow-y: auto;
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
 }
 
 .city-detail-modal .el-input__wrapper,
 .city-detail-modal .el-select .el-input__wrapper {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: none;
-  border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    border-radius: 6px;
 }
 
 .city-detail-modal .el-input__inner,
 .city-detail-modal .el-select-dropdown__item {
-  color: #fff;
+    color: #fff;
 }
 
 .city-detail-modal .el-select-dropdown {
-  background: #1e2f55;
-  border: 1px solid rgba(240, 179, 68, 0.2);
-  border-radius: 6px;
+    background: #1e2f55;
+    border: 1px solid rgba(240, 179, 68, 0.2);
+    border-radius: 6px;
 }
 
 .city-detail-modal .el-select-dropdown__item {
-  color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .city-detail-modal .el-select-dropdown__item.hover,
 .city-detail-modal .el-select-dropdown__item:hover {
-  background: rgba(240, 179, 68, 0.15);
+    background: rgba(240, 179, 68, 0.15);
 }
 
 .city-detail-modal .el-input-number .el-input__wrapper {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: none;
-  border-radius: 6px;
-}
-
-/* AI路线规划器 - 表单组件样式 */
-.ai-route-planner .el-select .el-input__wrapper {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: none;
-  border-radius: 6px;
-}
-
-.ai-route-planner .el-select .el-input__wrapper:hover {
-  border-color: rgba(240, 179, 68, 0.4);
-}
-
-.ai-route-planner .el-select .el-input.is-focus .el-input__wrapper {
-  border-color: #f0b344;
-  box-shadow: 0 0 0 2px rgba(240, 179, 68, 0.15);
-}
-
-.ai-route-planner .el-input__inner {
-  color: #fff;
-  font-size: 14px;
-}
-
-.ai-route-planner .el-input__inner::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.ai-route-planner .el-input-number {
-  width: 100%;
-}
-
-.ai-route-planner .el-input-number .el-input__wrapper {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: none;
-  border-radius: 6px;
-}
-
-.ai-route-planner .el-input-number .el-input__wrapper:hover {
-  border-color: rgba(240, 179, 68, 0.4);
-}
-
-.ai-route-planner .el-input-number__decrease,
-.ai-route-planner .el-input-number__increase {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.ai-route-planner .el-input-number__decrease:hover,
-.ai-route-planner .el-input-number__increase:hover {
-  color: #f0b344;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    border-radius: 6px;
 }
 
 /* Select dropdown popup */
 .el-select-dropdown {
-  background: #1e2f55 !important;
-  border: 1px solid rgba(240, 179, 68, 0.2) !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    background: #1e2f55 !important;
+    border: 1px solid rgba(240, 179, 68, 0.2) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
 }
 
 .el-select-dropdown__item {
-  color: rgba(255, 255, 255, 0.9) !important;
-  font-size: 14px;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 14px;
+    line-height: 1 !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
 }
 
 .el-select-dropdown__item.hover,
 .el-select-dropdown__item:hover {
-  background: rgba(240, 179, 68, 0.15) !important;
-  color: #fff !important;
+    background: rgba(240, 179, 68, 0.15) !important;
+    color: #fff !important;
 }
 
 .el-select-dropdown__item.selected {
-  color: #f0b344 !important;
-  font-weight: 600;
+    color: #f0b344 !important;
+    font-weight: 600;
 }
 
 .el-popper.is-light {
-  background: #1e2f55;
-  border-color: rgba(240, 179, 68, 0.2);
+    background: #1e2f55;
+    border-color: rgba(240, 179, 68, 0.2);
 }
 
 .el-popper .el-popper__arrow::before {
-  background: #1e2f55;
-  border-color: rgba(240, 179, 68, 0.2);
+    background: #1e2f55;
+    border-color: rgba(240, 179, 68, 0.2);
 }
 
 /* Select dropdown 内部结构 - 确保透明背景 */
 .el-select-dropdown__wrap {
-  background: transparent !important;
+    background: transparent !important;
 }
 
 .el-select-dropdown__list {
-  background: transparent !important;
+    background: transparent !important;
 }
 
 .el-select-dropdown__item {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
 }
 
 .el-scrollbar__wrap {
-  background: transparent !important;
+    background: transparent !important;
 }
 
 .el-scrollbar__bar {
-  background: transparent !important;
+    background: transparent !important;
 }
 
 .el-select-dropdown {
-  background: #1e2f55 !important;
+    background: #1e2f55 !important;
 }
 
 .el-select-dropdown__popper {
-  background: #1e2f55 !important;
+    background: #1e2f55 !important;
 }
 
 /* 选中项背景 - 关键修复 */
 .el-select-dropdown__item.selected,
 .el-select-dropdown__item.is-selected,
 .el-select-dropdown__item[selected] {
-  background-color: rgba(240, 179, 68, 0.2) !important;
-  color: #f0b344 !important;
+    background-color: rgba(240, 179, 68, 0.2) !important;
+    color: #f0b344 !important;
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-  .city-detail-modal.el-dialog {
-    width: 95% !important;
-    max-width: 95vw;
-    margin: 10px auto !important;
-  }
+    .city-detail-modal.el-dialog {
+        width: 95% !important;
+        max-width: 95vw;
+        margin: 10px auto !important;
+    }
 
-  .city-detail-modal .el-dialog__body {
-    padding: 12px;
-    max-height: 70vh;
-    overflow-y: auto;
-  }
+    .city-detail-modal .el-dialog__body {
+        padding: 12px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
 
-  .city-content {
-    flex-direction: column;
-  }
+    .city-content {
+        flex-direction: column;
+    }
 
-  .content-left,
-  .content-right,
-  .content-full {
-    width: 100%;
-    padding: 0;
-  }
+    .content-left,
+    .content-right,
+    .content-full {
+        width: 100%;
+        padding: 0;
+    }
 
-  .info-section {
-    margin-bottom: 16px;
-  }
+    .info-section {
+        margin-bottom: 16px;
+    }
 
-  .info-section h3 {
-    font-size: 1rem;
-    margin-bottom: 8px;
-  }
+    .info-section h3 {
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
 
-  .tasks-grid {
-    grid-template-columns: 1fr;
-  }
+    .tasks-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

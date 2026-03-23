@@ -19,7 +19,7 @@
           沉浸对话
         </button>
       </div>
-      <button class="login-btn" @click="$emit('open-login')">
+      <button class="login-btn" @click="handleLoginClick">
         {{ isLoggedIn ? userInfo?.username : '登录/注册' }}
       </button>
     </div>
@@ -34,7 +34,7 @@
         </svg>
       </button>
       <h1 class="mobile-logo">城竞共生</h1>
-      <button class="user-btn" @click="$emit('open-login')">
+      <button class="user-btn" @click="handleLoginClick">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="8" r="4" />
           <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
@@ -94,7 +94,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
-defineEmits(['open-login'])
+const emit = defineEmits(['open-login'])
 
 const sidebarOpen = ref(false)
 
@@ -118,6 +118,14 @@ const goToTravel = () => {
 const goToDialogue = () => {
   sidebarOpen.value = false
   router.push('/dialogue')
+}
+
+const handleLoginClick = () => {
+  if (isLoggedIn.value) {
+    router.push('/profile')
+  } else {
+    emit('open-login')
+  }
 }
 </script>
 

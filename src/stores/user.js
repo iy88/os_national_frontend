@@ -5,11 +5,12 @@ export const useUserStore = defineStore('user', () => {
   const isLoggedIn = ref(false)
   const userInfo = ref(null)
   const collectedRoutes = ref([])
+  const showLoginModal = ref(false)
 
   const register = (userData) => {
     userInfo.value = {
       username: userData.username,
-      phone: userData.phone,
+      email: userData.email,
       gender: userData.gender,
       age: userData.age,
       basicInfo: userData.basicInfo,
@@ -24,7 +25,7 @@ export const useUserStore = defineStore('user', () => {
     if (username && password) {
       userInfo.value = {
         username: username,
-        phone: '',
+        email: '',
         avatar: ''
       }
       isLoggedIn.value = true
@@ -38,6 +39,12 @@ export const useUserStore = defineStore('user', () => {
     isLoggedIn.value = false
     userInfo.value = null
     collectedRoutes.value = []
+  }
+
+  const updateField = (key, value) => {
+    if (userInfo.value) {
+      userInfo.value[key] = value
+    }
   }
 
   const addCollectedRoute = (route) => {
@@ -57,9 +64,11 @@ export const useUserStore = defineStore('user', () => {
     isLoggedIn,
     userInfo,
     collectedRoutes,
+    showLoginModal,
     register,
     login,
     logout,
+    updateField,
     addCollectedRoute,
     removeCollectedRoute
   }
