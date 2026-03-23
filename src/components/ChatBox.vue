@@ -1,9 +1,9 @@
 <template>
     <div class="chat-box">
-        <div class="chat-header" v-if="title">
+        <div v-if="title" class="chat-header">
             <h4>{{ title }}</h4>
         </div>
-        <div class="chat-messages" ref="messagesContainer" @scroll="handleMessagesScroll">
+        <div ref="messagesContainer" class="chat-messages" @scroll="handleMessagesScroll">
             <div
                 v-for="(msg, index) in messages"
                 :key="index"
@@ -13,15 +13,15 @@
             </div>
         </div>
         <div class="chat-input">
-            <div class="chat-status" v-if="status !== 'idle'">
+            <div v-if="status !== 'idle'" class="chat-status">
                 <span :class="['status-dot', status]"></span>
                 <span class="status-text">{{ statusText }}</span>
             </div>
             <textarea
+                ref="inputTextarea"
                 v-model="inputText"
                 :placeholder="placeholder"
                 rows="1"
-                ref="inputTextarea"
                 @keydown="handleKeydown"
             ></textarea>
             <button @click="handleSend">发送</button>
@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import {ref, computed, nextTick, watch} from 'vue'
+import {computed, nextTick, ref, watch} from 'vue'
 
 const props = defineProps({
     messages: {
@@ -60,7 +60,7 @@ let previousScrollTop = 0 // 上一次的滚动位置
 const handleMessagesScroll = () => {
     if (!messagesContainer.value) return
 
-    const { scrollTop } = messagesContainer.value
+    const {scrollTop} = messagesContainer.value
 
     // 如果向上滚动（scrollTop < previous），判定为用户滚动
     if (scrollTop < previousScrollTop) {

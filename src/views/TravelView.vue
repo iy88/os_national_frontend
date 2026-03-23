@@ -4,13 +4,13 @@
 
         <!-- 城市详情弹窗 -->
         <el-dialog
+            ref="cityDialogRef"
             v-model="showCityModal"
             :title="currentCity?.name"
-            width="800px"
             class="city-detail-modal"
-            ref="cityDialogRef"
+            width="800px"
         >
-            <div class="city-content" v-if="currentCity" ref="cityContentRef">
+            <div v-if="currentCity" ref="cityContentRef" class="city-content">
                 <div class="content-left">
                     <!-- 电竞选手 -->
                     <div class="info-section">
@@ -93,7 +93,7 @@
             <div class="quick-planners">
                 <div class="planner-item">
                     <label>目标城市</label>
-                    <el-select v-model="selectedCity" placeholder="可选" clearable style="width: 100%">
+                    <el-select v-model="selectedCity" clearable placeholder="可选" style="width: 100%">
                         <el-option
                             v-for="(name, key) in cityMap"
                             :key="key"
@@ -104,29 +104,29 @@
                 </div>
                 <div class="planner-item">
                     <label>旅行天数</label>
-                    <el-select v-model="travelDays" placeholder="可选" clearable style="width: 100%">
-                        <el-option label="1天" :value="1"/>
-                        <el-option label="2天" :value="2"/>
-                        <el-option label="3天" :value="3"/>
-                        <el-option label="4天" :value="4"/>
-                        <el-option label="5天" :value="5"/>
-                        <el-option label="6天" :value="6"/>
-                        <el-option label="7天" :value="7"/>
+                    <el-select v-model="travelDays" clearable placeholder="可选" style="width: 100%">
+                        <el-option :value="1" label="1天"/>
+                        <el-option :value="2" label="2天"/>
+                        <el-option :value="3" label="3天"/>
+                        <el-option :value="4" label="4天"/>
+                        <el-option :value="5" label="5天"/>
+                        <el-option :value="6" label="6天"/>
+                        <el-option :value="7" label="7天"/>
                     </el-select>
                 </div>
                 <div class="planner-item">
                     <label>出行人数</label>
-                    <el-select v-model="travelPeople" placeholder="可选" clearable style="width: 100%">
-                        <el-option label="1人" :value="1"/>
-                        <el-option label="2人" :value="2"/>
-                        <el-option label="3-5人" :value="3"/>
-                        <el-option label="5-10人" :value="5"/>
-                        <el-option label="10人以上" :value="10"/>
+                    <el-select v-model="travelPeople" clearable placeholder="可选" style="width: 100%">
+                        <el-option :value="1" label="1人"/>
+                        <el-option :value="2" label="2人"/>
+                        <el-option :value="3" label="3-5人"/>
+                        <el-option :value="5" label="5-10人"/>
+                        <el-option :value="10" label="10人以上"/>
                     </el-select>
                 </div>
                 <div class="planner-item">
                     <label>关系类型</label>
-                    <el-select v-model="travelRelationship" placeholder="可选" clearable style="width: 100%">
+                    <el-select v-model="travelRelationship" clearable placeholder="可选" style="width: 100%">
                         <el-option label="好友同行" value="好友同行"/>
                         <el-option label="情侣出游" value="情侣出游"/>
                         <el-option label="家庭出行" value="家庭出行"/>
@@ -135,7 +135,7 @@
                 </div>
                 <div class="planner-item">
                     <label>本命英雄</label>
-                    <el-select v-model="favoriteHero" placeholder="可选" clearable style="width: 100%">
+                    <el-select v-model="favoriteHero" clearable placeholder="可选" style="width: 100%">
                         <el-option label="李白" value="李白"/>
                         <el-option label="武则天" value="武则天"/>
                         <el-option label="诸葛亮" value="诸葛亮"/>

@@ -1,13 +1,13 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
-  server: {
-    allowedHosts: ['ali.iy88.site'],
-    host: '0.0.0.0',
-    port: 5173
-  },
+    plugins: [vue()],
+    server: {
+        allowedHosts: ['ali.iy88.site'],
+        host: '0.0.0.0',
+        port: 5173
+    },
 })
 
