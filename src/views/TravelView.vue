@@ -158,6 +158,7 @@ import {nextTick, onMounted, onUnmounted, ref} from 'vue'
 import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
 import citiesData from '../data/cities.json'
+import {useStreamTimers} from '../composables/useStreamTimers'
 
 // 城市数据列表（直接使用 cities.json）
 const cityDataList = citiesData
@@ -182,17 +183,14 @@ const cityDialogRef = ref(null)
 const cityContentRef = ref(null)
 const chatBoxRef = ref(null)
 
-// 流式输出定时器引用
-const streamIntervalRef = ref(null)
-const streamTimeoutRef = ref(null)
-const thinkingTimeoutRef = ref(null)
+// 流式输出定时器
+const {streamIntervalRef, streamTimeoutRef, thinkingTimeoutRef, clearStreamTimers} = useStreamTimers()
 
 // 外部页面滚动控制
 let isFirstRequest = true
 let isScrollDetectionActive = false
 let userHasScrolledPage = false
 let lastScrollTime = 0
-let lastChatHeight = 0
 let scrollCheckInterval = null
 let previousPageScrollTop = 0 // 上一次的页面滚动位置
 
@@ -222,7 +220,6 @@ const stopAutoScrollPage = () => {
 }
 
 const startAutoScrollPage = () => {
-    lastChatHeight = 0
     isScrollDetectionActive = true
 
     scrollCheckInterval = setInterval(() => {
@@ -242,8 +239,6 @@ const startAutoScrollPage = () => {
                 stopAutoScrollPage()
                 return
             }
-
-            lastChatHeight = currentHeight
 
             // 滚动到页面底部
             lastScrollTime = Date.now()
@@ -303,22 +298,6 @@ const mockStreamResponse = `根据您的需求，我为您规划了一条从上�
 4. 不要错过王者荣耀限定周边商店
 
 祝您和女朋友有一个难忘的电竞文旅体验！🎉`
-
-// 清理所有流式输出相关的定时器
-const clearStreamTimers = () => {
-    if (thinkingTimeoutRef.value) {
-        clearTimeout(thinkingTimeoutRef.value)
-        thinkingTimeoutRef.value = null
-    }
-    if (streamIntervalRef.value) {
-        clearInterval(streamIntervalRef.value)
-        streamIntervalRef.value = null
-    }
-    if (streamTimeoutRef.value) {
-        clearTimeout(streamTimeoutRef.value)
-        streamTimeoutRef.value = null
-    }
-}
 
 const sendTravelMessage = (text) => {
     // 清理之前的定时器，防止路由跳转后继续执行

@@ -89,6 +89,7 @@ import ChatBox from '../components/ChatBox.vue'
 import StoryModal from '../components/StoryModal.vue'
 import PhotoGallery from '../components/PhotoGallery.vue'
 import {categoryInfo, characterData, getCharacterWelcome, mockStreamReply} from '../data/characters'
+import {useStreamTimers} from '../composables/useStreamTimers'
 
 const activeCategory = ref('hero')
 const activeCharacter = ref(null)
@@ -99,10 +100,8 @@ const showStoryModal = ref(false)
 const showPhotosModal = ref(false)
 const selectedCharacter = ref(null)
 
-// 流式输出定时器引用
-const streamIntervalRef = ref(null)
-const streamTimeoutRef = ref(null)
-const thinkingTimeoutRef = ref(null)
+// 流式输出定时器
+const {streamIntervalRef, streamTimeoutRef, thinkingTimeoutRef, clearStreamTimers} = useStreamTimers()
 
 // 外部页面滚动控制
 let isFirstRequest = true
@@ -254,22 +253,6 @@ const sendMessage = (text) => {
             }
         }, 15) // 每15ms输出一个字符
     }, 1000)
-}
-
-// 清理所有流式输出相关的定时器
-const clearStreamTimers = () => {
-    if (thinkingTimeoutRef.value) {
-        clearTimeout(thinkingTimeoutRef.value)
-        thinkingTimeoutRef.value = null
-    }
-    if (streamIntervalRef.value) {
-        clearInterval(streamIntervalRef.value)
-        streamIntervalRef.value = null
-    }
-    if (streamTimeoutRef.value) {
-        clearTimeout(streamTimeoutRef.value)
-        streamTimeoutRef.value = null
-    }
 }
 </script>
 

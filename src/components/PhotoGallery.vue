@@ -79,7 +79,6 @@ let touchStartX = 0
 let touchStartY = 0
 let touchStartTime = 0
 let isDragging = false
-let dragStartOffset = 0
 
 const scrollToActiveIndicator = (index) => {
     if (!indicatorStripRef.value) return
@@ -126,7 +125,6 @@ const handleTouchStart = (e) => {
     touchStartY = e.touches[0].clientY
     touchStartTime = Date.now()
     isDragging = true
-    dragStartOffset = 0
 }
 
 const handleTouchMove = (e) => {
@@ -147,7 +145,6 @@ const handleTouchMove = (e) => {
         // 限制拖拽范围
         const maxOffset = window.innerWidth * 0.3
         const clampedDelta = Math.max(-maxOffset, Math.min(maxOffset, deltaX))
-        dragStartOffset = clampedDelta
 
         // 计算视觉偏移：基础偏移 + 拖拽增量
         const baseOffset = currentIndex.value * 100
@@ -179,7 +176,6 @@ const handleTouchEnd = (e) => {
     }
 
     isDragging = false
-    dragStartOffset = 0
 }
 
 watch(() => props.modelValue, (val) => {

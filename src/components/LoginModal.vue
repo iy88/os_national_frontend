@@ -49,8 +49,8 @@
                     {{ isLogin ? '还没有账号？' : '已有账号？' }}
                     <span @click="isLogin = !isLogin">{{ isLogin ? '立即注册' : '去登录' }}</span>
                 </p>
-                <el-button class="submit-btn" type="primary" @click="handleSubmit">
-                    {{ isLogin ? '登录' : '注册' }}
+                <el-button :disabled="isSubmitting" class="submit-btn" type="primary" @click="handleSubmit">
+                    {{ isSubmitting ? '提交中...' : (isLogin ? '登录' : '注册') }}
                 </el-button>
             </div>
         </div>
@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import {computed, nextTick, ref} from 'vue'
+import {computed, ref} from 'vue'
 import {useUserStore} from '../stores/user'
 import {ElMessage} from 'element-plus'
 import {sendVerificationCode, register as apiRegister, login as apiLogin} from '../api'
@@ -182,6 +182,7 @@ const registerRules = {
 }
 
 const verifyCodeSent = ref(false)
+const isSubmitting = ref(false)
 const countdown = ref(0)
 let countdownTimer = null
 
@@ -210,9 +211,12 @@ const sendVerifyCode = async () => {
 }
 
 const handleSubmit = async () => {
-    if (isLogin.value) {
-        if (loginForm.value.username && loginForm.value.password) {
-            try {
+    if (isSubmitting.value) return
+    isSubmitting.value = true
+
+    try {
+        if (isLogin.value) {
+            if (loginForm.value.username && loginForm.value.password) {
                 const result = await apiLogin(loginForm.value)
                 if (result.success) {
                     userStore.login(result)
@@ -220,18 +224,14 @@ const handleSubmit = async () => {
                     emit('update:modelValue', false)
                     resetForms()
                 }
-            } catch (error) {
-                ElMessage.error(error.message || '登录失败')
+            } else {
+                ElMessage.warning('请填写完整信息')
             }
         } else {
-            ElMessage.warning('请填写完整信息')
-        }
-    } else {
-        // 注册时校验整个表单
-        if (!registerFormRef.value) return
-        await registerFormRef.value.validate(async (valid) => {
-            if (valid) {
-                try {
+            // 注册时校验整个表单
+            if (!registerFormRef.value) return
+            await registerFormRef.value.validate(async (valid) => {
+                if (valid) {
                     const result = await apiRegister(registerForm.value)
                     if (result.success) {
                         userStore.login(result)
@@ -239,13 +239,15 @@ const handleSubmit = async () => {
                         emit('update:modelValue', false)
                         resetForms()
                     }
-                } catch (error) {
-                    ElMessage.error(error.message || '注册失败')
+                } else {
+                    ElMessage.warning('请填写完整且有效的注册信息')
                 }
-            } else {
-                ElMessage.warning('请填写完整且有效的注册信息')
-            }
-        })
+            })
+        }
+    } catch (error) {
+        ElMessage.error(error.message || '提交失败')
+    } finally {
+        isSubmitting.value = false
     }
 }
 
