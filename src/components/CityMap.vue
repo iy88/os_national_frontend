@@ -70,6 +70,7 @@
 
 <script setup>
 import {onMounted, ref} from 'vue'
+import citiesData from '../data/cities.json'
 
 const emit = defineEmits(['select-city'])
 
@@ -120,15 +121,17 @@ const showHint = ref(true)
 // 容器引用
 const containerRef = ref(null)
 
-// 城市标记数据
-const cityMarkersData = {
-    xian: {name: '西安', lon: 108.95, lat: 34.27},
-    chengdu: {name: '成都', lon: 104.07, lat: 30.66},
-    shanghai: {name: '上海', lon: 121.47, lat: 31.23},
-    wuhan: {name: '武汉', lon: 114.30, lat: 30.58},
-    guangzhou: {name: '广州', lon: 113.28, lat: 23.13},
-    hangzhou: {name: '杭州', lon: 120.15, lat: 30.29}
-}
+// 城市标记数据（从 cities.json 导入）
+const cityMarkersData = Object.entries(citiesData).reduce((acc, [key, city]) => {
+    if (city.center) {
+        acc[key] = {
+            name: city.displayName,
+            lon: city.center[0],
+            lat: city.center[1]
+        }
+    }
+    return acc
+}, {})
 
 // 地理坐标转SVG坐标
 const geoToSvg = (lon, lat) => {

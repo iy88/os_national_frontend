@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import {ref} from 'vue'
+import {ref, computed} from 'vue'
 import {getProfile, updateProfile} from '../api'
 
 export const useUserStore = defineStore('user', () => {
@@ -7,6 +7,19 @@ export const useUserStore = defineStore('user', () => {
     const userInfo = ref(null)
     const collectedRoutes = ref([])
     const showLoginModal = ref(false)
+
+    // 头像URL计算属性
+    const avatarUrl = computed(() => {
+        if (userInfo.value?.avatarToken) {
+            return `/file/avatar/fetch?token=${userInfo.value.avatarToken}`
+        }
+        return null
+    })
+
+    // Token操作
+    const getToken = () => localStorage.getItem('token')
+    const setToken = (token) => localStorage.setItem('token', token)
+    const removeToken = () => localStorage.removeItem('token')
 
     // 从 API 响应设置用户信息
     const setUserInfo = (info) => {
@@ -41,23 +54,18 @@ export const useUserStore = defineStore('user', () => {
         return result
     }
 
+    // 统一登录处理
+    const login = (result) => {
+        setToken(result.token)
+        setUserInfo(result.userInfo)
+    }
+
+    // 统一登出处理
     const logout = () => {
-        localStorage.removeItem('token')
+        removeToken()
         isLoggedIn.value = false
         userInfo.value = null
         collectedRoutes.value = []
-    }
-
-    const updateField = (key, value) => {
-        if (userInfo.value) {
-            userInfo.value[key] = value
-        }
-    }
-
-    const addCollectedRoute = (route) => {
-        if (!collectedRoutes.value.includes(route)) {
-            collectedRoutes.value.push(route)
-        }
     }
 
     const removeCollectedRoute = (route) => {
@@ -67,27 +75,18 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
-    // 初始化时检查本地存储的 token
-    const initAuth = () => {
-        const token = localStorage.getItem('token')
-        if (token) {
-            // TODO: 可以在这里验证 token 有效性
-            // 目前简单处理，刷新页面后需要重新登录
-        }
-    }
-
     return {
         isLoggedIn,
         userInfo,
         collectedRoutes,
         showLoginModal,
+        avatarUrl,
+        getToken,
+        login,
+        logout,
         setUserInfo,
         fetchUserProfile,
         updateUserProfile,
-        logout,
-        updateField,
-        addCollectedRoute,
-        removeCollectedRoute,
-        initAuth
+        removeCollectedRoute
     }
 })

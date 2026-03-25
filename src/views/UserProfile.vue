@@ -80,13 +80,7 @@ const router = useRouter()
 
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const userInfo = computed(() => userStore.userInfo)
-
-const avatarUrl = computed(() => {
-    if (userInfo.value?.avatarToken) {
-        return `/file/avatar/fetch?token=${userInfo.value.avatarToken}`
-    }
-    return null
-})
+const avatarUrl = computed(() => userStore.avatarUrl)
 
 const navItems = [
     {

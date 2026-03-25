@@ -157,7 +157,18 @@
 import {nextTick, onMounted, onUnmounted, ref} from 'vue'
 import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
-import {cityDataList, cityMap} from '../data/cities'
+import citiesData from '../data/cities.json'
+
+// 城市数据列表（直接使用 cities.json）
+const cityDataList = citiesData
+
+// 城市名称映射（key -> displayName）
+const cityMap = Object.entries(citiesData).reduce((acc, [key, city]) => {
+    if (city.displayName) {
+        acc[key] = city.displayName
+    }
+    return acc
+}, {})
 
 const selectedCity = ref('')
 const travelDays = ref(null)

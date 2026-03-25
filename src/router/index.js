@@ -73,28 +73,23 @@ router.beforeEach(async (to, from, next) => {
                 userStore.setUserInfo(result.userInfo)
                 next()
             } else {
-                localStorage.removeItem('token')
-                if (to.path.startsWith('/profile')) {
-                    userStore.showLoginModal = true
-                    next('/travel')
-                } else {
-                    next()
-                }
+                userStore.logout()
+                redirectToLogin()
             }
         } catch (error) {
-            // token 无效，移除并根据路由决定是否弹出登录框
-            localStorage.removeItem('token')
-            if (to.path.startsWith('/profile')) {
-                userStore.showLoginModal = true
-                next('/travel')
-            } else {
-                next()
-            }
+            // token 无效，使用 store 登出（会清除 token）
+            userStore.logout()
+            redirectToLogin()
         } finally {
             isAutoLoggingIn = false
         }
     } else {
         // 无 token
+        redirectToLogin()
+    }
+
+    // 统一跳转和弹窗处理
+    function redirectToLogin() {
         if (to.path.startsWith('/profile')) {
             userStore.showLoginModal = true
             next('/travel')

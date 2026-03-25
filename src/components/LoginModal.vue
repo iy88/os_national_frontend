@@ -201,8 +201,7 @@ const handleSubmit = async () => {
             try {
                 const result = await apiLogin(loginForm.value)
                 if (result.success) {
-                    localStorage.setItem('token', result.token)
-                    userStore.setUserInfo(result.userInfo)
+                    userStore.login(result)
                     // 获取完整profile（含avatarToken）
                     await userStore.fetchUserProfile()
                     ElMessage.success('登录成功！')
@@ -223,8 +222,7 @@ const handleSubmit = async () => {
                 try {
                     const result = await apiRegister(registerForm.value)
                     if (result.success) {
-                        localStorage.setItem('token', result.token)
-                        userStore.setUserInfo(result.userInfo)
+                        userStore.login(result)
                         // 获取完整profile（含avatarToken）
                         await userStore.fetchUserProfile()
                         ElMessage.success('注册成功！')
@@ -243,7 +241,6 @@ const handleSubmit = async () => {
 
 const handleLogout = () => {
     userStore.logout()
-    localStorage.removeItem('token')
     ElMessage.success('已退出登录')
     emit('update:modelValue', false)
     resetForms()
