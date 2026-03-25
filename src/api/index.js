@@ -66,4 +66,14 @@ export const healthCheck = () => {
     return apiClient.get('/health')
 }
 
+// 获取用户信息
+export const getProfile = () => {
+    return apiClient.get('/user/profile')
+}
+
+// 更新用户信息（增量更新）
+export const updateProfile = (data) => {
+    return apiClient.put('/user/profile', data)
+}
+
 export default apiClient

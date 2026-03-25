@@ -30,7 +30,7 @@
         <div class="info-card">
             <div class="card-header">
                 <h3 class="card-title">基本信息</h3>
-                <button v-if="!isEditing" class="edit-all-btn" @click="toggleEditAll">
+                <button v-if="!isEditing && !isLoading" class="edit-all-btn" @click="toggleEditAll">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -38,7 +38,17 @@
                 </button>
             </div>
 
-            <div class="info-grid">
+            <div v-if="isLoading" class="loading">加载中...</div>
+
+            <div v-else class="info-grid">
+                <!-- 邮箱（只读） -->
+                <div class="info-item">
+                    <label class="info-label">邮箱</label>
+                    <div class="info-value-wrapper">
+                        <span class="info-value">{{ userInfo?.email || '未填写' }}</span>
+                    </div>
+                </div>
+
                 <div
                     v-for="(field, key) in editableFields"
                     :key="key"
@@ -83,7 +93,7 @@
 </template>
 
 <script setup>
-import {computed, reactive, ref} from 'vue'
+import {computed, onMounted, reactive, ref} from 'vue'
 import {useUserStore} from '../../stores/user'
 import {ElMessage} from 'element-plus'
 
@@ -93,11 +103,10 @@ const userInfo = computed(() => userStore.userInfo)
 
 const editableFields = {
     username: {label: '用户名', type: 'text'},
-    email: {label: '邮箱', type: 'email'},
     gender: {label: '性别', type: 'select'},
     age: {label: '年龄', type: 'number'},
     basicInfo: {label: '基本信息', type: 'textarea', rows: 2},
-    intro: {label: '简介', type: 'textarea', rows: 3}
+    bio: {label: '简介', type: 'textarea', rows: 3}
 }
 
 const genderOptions = [
@@ -109,6 +118,19 @@ const genderOptions = [
 const editingField = reactive({})
 const editForm = reactive({})
 const isEditing = ref(false)
+const isLoading = ref(false)
+
+onMounted(async () => {
+    isLoading.value = true
+    try {
+        await userStore.fetchUserProfile()
+    } catch (error) {
+        ElMessage.error(error.message || '获取用户信息失败')
+    } finally {
+        isLoading.value = false
+    }
+})
+
 const toggleEditAll = () => {
     Object.keys(editableFields).forEach(key => {
         editForm[key] = userInfo.value?.[key]
@@ -124,15 +146,21 @@ const cancelEdit = () => {
     isEditing.value = false
 }
 
-const saveAll = () => {
-    Object.keys(editableFields).forEach(key => {
-        if (editingField[key]) {
-            userStore.updateField(key, editForm[key])
-            editingField[key] = false
-        }
-    })
-    isEditing.value = false
-    ElMessage.success('保存成功')
+const saveAll = async () => {
+    try {
+        const updateData = {}
+        Object.keys(editableFields).forEach(key => {
+            if (editingField[key]) {
+                updateData[key] = editForm[key]
+                editingField[key] = false
+            }
+        })
+        await userStore.updateUserProfile(updateData)
+        isEditing.value = false
+        ElMessage.success('保存成功')
+    } catch (error) {
+        ElMessage.error(error.message || '保存失败')
+    }
 }
 </script>
 
@@ -148,6 +176,12 @@ const saveAll = () => {
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
     padding: 24px;
+}
+
+.loading {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 40px 0;
 }
 
 .card-header {

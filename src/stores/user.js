@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {ref} from 'vue'
+import {getProfile, updateProfile} from '../api'
 
 export const useUserStore = defineStore('user', () => {
     const isLoggedIn = ref(false)
@@ -13,10 +14,31 @@ export const useUserStore = defineStore('user', () => {
             uid: info.uid,
             username: info.username,
             email: info.email,
+            gender: info.gender || '',
+            age: info.age || '',
+            basicInfo: info.basicInfo || '',
+            bio: info.bio || '',
             avatar: info.avatar || ''
         }
         isLoggedIn.value = true
         collectedRoutes.value = []
+    }
+
+    // 获取用户完整信息
+    const fetchUserProfile = async () => {
+        const result = await getProfile()
+        if (result.success && result.userInfo) {
+            setUserInfo(result.userInfo)
+        }
+    }
+
+    // 更新用户信息
+    const updateUserProfile = async (data) => {
+        const result = await updateProfile(data)
+        if (result.success && result.userInfo) {
+            setUserInfo(result.userInfo)
+        }
+        return result
     }
 
     const logout = () => {
@@ -59,6 +81,8 @@ export const useUserStore = defineStore('user', () => {
         collectedRoutes,
         showLoginModal,
         setUserInfo,
+        fetchUserProfile,
+        updateUserProfile,
         logout,
         updateField,
         addCollectedRoute,

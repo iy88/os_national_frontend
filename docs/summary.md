@@ -61,10 +61,12 @@ src/
 // stores/user.js
 {
   isLoggedIn: boolean,          // 登录状态
-  userInfo: object | null,      // 用户信息 { uid, username, email, avatar }
+  userInfo: object | null,      // 用户信息 { uid, username, email, gender, age, basicInfo, bio, avatar }
   collectedRoutes: array,       // 收藏路线
   showLoginModal: boolean,      // 登录弹窗显示状态（统一管理）
   setUserInfo(),                // 设置用户信息（从 API 响应）
+  fetchUserProfile(),          // 获取用户完整信息
+  updateUserProfile(),         // 更新用户信息
   logout(),                     // 登出
   updateField(),                // 更新用户字段
   addCollectedRoute(),          // 添加收藏
@@ -74,7 +76,8 @@ src/
 
 ### API 集成
 
-- **基础 URL**: `http://localhost:5000`（可通过 `VITE_API_BASE_URL` 环境变量配置）
+- **基础 URL**: 空字符串（相对路径），开发环境走 Vite proxy
+- **Proxy Target**: `VITE_API_BASE_URL` 环境变量（默认 `http://localhost:8080`）
 - **Token 存储**: localStorage，key 为 `token`
 - **请求拦截器**: 自动在请求头添加 `Authorization: Bearer <token>`
 
@@ -85,6 +88,8 @@ src/
 | POST | /email/verification/send | 发送邮箱验证码 |
 | POST | /user/register | 用户注册 |
 | POST | /user/login | 用户登录 |
+| GET | /user/profile | 获取用户信息 |
+| PUT | /user/profile | 更新用户信息（增量更新） |
 
 ### 登录流程
 
@@ -99,10 +104,10 @@ src/
 
 | 字段 | 校验规则 |
 |------|----------|
-| 用户名 | 必填，至少3个字符 |
+| 用户名 | 可选，3-80字符（有值时校验） |
 | 邮箱 | 必填，有效邮箱格式 |
 | 验证码 | 必填，6位数字 |
-| 密码 | 必填，至少6个字符 |
+| 密码 | 必填，6-128字符 |
 | 确认密码 | 必填，需与密码一致 |
 
 ### 组件通信
@@ -140,3 +145,4 @@ src/
 - 2026-03-25: 项目初始化，建立基本架构
 - 2026-03-25: 简化注册表单，仅保留用户名/密码/确认密码/邮箱/验证码，移除基本信息/简介，添加完整表单校验
 - 2026-03-25: 集成后端 API，使用 axios 实现登录/注册/发送验证码请求
+- 2026-03-25: 实现 profile 获取与更新功能，登录/注册后自动获取完整用户信息
