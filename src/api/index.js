@@ -1,11 +1,8 @@
 import axios from 'axios'
 
-// 开发环境使用空字符串，通过 Vite proxy 转发
-// 生产环境可配置完整的 API 地址
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
-
+// 所有请求使用相对路径，走 Vite proxy 或生产环境同源
 const apiClient = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: '',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
