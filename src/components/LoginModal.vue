@@ -108,10 +108,10 @@ const registerForm = ref({
 
 // 表单校验规则
 const validateUsername = (rule, value, callback) => {
-    if (!value) {
-        callback(new Error('请输入用户名'))
-    } else if (value.length < 3) {
+    if (value && value.length < 3) {
         callback(new Error('用户名至少3个字符'))
+    } else if (value && value.length > 80) {
+        callback(new Error('用户名最多80个字符'))
     } else {
         callback()
     }
@@ -142,6 +142,8 @@ const validatePassword = (rule, value, callback) => {
         callback(new Error('请输入密码'))
     } else if (value.length < 6) {
         callback(new Error('密码至少6个字符'))
+    } else if (value.length > 128) {
+        callback(new Error('密码最多128个字符'))
     } else {
         callback()
     }
