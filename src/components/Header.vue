@@ -19,8 +19,39 @@
                     沉浸对话
                 </button>
             </div>
-            <button class="login-btn" @click="handleLoginClick">
-                {{ isLoggedIn ? userInfo?.username : '登录/注册' }}
+            <!-- 登录后显示头像下拉 -->
+            <div
+                v-if="isLoggedIn"
+                class="user-dropdown"
+                @mouseenter="handleDesktopMouseEnter"
+                @mouseleave="handleDesktopMouseLeave"
+            >
+                <button class="avatar-btn">
+                    <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
+                    <div v-else class="avatar-placeholder">
+                        {{ userInfo?.username?.charAt(0) || 'U' }}
+                    </div>
+                </button>
+                <div v-show="dropdownOpen" class="dropdown-menu">
+                    <button class="dropdown-item" @click="goToProfile">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        个人中心
+                    </button>
+                    <button class="dropdown-item logout" @click="handleLogout">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" x2="9" y1="12" y2="12"/>
+                        </svg>
+                        退出登录
+                    </button>
+                </div>
+            </div>
+            <button v-else class="login-btn" @click="handleLoginClick">
+                登录/注册
             </button>
         </div>
 
@@ -34,7 +65,33 @@
                 </svg>
             </button>
             <h1 class="mobile-logo">城竞共生</h1>
-            <button class="user-btn" @click="handleLoginClick">
+            <!-- 移动端已登录显示头像下拉 -->
+            <div v-if="isLoggedIn" class="user-dropdown mobile">
+                <button class="avatar-btn small" @click.stop="toggleMobileDropdown">
+                    <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
+                    <div v-else class="avatar-placeholder">
+                        {{ userInfo?.username?.charAt(0) || 'U' }}
+                    </div>
+                </button>
+                <div v-show="dropdownOpen" class="dropdown-menu">
+                    <button class="dropdown-item" @click="goToProfile">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        个人中心
+                    </button>
+                    <button class="dropdown-item logout" @click="handleLogout">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" x2="9" y1="12" y2="12"/>
+                        </svg>
+                        退出登录
+                    </button>
+                </div>
+            </div>
+            <button v-else class="user-btn" @click="handleLoginClick">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="8" r="4"/>
                     <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
@@ -86,7 +143,7 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue'
+import {computed, onMounted, onUnmounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useUserStore} from '../stores/user'
 
@@ -97,6 +154,64 @@ const userStore = useUserStore()
 const emit = defineEmits(['open-login'])
 
 const sidebarOpen = ref(false)
+const dropdownOpen = ref(false)
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth <= 768 : false)
+
+let hideTimer = null
+
+const clearHideTimer = () => {
+    if (hideTimer) {
+        clearTimeout(hideTimer)
+        hideTimer = null
+    }
+}
+
+const updateViewport = () => {
+    isMobile.value = window.innerWidth <= 768
+    if (!isMobile.value) {
+        dropdownOpen.value = false
+    }
+}
+
+const handleDesktopMouseEnter = () => {
+    if (isMobile.value) return
+    clearHideTimer()
+    dropdownOpen.value = true
+}
+
+const handleDesktopMouseLeave = () => {
+    if (isMobile.value) return
+    clearHideTimer()
+    hideTimer = setTimeout(() => {
+        dropdownOpen.value = false
+    }, 220)
+}
+
+const toggleMobileDropdown = () => {
+    if (!isMobile.value) return
+    clearHideTimer()
+    dropdownOpen.value = !dropdownOpen.value
+}
+
+const handleDocumentClick = (event) => {
+    if (!isMobile.value || !dropdownOpen.value) return
+    const target = event.target
+    if (!(target instanceof Element)) return
+    if (!target.closest('.user-dropdown.mobile')) {
+        dropdownOpen.value = false
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('resize', updateViewport)
+    document.addEventListener('click', handleDocumentClick)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', updateViewport)
+    document.removeEventListener('click', handleDocumentClick)
+    clearHideTimer()
+})
 
 const activeTab = computed(() => {
     if (route.path.startsWith('/profile')) return null
@@ -106,6 +221,13 @@ const activeTab = computed(() => {
 
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const userInfo = computed(() => userStore.userInfo)
+
+const avatarUrl = computed(() => {
+    if (userInfo.value?.avatarToken) {
+        return `/file/avatar/fetch?token=${userInfo.value.avatarToken}`
+    }
+    return null
+})
 
 const toggleSidebar = () => {
     sidebarOpen.value = !sidebarOpen.value
@@ -122,11 +244,20 @@ const goToDialogue = () => {
 }
 
 const handleLoginClick = () => {
-    if (isLoggedIn.value) {
-        router.push('/profile')
-    } else {
-        emit('open-login')
-    }
+    emit('open-login')
+}
+
+const goToProfile = () => {
+    clearHideTimer()
+    dropdownOpen.value = false
+    router.push('/profile')
+}
+
+const handleLogout = () => {
+    clearHideTimer()
+    dropdownOpen.value = false
+    userStore.logout()
+    router.push('/travel')
 }
 </script>
 
@@ -237,6 +368,137 @@ const handleLoginClick = () => {
     transform: translateY(0);
     box-shadow: 0 1px 4px rgba(240, 179, 68, 0.3),
     inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 用户头像下拉菜单 */
+.user-dropdown {
+    position: relative;
+}
+
+.avatar-btn {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #f0b344;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.25);
+}
+
+.avatar-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.35);
+}
+
+.avatar-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 160px;
+    background: rgba(30, 45, 80, 0.98);
+    border: 1px solid rgba(240, 179, 68, 0.2);
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.avatar-btn.small {
+    width: 36px;
+    height: 36px;
+}
+
+.avatar-btn.small .avatar-placeholder {
+    font-size: 0.95rem;
+}
+
+.user-dropdown.mobile {
+    position: static;
+}
+
+.user-dropdown.mobile .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 16px;
+    left: auto;
+    transform: none;
+}
+
+.dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.dropdown-item svg {
+    width: 18px;
+    height: 18px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.dropdown-item:hover {
+    background: rgba(240, 179, 68, 0.12);
+    color: #fff;
+}
+
+.dropdown-item:hover svg {
+    color: #f0b344;
+}
+
+.dropdown-item.logout {
+    color: #e63946;
+}
+
+.dropdown-item.logout svg {
+    color: rgba(230, 57, 70, 0.7);
+}
+
+.dropdown-item.logout:hover {
+    background: rgba(230, 57, 70, 0.15);
+}
+
+.dropdown-item.logout:hover svg {
+    color: #e63946;
 }
 
 /* 移动端导航 */

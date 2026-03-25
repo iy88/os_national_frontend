@@ -76,4 +76,40 @@ export const updateProfile = (data) => {
     return apiClient.put('/user/profile', data)
 }
 
+// 上传头像 (multipart/form-data)
+const uploadClient = axios.create({
+    baseURL: '',
+    timeout: 30000
+})
+
+uploadClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token')
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+    },
+    (error) => Promise.reject(error)
+)
+
+uploadClient.interceptors.response.use(
+    (response) => response.data,
+    (error) => {
+        const message = error.response?.data?.message || error.message || '上传失败'
+        return Promise.reject(new Error(message))
+    }
+)
+
+export const uploadAvatar = (userId, file) => {
+    const formData = new FormData()
+    formData.append('user_id', userId)
+    formData.append('file', file)
+    return uploadClient.post('/file/avatar/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+}
+
 export default apiClient

@@ -7,14 +7,14 @@
             </div>
             <div class="avatar-content">
                 <div class="avatar-wrapper">
-                    <img v-if="userInfo?.avatar" :alt="userInfo.username" :src="userInfo.avatar"/>
+                    <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
                     <div v-else class="avatar-placeholder">
                         {{ userInfo?.username?.charAt(0) || 'U' }}
                     </div>
                 </div>
                 <div class="avatar-actions">
-                    <p class="avatar-hint">点击头像更换</p>
-                    <button class="action-btn upload-btn">
+                    <p class="avatar-hint">支持 jpg、png、webp，最大 2MB</p>
+                    <button class="upload-btn" @click="showUploadModal = true">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="17 8 12 3 7 8"/>
@@ -89,6 +89,85 @@
                 <button class="save-btn" @click="saveAll">保存全部</button>
             </div>
         </div>
+
+        <!-- 上传弹窗 -->
+        <el-dialog
+            v-model="showUploadModal"
+            title="上传头像"
+            width="480px"
+            :close-on-click-modal="false"
+            align-center
+            class="upload-modal"
+        >
+            <!-- 桌面端拖拽上传 -->
+            <div v-if="!isMobile" class="upload-layout">
+                <el-upload
+                    ref="uploadRef"
+                    drag
+                    :auto-upload="false"
+                    :limit="1"
+                    :show-file-list="false"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    :on-change="handleFileChange"
+                    :on-remove="handleFileRemove"
+                    class="avatar-upload"
+                >
+                    <!-- 无文件时显示默认内容 -->
+                    <div v-if="!pendingFile" class="upload-content">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" x2="12" y1="3" y2="15"/>
+                        </svg>
+                        <p>点击或拖拽图片到此处</p>
+                        <p class="upload-hint">支持 jpg、png、webp，最大 2MB</p>
+                    </div>
+                    <!-- 有文件时显示预览背景 -->
+                    <div v-else class="upload-preview" :style="{ backgroundImage: `url(${previewUrl})` }">
+                        <div class="preview-overlay">
+                            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" x2="12" y1="3" y2="15"/>
+                            </svg>
+                            <p>点击或拖拽更换图片</p>
+                            <p class="upload-hint">支持 jpg、png、webp，最大 2MB</p>
+                        </div>
+                    </div>
+                </el-upload>
+            </div>
+            <!-- 移动端直接选择文件 -->
+            <div v-else class="mobile-upload" @click="triggerMobileUpload">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" x2="12" y1="3" y2="15"/>
+                </svg>
+                <p>点击选择图片</p>
+                <p class="upload-hint">支持 jpg、png、webp，最大 2MB</p>
+                <input
+                    ref="mobileFileInput"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    style="display: none"
+                    @change="handleMobileFileSelect"
+                />
+            </div>
+            <div class="modal-footer">
+                <!-- 文件名提示 -->
+                <div class="file-info">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                        <polyline points="13 2 13 9 20 9"/>
+                    </svg>
+                    <span class="file-name">{{ pendingFile ? pendingFile.name : '未选择文件' }}</span>
+                </div>
+                <div class="modal-actions">
+                    <el-button class="cancel-btn-lg" @click="cancelUpload">取消</el-button>
+                    <el-button type="primary" class="upload-btn-lg" :disabled="!pendingFile" @click="confirmUpload">上传</el-button>
+                </div>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -96,10 +175,18 @@
 import {computed, onMounted, reactive, ref} from 'vue'
 import {useUserStore} from '../../stores/user'
 import {ElMessage} from 'element-plus'
+import {uploadAvatar} from '../../api'
 
 const userStore = useUserStore()
 
 const userInfo = computed(() => userStore.userInfo)
+
+const avatarUrl = computed(() => {
+    if (userInfo.value?.avatarToken) {
+        return `/file/avatar/fetch?token=${userInfo.value.avatarToken}`
+    }
+    return null
+})
 
 const editableFields = {
     username: {label: '用户名', type: 'text'},
@@ -119,6 +206,22 @@ const editingField = reactive({})
 const editForm = reactive({})
 const isEditing = ref(false)
 const isLoading = ref(false)
+const uploadRef = ref(null)
+const mobileFileInput = ref(null)
+
+const showUploadModal = ref(false)
+const pendingFile = ref(null)
+const previewUrl = ref('')
+
+// 检测移动端
+const isMobile = ref(window.innerWidth <= 480)
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+        isMobile.value = window.innerWidth <= 480
+    })
+}
+
+const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2MB
 
 onMounted(async () => {
     isLoading.value = true
@@ -130,6 +233,66 @@ onMounted(async () => {
         isLoading.value = false
     }
 })
+
+const handleFileChange = (file) => {
+    if (file.size > MAX_FILE_SIZE) {
+        ElMessage.error('图片大小不能超过 2MB')
+        uploadRef.value?.clearFiles()
+        return
+    }
+    pendingFile.value = file.raw
+    previewUrl.value = URL.createObjectURL(file.raw)
+}
+
+const handleFileRemove = () => {
+    if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value)
+    }
+    pendingFile.value = null
+    previewUrl.value = ''
+}
+
+const triggerMobileUpload = () => {
+    mobileFileInput.value?.click()
+}
+
+const handleMobileFileSelect = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (file.size > MAX_FILE_SIZE) {
+        ElMessage.error('图片大小不能超过 2MB')
+        event.target.value = ''
+        return
+    }
+    pendingFile.value = file
+    previewUrl.value = URL.createObjectURL(file)
+    event.target.value = ''
+}
+
+const cancelUpload = () => {
+    if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value)
+    }
+    pendingFile.value = null
+    previewUrl.value = ''
+    uploadRef.value?.clearFiles()
+    showUploadModal.value = false
+}
+
+const confirmUpload = async () => {
+    if (!pendingFile.value) return
+
+    try {
+        const result = await uploadAvatar(userInfo.value.uid, pendingFile.value)
+        if (result.success) {
+            userInfo.value.avatarToken = result.avatar_token
+            ElMessage.success('头像上传成功')
+            cancelUpload()
+        }
+    } catch (error) {
+        ElMessage.error(error.message || '头像上传失败')
+    }
+}
 
 const toggleEditAll = () => {
     Object.keys(editableFields).forEach(key => {
@@ -211,6 +374,7 @@ const saveAll = async () => {
     display: flex;
     align-items: center;
     gap: 24px;
+    margin-top: 16px;
 }
 
 .avatar-wrapper {
@@ -259,7 +423,7 @@ const saveAll = async () => {
     margin: 0;
 }
 
-.action-btn {
+.upload-btn {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -273,14 +437,342 @@ const saveAll = async () => {
     transition: all 0.2s ease;
 }
 
-.action-btn svg {
+.upload-btn svg {
     width: 16px;
     height: 16px;
 }
 
-.action-btn:hover {
+.upload-btn:hover {
     background: rgba(240, 179, 68, 0.2);
     border-color: rgba(240, 179, 68, 0.4);
+}
+
+/* 头像上传弹窗 */
+.basic-info .upload-modal .el-dialog {
+    background: #1a2642;
+    border-radius: 12px;
+    width: 680px;
+    max-width: 90vw;
+    margin: 0 auto;
+}
+
+.basic-info .upload-modal :deep(.el-dialog__wrapper) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 上传区域容器 - 占满宽度 */
+.basic-info .upload-layout {
+    width: 100%;
+}
+
+.basic-info .avatar-upload {
+    width: 100%;
+    display: block;
+}
+
+.basic-info .avatar-upload :deep(.el-upload) {
+    width: 100%;
+}
+
+.basic-info .avatar-upload :deep(.el-upload-dragger) {
+    background: rgba(59, 130, 246, 0.05);
+    border: 2px dashed #3b82f6;
+    border-radius: 8px;
+    padding: 0;
+    transition: all 0.2s;
+    width: 100%;
+    height: 200px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.basic-info .avatar-upload :deep(.el-upload-dragger:hover) {
+    border-color: #60a5fa;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.basic-info .upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.basic-info .upload-content svg {
+    width: 4vw;
+    height: 4vw;
+    max-width: 48px;
+    max-height: 48px;
+    min-width: 36px;
+    min-height: 36px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 12px;
+}
+
+.basic-info .upload-content p {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.basic-info .upload-hint {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 6px;
+}
+
+/* 预览背景区域 */
+.basic-info .upload-preview {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 8px;
+    position: relative;
+}
+
+.basic-info .preview-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.basic-info .upload-preview:hover .preview-overlay {
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.basic-info .preview-overlay svg {
+    width: 40px;
+    height: 40px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 10px;
+}
+
+.basic-info .preview-overlay p {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* 底部区域 - 文件名和按钮同一行 */
+.basic-info .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: 20px;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+/* 文件信息 - 靠左 */
+.basic-info .file-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    max-width: 60%;
+    min-width: 0;
+}
+
+/* 按钮区域 - 靠右 */
+.basic-info .modal-actions {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.basic-info .modal-actions .el-button {
+    display: inline-flex;
+}
+
+.basic-info .file-info svg {
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 255, 255, 0.6);
+    flex-shrink: 0;
+}
+
+.basic-info .file-name {
+    display: block;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.85rem;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 移动端上传区域 */
+.basic-info .mobile-upload {
+    background: rgba(59, 130, 246, 0.05);
+    border: 2px dashed #3b82f6;
+    border-radius: 8px;
+    padding: 48px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.basic-info .mobile-upload:hover {
+    border-color: #60a5fa;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.basic-info .mobile-upload svg {
+    width: 48px;
+    height: 48px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 16px;
+}
+
+.basic-info .mobile-upload p {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* 弹窗内大按钮 */
+.basic-info .cancel-btn-lg,
+.basic-info .upload-btn-lg {
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.basic-info .cancel-btn-lg {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.basic-info .cancel-btn-lg:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+
+.basic-info .upload-btn-lg {
+    background: linear-gradient(145deg, #f0b344 0%, #d4962e 100%);
+    border: none;
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(240, 179, 68, 0.35);
+}
+
+.basic-info .upload-btn-lg:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(240, 179, 68, 0.45);
+}
+
+.basic-info .upload-btn-lg:disabled {
+    background: rgba(240, 179, 68, 0.4);
+    box-shadow: none;
+}
+
+/* 移动端适配 */
+@media (max-width: 480px) {
+    .basic-info .upload-modal .el-dialog {
+        width: 90vw;
+        margin: 30vh auto;
+    }
+
+    .basic-info .avatar-upload :deep(.el-upload-dragger),
+    .basic-info .mobile-upload {
+        min-height: 132px;
+        height: auto;
+        padding: 12px 10px;
+        overflow: visible;
+    }
+
+    .basic-info .upload-content {
+        width: 100%;
+        padding: 0 4px;
+        overflow: visible;
+    }
+
+    .basic-info .upload-content svg {
+        width: 28px;
+        height: 28px;
+        max-width: 28px;
+        max-height: 28px;
+        min-width: 24px;
+        min-height: 24px;
+        margin-bottom: 6px;
+    }
+
+    .basic-info .upload-content p {
+        font-size: 0.8rem;
+        line-height: 1.2;
+        margin: 0;
+        word-break: break-word;
+    }
+
+    .basic-info .upload-hint {
+        font-size: 0.75rem;
+    }
+
+    .basic-info .preview-overlay svg {
+        width: 28px;
+        height: 28px;
+        margin-bottom: 6px;
+    }
+
+    .basic-info .preview-overlay p {
+        font-size: 0.8rem;
+    }
+
+    .basic-info .upload-hint {
+        font-size: 0.7rem;
+        margin-top: 4px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .basic-info .modal-footer {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .basic-info .file-info {
+        max-width: 55%;
+        flex-shrink: 0;
+        padding: 6px 10px;
+    }
+
+    .basic-info .file-name {
+        max-width: 100%;
+    }
+
+    .basic-info .modal-actions {
+        flex: 1;
+        justify-content: flex-end;
+        flex-shrink: 0;
+    }
+
+    .basic-info .cancel-btn-lg,
+    .basic-info .upload-btn-lg {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
 }
 
 .edit-all-btn {

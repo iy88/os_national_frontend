@@ -4,7 +4,7 @@
         <aside class="profile-sidebar">
             <div class="sidebar-header">
                 <div class="user-avatar" @click="goToProfile">
-                    <img v-if="userInfo?.avatar" :alt="userInfo.username" :src="userInfo.avatar"/>
+                    <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
                     <div v-else class="avatar-placeholder">
                         {{ userInfo?.username?.charAt(0) || 'U' }}
                     </div>
@@ -80,6 +80,13 @@ const router = useRouter()
 
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const userInfo = computed(() => userStore.userInfo)
+
+const avatarUrl = computed(() => {
+    if (userInfo.value?.avatarToken) {
+        return `/file/avatar/fetch?token=${userInfo.value.avatarToken}`
+    }
+    return null
+})
 
 const navItems = [
     {

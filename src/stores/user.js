@@ -18,7 +18,7 @@ export const useUserStore = defineStore('user', () => {
             age: info.age || '',
             basicInfo: info.basicInfo || '',
             bio: info.bio || '',
-            avatar: info.avatar || ''
+            avatarToken: info.avatarToken || ''
         }
         isLoggedIn.value = true
         collectedRoutes.value = []
@@ -42,6 +42,7 @@ export const useUserStore = defineStore('user', () => {
     }
 
     const logout = () => {
+        localStorage.removeItem('token')
         isLoggedIn.value = false
         userInfo.value = null
         collectedRoutes.value = []

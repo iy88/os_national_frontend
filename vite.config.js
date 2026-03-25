@@ -23,6 +23,10 @@ export default defineConfig({
                 target: apiTarget,
                 changeOrigin: true
             },
+            '/file': {
+                target: apiTarget,
+                changeOrigin: true
+            },
             '/health': {
                 target: apiTarget,
                 changeOrigin: true

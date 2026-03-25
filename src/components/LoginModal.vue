@@ -203,6 +203,8 @@ const handleSubmit = async () => {
                 if (result.success) {
                     localStorage.setItem('token', result.token)
                     userStore.setUserInfo(result.userInfo)
+                    // 获取完整profile（含avatarToken）
+                    await userStore.fetchUserProfile()
                     ElMessage.success('登录成功！')
                     emit('update:modelValue', false)
                     resetForms()
@@ -223,6 +225,8 @@ const handleSubmit = async () => {
                     if (result.success) {
                         localStorage.setItem('token', result.token)
                         userStore.setUserInfo(result.userInfo)
+                        // 获取完整profile（含avatarToken）
+                        await userStore.fetchUserProfile()
                         ElMessage.success('注册成功！')
                         emit('update:modelValue', false)
                         resetForms()
