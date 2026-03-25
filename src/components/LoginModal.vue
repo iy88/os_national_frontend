@@ -12,58 +12,44 @@
             <!-- 登录表单 -->
             <el-form v-if="isLogin" :model="loginForm" label-position="top">
                 <el-form-item label="用户名/邮箱">
-                    <el-input v-model="loginForm.username" placeholder="请输入用户名或邮箱"/>
+                    <el-input v-model="loginForm.username" placeholder="请输入用户名或邮箱" @keydown.enter.prevent="focusPassword"/>
                 </el-form-item>
                 <el-form-item label="密码">
-                    <el-input v-model="loginForm.password" placeholder="请输入密码" type="password"/>
+                    <el-input ref="passwordInputRef" v-model="loginForm.password" placeholder="请输入密码" type="password" @keydown.enter.prevent="handleSubmit"/>
                 </el-form-item>
             </el-form>
 
             <!-- 注册表单 -->
             <el-form v-else ref="registerFormRef" :model="registerForm" :rules="registerRules" label-position="top">
                 <el-form-item label="用户名" prop="username">
-                    <el-input v-model="registerForm.username" placeholder="请输入用户名"/>
+                    <el-input v-model="registerForm.username" placeholder="请输入用户名" @keydown.enter.prevent="focusEmail"/>
                 </el-form-item>
                 <el-form-item label="邮箱" prop="email">
-                    <el-input v-model="registerForm.email" placeholder="请输入邮箱"/>
+                    <el-input ref="emailInputRef" v-model="registerForm.email" placeholder="请输入邮箱" @keydown.enter.prevent="focusVerifyCode"/>
                 </el-form-item>
                 <el-form-item label="验证码" prop="verifyCode">
                     <div class="verification-row">
-                        <el-input v-model="registerForm.verifyCode" class="verify-code-input"
-                                  placeholder="请输入验证码"/>
+                        <el-input ref="verifyCodeInputRef" v-model="registerForm.verifyCode" class="verify-code-input"
+                                  placeholder="请输入验证码" @keydown.enter.prevent="focusPasswordReg"/>
                         <el-button :disabled="verifyCodeSent" class="send-code-btn" @click="sendVerifyCode">
                             {{ verifyCodeSent ? `${countdown}s后重发` : '发送验证码' }}
                         </el-button>
                     </div>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
-                    <el-input v-model="registerForm.password" placeholder="请输入密码" type="password" show-password/>
+                    <el-input ref="passwordRegInputRef" v-model="registerForm.password" placeholder="请输入密码" type="password" show-password @keydown.enter.prevent="focusConfirmPassword"/>
                 </el-form-item>
                 <el-form-item label="确认密码" prop="confirmPassword">
-                    <el-input v-model="registerForm.confirmPassword" placeholder="请再次输入密码" type="password" show-password/>
+                    <el-input v-model="registerForm.confirmPassword" placeholder="请再次输入密码" type="password" show-password @keydown.enter.prevent="handleSubmit"/>
                 </el-form-item>
             </el-form>
 
-            <!-- 登录后显示收藏路线 -->
-            <div v-if="isLoggedIn" class="collected-routes">
-                <h4>我的收藏路线</h4>
-                <div v-if="collectedRoutes.length > 0" class="routes-list">
-                    <div v-for="(route, index) in collectedRoutes" :key="index" class="route-item">
-                        {{ route }}
-                    </div>
-                </div>
-                <p v-else class="no-routes">暂无收藏路线</p>
-                <el-button class="logout-btn" type="danger" @click="handleLogout">
-                    退出登录
-                </el-button>
-            </div>
-
             <div class="form-footer">
-                <p v-if="!isLoggedIn" class="switch-mode">
+                <p class="switch-mode">
                     {{ isLogin ? '还没有账号？' : '已有账号？' }}
                     <span @click="isLogin = !isLogin">{{ isLogin ? '立即注册' : '去登录' }}</span>
                 </p>
-                <el-button v-if="!isLoggedIn" class="submit-btn" type="primary" @click="handleSubmit">
+                <el-button class="submit-btn" type="primary" @click="handleSubmit">
                     {{ isLogin ? '登录' : '注册' }}
                 </el-button>
             </div>
@@ -72,7 +58,7 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue'
+import {computed, nextTick, ref} from 'vue'
 import {useUserStore} from '../stores/user'
 import {ElMessage} from 'element-plus'
 import {sendVerificationCode, register as apiRegister, login as apiLogin} from '../api'
@@ -88,9 +74,6 @@ const emit = defineEmits(['update:modelValue'])
 
 const userStore = useUserStore()
 
-const isLoggedIn = computed(() => userStore.isLoggedIn)
-const collectedRoutes = computed(() => userStore.collectedRoutes)
-
 const isLogin = ref(true)
 const loginForm = ref({
     username: '',
@@ -98,6 +81,11 @@ const loginForm = ref({
 })
 
 const registerFormRef = ref(null)
+const passwordInputRef = ref(null)
+const emailInputRef = ref(null)
+const verifyCodeInputRef = ref(null)
+const passwordRegInputRef = ref(null)
+
 const registerForm = ref({
     username: '',
     email: '',
@@ -105,6 +93,32 @@ const registerForm = ref({
     password: '',
     confirmPassword: ''
 })
+
+// 回车跳转到下一个输入框
+const focusPassword = () => {
+    passwordInputRef.value?.focus()
+}
+
+const focusEmail = () => {
+    emailInputRef.value?.focus()
+}
+
+const focusVerifyCode = () => {
+    verifyCodeInputRef.value?.focus()
+}
+
+const focusPasswordReg = () => {
+    passwordRegInputRef.value?.focus()
+}
+
+const focusConfirmPassword = () => {
+    // 找到确认密码输入框并聚焦
+    const inputs = document.querySelectorAll('.login-container .el-input')
+    const lastInput = inputs[inputs.length - 1]
+    if (lastInput) {
+        lastInput.querySelector('input')?.focus()
+    }
+}
 
 // 表单校验规则
 const validateUsername = (rule, value, callback) => {
@@ -202,8 +216,6 @@ const handleSubmit = async () => {
                 const result = await apiLogin(loginForm.value)
                 if (result.success) {
                     userStore.login(result)
-                    // 获取完整profile（含avatarToken）
-                    await userStore.fetchUserProfile()
                     ElMessage.success('登录成功！')
                     emit('update:modelValue', false)
                     resetForms()
@@ -223,8 +235,6 @@ const handleSubmit = async () => {
                     const result = await apiRegister(registerForm.value)
                     if (result.success) {
                         userStore.login(result)
-                        // 获取完整profile（含avatarToken）
-                        await userStore.fetchUserProfile()
                         ElMessage.success('注册成功！')
                         emit('update:modelValue', false)
                         resetForms()
@@ -237,13 +247,6 @@ const handleSubmit = async () => {
             }
         })
     }
-}
-
-const handleLogout = () => {
-    userStore.logout()
-    ElMessage.success('已退出登录')
-    emit('update:modelValue', false)
-    resetForms()
 }
 
 const resetForms = () => {
@@ -277,58 +280,6 @@ const resetForms = () => {
 
 .switch-mode span:hover {
     text-decoration: underline;
-}
-
-.collected-routes {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    padding: 14px;
-    margin-bottom: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.collected-routes h4 {
-    color: #f0b344;
-    margin: 0 0 10px 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-}
-
-.routes-list {
-    max-height: 180px;
-    overflow-y: auto;
-}
-
-.route-item {
-    padding: 8px 12px;
-    background: rgba(240, 179, 68, 0.08);
-    border-radius: 6px;
-    margin-bottom: 8px;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.88rem;
-}
-
-.no-routes {
-    color: rgba(255, 255, 255, 0.5);
-    text-align: center;
-    padding: 18px 0;
-    font-size: 0.9rem;
-}
-
-.logout-btn {
-    width: 100%;
-    margin-top: 14px;
-    background: linear-gradient(180deg, #e63946 0%, #c62d3a 100%);
-    border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    box-shadow: 0 2px 6px rgba(230, 57, 70, 0.3);
-}
-
-.logout-btn:hover {
-    background: linear-gradient(180deg, #f04050 0%, #d63a47 100%);
 }
 
 .submit-btn {

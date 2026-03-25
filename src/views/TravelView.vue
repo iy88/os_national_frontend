@@ -182,6 +182,11 @@ const cityDialogRef = ref(null)
 const cityContentRef = ref(null)
 const chatBoxRef = ref(null)
 
+// 流式输出定时器引用
+const streamIntervalRef = ref(null)
+const streamTimeoutRef = ref(null)
+const thinkingTimeoutRef = ref(null)
+
 // 外部页面滚动控制
 let isFirstRequest = true
 let isScrollDetectionActive = false
@@ -257,6 +262,7 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('scroll', handlePageScroll)
     stopAutoScrollPage()
+    clearStreamTimers()
 })
 
 const travelMessages = ref([
@@ -298,7 +304,26 @@ const mockStreamResponse = `根据您的需求，我为您规划了一条从上�
 
 祝您和女朋友有一个难忘的电竞文旅体验！🎉`
 
+// 清理所有流式输出相关的定时器
+const clearStreamTimers = () => {
+    if (thinkingTimeoutRef.value) {
+        clearTimeout(thinkingTimeoutRef.value)
+        thinkingTimeoutRef.value = null
+    }
+    if (streamIntervalRef.value) {
+        clearInterval(streamIntervalRef.value)
+        streamIntervalRef.value = null
+    }
+    if (streamTimeoutRef.value) {
+        clearTimeout(streamTimeoutRef.value)
+        streamTimeoutRef.value = null
+    }
+}
+
 const sendTravelMessage = (text) => {
+    // 清理之前的定时器，防止路由跳转后继续执行
+    clearStreamTimers()
+
     const cityName = selectedCity.value ? cityMap[selectedCity.value] : ''
     const hasPlanningInfo = cityName || travelDays.value || travelPeople.value || travelRelationship.value || favoriteHero.value
 
@@ -326,7 +351,7 @@ ${text}
     chatBoxRef.value?.setStatus('thinking')
 
     // 2. 1秒后切换到正在输出状态，并开始流式输出
-    setTimeout(() => {
+    thinkingTimeoutRef.value = setTimeout(() => {
         chatBoxRef.value?.setStatus('streaming')
 
         // 第一次请求时，流式输出开始后启动外部页面滚动
@@ -341,14 +366,14 @@ ${text}
 
         // 3. 模拟逐字输出
         let charIndex = 0
-        const streamInterval = setInterval(() => {
+        streamIntervalRef.value = setInterval(() => {
             if (charIndex < mockStreamResponse.length) {
                 travelMessages.value[msgIndex].content += mockStreamResponse[charIndex]
                 charIndex++
             } else {
-                clearInterval(streamInterval)
+                clearInterval(streamIntervalRef.value)
                 // 4. 输出完成后恢复空闲状态
-                setTimeout(() => {
+                streamTimeoutRef.value = setTimeout(() => {
                     chatBoxRef.value?.setStatus('idle')
                     // 第一次请求完成，停止外部页面滚动
                     if (isFirstRequest) {

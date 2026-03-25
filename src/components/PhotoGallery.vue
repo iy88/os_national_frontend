@@ -9,12 +9,28 @@
         @update:model-value="(val) => emit('update:modelValue', val)"
     >
         <div v-if="photos.length > 0" class="gallery-container">
-            <div class="gallery-main">
+            <div
+                class="gallery-main"
+                @touchstart="handleTouchStart"
+                @touchmove="handleTouchMove"
+                @touchend="handleTouchEnd"
+            >
                 <button :disabled="currentIndex === 0" class="nav-btn prev" @click="prev">
                     <span>&lt;</span>
                 </button>
                 <div class="photo-display">
-                    <img :alt="`照片 ${currentIndex + 1}`" :src="photos[currentIndex]"/>
+                    <div
+                        ref="photoTrackRef"
+                        class="photo-track"
+                        :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+                    >
+                        <img
+                            v-for="(photo, index) in photos"
+                            :key="index"
+                            :alt="`照片 ${index + 1}`"
+                            :src="photo"
+                        />
+                    </div>
                 </div>
                 <button :disabled="currentIndex === photos.length - 1" class="nav-btn next" @click="next">
                     <span>&gt;</span>
@@ -23,15 +39,13 @@
             <div class="photo-counter">
                 {{ currentIndex + 1 }} / {{ photos.length }}
             </div>
-            <div v-if="photos.length > 1" class="thumbnail-strip">
+            <div v-if="photos.length > 1" ref="indicatorStripRef" class="indicator-strip">
                 <div
                     v-for="(photo, index) in photos"
                     :key="index"
-                    :class="['thumbnail', { active: index === currentIndex }]"
-                    @click="currentIndex = index"
-                >
-                    <img :alt="`缩略图 ${index + 1}`" :src="photo"/>
-                </div>
+                    :class="['indicator', { active: index === currentIndex }]"
+                    @click="handleIndicatorClick(index)"
+                />
             </div>
         </div>
         <div v-else class="no-photos">
@@ -57,22 +71,115 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const currentIndex = ref(0)
+const indicatorStripRef = ref(null)
+const photoTrackRef = ref(null)
+
+// 拖拽滑动状态
+let touchStartX = 0
+let touchStartY = 0
+let touchStartTime = 0
+let isDragging = false
+let dragStartOffset = 0
+
+const scrollToActiveIndicator = (index) => {
+    if (!indicatorStripRef.value) return
+    const strip = indicatorStripRef.value
+    const indicators = strip.querySelectorAll('.indicator')
+    if (!indicators[index]) return
+
+    const indicator = indicators[index]
+    const stripRect = strip.getBoundingClientRect()
+    const indicatorRect = indicator.getBoundingClientRect()
+
+    // 计算使当前指示器居中需要的 scrollLeft
+    const scrollLeft = indicator.offsetLeft - (stripRect.width / 2) + (indicatorRect.width / 2)
+    strip.scrollTo({left: scrollLeft, behavior: 'smooth'})
+}
+
+const handleIndicatorClick = (index) => {
+    currentIndex.value = index
+    scrollToActiveIndicator(index)
+}
 
 const prev = () => {
     if (currentIndex.value > 0) {
         currentIndex.value--
+        scrollToActiveIndicator(currentIndex.value)
     }
 }
 
 const next = () => {
     if (currentIndex.value < props.photos.length - 1) {
         currentIndex.value++
+        scrollToActiveIndicator(currentIndex.value)
     }
 }
 
 const handleKeydown = (e) => {
     if (e.key === 'ArrowLeft') prev()
     if (e.key === 'ArrowRight') next()
+}
+
+// 拖拽滑动
+const handleTouchStart = (e) => {
+    touchStartX = e.touches[0].clientX
+    touchStartY = e.touches[0].clientY
+    touchStartTime = Date.now()
+    isDragging = true
+    dragStartOffset = 0
+}
+
+const handleTouchMove = (e) => {
+    if (!isDragging) return
+
+    const currentX = e.touches[0].clientX
+    const currentY = e.touches[0].clientY
+    const deltaX = currentX - touchStartX
+    const deltaY = currentY - touchStartY
+
+    // 如果是水平滑动，阻止默认行为
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        e.preventDefault()
+    }
+
+    // 更新拖拽偏移
+    if (photoTrackRef.value) {
+        // 限制拖拽范围
+        const maxOffset = window.innerWidth * 0.3
+        const clampedDelta = Math.max(-maxOffset, Math.min(maxOffset, deltaX))
+        dragStartOffset = clampedDelta
+
+        // 计算视觉偏移：基础偏移 + 拖拽增量
+        const baseOffset = currentIndex.value * 100
+        const dragPercent = (clampedDelta / photoTrackRef.value.offsetWidth) * 100
+        photoTrackRef.value.style.transform = `translateX(-${baseOffset - dragPercent}%)`
+    }
+}
+
+const handleTouchEnd = (e) => {
+    if (!isDragging) return
+
+    const touchEndX = e.changedTouches[0].clientX
+    const deltaX = touchEndX - touchStartX
+    const duration = touchStartTime ? Date.now() - touchStartTime : 0
+
+    // 重置视觉偏移
+    if (photoTrackRef.value) {
+        photoTrackRef.value.style.transform = `translateX(-${currentIndex.value * 100}%)`
+    }
+
+    // 判断是滑动切换还是弹回
+    const threshold = photoTrackRef.value ? photoTrackRef.value.offsetWidth * 0.25 : 50
+    if (Math.abs(deltaX) > threshold && duration < 300) {
+        if (deltaX > 0) {
+            prev()
+        } else {
+            next()
+        }
+    }
+
+    isDragging = false
+    dragStartOffset = 0
 }
 
 watch(() => props.modelValue, (val) => {
@@ -140,10 +247,17 @@ watch(() => props.modelValue, (val) => {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.photo-display img {
-    max-width: 100%;
+.photo-track {
+    display: flex;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+.photo-track img {
+    width: 100%;
     max-height: 380px;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .photo-counter {
@@ -151,35 +265,35 @@ watch(() => props.modelValue, (val) => {
     font-size: 0.95rem;
 }
 
-.thumbnail-strip {
+.indicator-strip {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     overflow-x: auto;
-    padding: 10px 0;
+    padding: 8px 40px;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.thumbnail {
-    width: 56px;
-    height: 56px;
-    border-radius: 6px;
-    overflow: hidden;
+.indicator-strip::-webkit-scrollbar {
+    display: none;
+}
+
+.indicator {
+    width: 24px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.25);
     cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 /*noinspection CssUnusedSymbol*/
-.thumbnail.active {
-    border-color: #f0b344;
-    box-shadow: 0 0 10px rgba(240, 179, 68, 0.3);
-}
-
-.thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.indicator.active {
+    width: 36px;
+    background: #f0b344;
+    box-shadow: 0 0 10px rgba(240, 179, 68, 0.5);
 }
 
 .no-photos {
@@ -236,19 +350,20 @@ watch(() => props.modelValue, (val) => {
     }
 
     .gallery-main {
-        gap: 8px;
+        gap: 0;
+        position: relative;
     }
 
-    .nav-btn {
-        width: 32px;
-        height: 32px;
+    .gallery-main .nav-btn {
+        display: none !important;
     }
 
     .photo-display {
         max-height: 280px;
+        width: 100%;
     }
 
-    .photo-display img {
+    .photo-track img {
         max-height: 280px;
     }
 }

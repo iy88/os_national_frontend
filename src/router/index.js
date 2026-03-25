@@ -49,17 +49,17 @@ const router = createRouter({
 
 let isAutoLoggingIn = false
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
     const userStore = useUserStore()
 
     // 如果正在自动登录验证中，直接放行
     if (isAutoLoggingIn) {
-        return next()
+        return true
     }
 
     // 如果已登录，直接放行
     if (userStore.isLoggedIn) {
-        return next()
+        return true
     }
 
     // 检查 localStorage 是否有 token
@@ -71,30 +71,30 @@ router.beforeEach(async (to, from, next) => {
             const result = await getProfile()
             if (result.success && result.userInfo) {
                 userStore.setUserInfo(result.userInfo)
-                next()
+                return true
             } else {
                 userStore.logout()
-                redirectToLogin()
+                return redirectToLogin(to)
             }
         } catch (error) {
             // token 无效，使用 store 登出（会清除 token）
             userStore.logout()
-            redirectToLogin()
+            return redirectToLogin(to)
         } finally {
             isAutoLoggingIn = false
         }
     } else {
         // 无 token
-        redirectToLogin()
+        return redirectToLogin(to)
     }
 
     // 统一跳转和弹窗处理
-    function redirectToLogin() {
+    function redirectToLogin(to) {
         if (to.path.startsWith('/profile')) {
             userStore.showLoginModal = true
-            next('/travel')
+            return '/travel'
         } else {
-            next()
+            return true
         }
     }
 })

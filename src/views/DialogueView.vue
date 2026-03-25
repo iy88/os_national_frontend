@@ -99,12 +99,16 @@ const showStoryModal = ref(false)
 const showPhotosModal = ref(false)
 const selectedCharacter = ref(null)
 
+// 流式输出定时器引用
+const streamIntervalRef = ref(null)
+const streamTimeoutRef = ref(null)
+const thinkingTimeoutRef = ref(null)
+
 // 外部页面滚动控制
 let isFirstRequest = true
 let isScrollDetectionActive = false
 let userHasScrolledPage = false
 let lastScrollTime = 0
-let lastChatHeight = 0
 let scrollCheckInterval = null
 let previousPageScrollTop = 0 // 上一次的页面滚动位置
 
@@ -134,7 +138,6 @@ const stopAutoScrollPage = () => {
 }
 
 const startAutoScrollPage = () => {
-    lastChatHeight = 0
     isScrollDetectionActive = true
 
     scrollCheckInterval = setInterval(() => {
@@ -155,8 +158,6 @@ const startAutoScrollPage = () => {
                 return
             }
 
-            lastChatHeight = currentHeight
-
             // 滚动到页面底部
             lastScrollTime = Date.now()
             window.scrollTo({
@@ -174,17 +175,22 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('scroll', handlePageScroll)
     stopAutoScrollPage()
+    clearStreamTimers()
 })
 
 const currentCharacters = computed(() => characterData[activeCategory.value] || [])
 
 const selectCategory = (category) => {
+    // 清理之前的定时器，防止切换分类后继续执行
+    clearStreamTimers()
     activeCategory.value = category
     activeCharacter.value = null
     messages.value = []
 }
 
 const selectCharacter = (character) => {
+    // 清理之前的定时器，防止切换角色后继续执行
+    clearStreamTimers()
     activeCharacter.value = character
     messages.value = [{
         type: 'character',
@@ -203,6 +209,9 @@ const openPhotos = (character) => {
 }
 
 const sendMessage = (text) => {
+    // 清理之前的定时器，防止路由跳转后继续执行
+    clearStreamTimers()
+
     messages.value.push({type: 'user', content: text})
 
     // 模拟流式输出过程
@@ -210,7 +219,7 @@ const sendMessage = (text) => {
     chatBoxRef.value?.setStatus('thinking')
 
     // 2. 1秒后切换到正在输出状态，并开始流式输出
-    setTimeout(() => {
+    thinkingTimeoutRef.value = setTimeout(() => {
         chatBoxRef.value?.setStatus('streaming')
 
         // 第一次请求时，流式输出开始后启动外部页面滚动
@@ -226,14 +235,14 @@ const sendMessage = (text) => {
 
         // 3. 模拟逐字输出
         let charIndex = 0
-        const streamInterval = setInterval(() => {
+        streamIntervalRef.value = setInterval(() => {
             if (charIndex < mockStreamReply.length) {
                 messages.value[msgIndex].content += mockStreamReply[charIndex]
                 charIndex++
             } else {
-                clearInterval(streamInterval)
+                clearInterval(streamIntervalRef.value)
                 // 4. 输出完成后恢复空闲状态
-                setTimeout(() => {
+                streamTimeoutRef.value = setTimeout(() => {
                     chatBoxRef.value?.setStatus('idle')
                     // 第一次请求完成，停止外部页面滚动
                     if (isFirstRequest) {
@@ -245,6 +254,22 @@ const sendMessage = (text) => {
             }
         }, 15) // 每15ms输出一个字符
     }, 1000)
+}
+
+// 清理所有流式输出相关的定时器
+const clearStreamTimers = () => {
+    if (thinkingTimeoutRef.value) {
+        clearTimeout(thinkingTimeoutRef.value)
+        thinkingTimeoutRef.value = null
+    }
+    if (streamIntervalRef.value) {
+        clearInterval(streamIntervalRef.value)
+        streamIntervalRef.value = null
+    }
+    if (streamTimeoutRef.value) {
+        clearTimeout(streamTimeoutRef.value)
+        streamTimeoutRef.value = null
+    }
 }
 </script>
 
