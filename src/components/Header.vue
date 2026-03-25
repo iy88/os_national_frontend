@@ -99,6 +99,7 @@ const emit = defineEmits(['open-login'])
 const sidebarOpen = ref(false)
 
 const activeTab = computed(() => {
+    if (route.path.startsWith('/profile')) return null
     if (route.path.includes('dialogue')) return 'dialogue'
     return 'travel'
 })

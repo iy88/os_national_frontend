@@ -5,6 +5,7 @@ import UserProfile from '../views/UserProfile.vue'
 import BasicInfo from '../views/profile/BasicInfo.vue'
 import FavoriteRoutes from '../views/profile/FavoriteRoutes.vue'
 import {useUserStore} from '../stores/user'
+import {getProfile} from '../api'
 
 const routes = [
     {
@@ -46,13 +47,60 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to, from, next) => {
+let isAutoLoggingIn = false
+
+router.beforeEach(async (to, from, next) => {
     const userStore = useUserStore()
-    if (to.path.startsWith('/profile') && !userStore.isLoggedIn) {
-        userStore.showLoginModal = true
-        next('/travel')
+
+    // 如果正在自动登录验证中，直接放行
+    if (isAutoLoggingIn) {
+        return next()
+    }
+
+    // 如果已登录，直接放行
+    if (userStore.isLoggedIn) {
+        return next()
+    }
+
+    // 检查 localStorage 是否有 token
+    const token = localStorage.getItem('token')
+    if (token) {
+        isAutoLoggingIn = true
+        try {
+            // 尝试获取 profile 验证 token
+            const result = await getProfile()
+            if (result.success && result.userInfo) {
+                userStore.setUserInfo(result.userInfo)
+                next()
+            } else {
+                localStorage.removeItem('token')
+                if (to.path.startsWith('/profile')) {
+                    userStore.showLoginModal = true
+                    next('/travel')
+                } else {
+                    next()
+                }
+            }
+        } catch (error) {
+            // token 无效，移除并根据路由决定是否弹出登录框
+            localStorage.removeItem('token')
+            if (to.path.startsWith('/profile')) {
+                userStore.showLoginModal = true
+                next('/travel')
+            } else {
+                next()
+            }
+        } finally {
+            isAutoLoggingIn = false
+        }
     } else {
-        next()
+        // 无 token
+        if (to.path.startsWith('/profile')) {
+            userStore.showLoginModal = true
+            next('/travel')
+        } else {
+            next()
+        }
     }
 })
 
