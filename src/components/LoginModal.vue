@@ -20,14 +20,14 @@
             </el-form>
 
             <!-- 注册表单 -->
-            <el-form v-else :model="registerForm" label-position="top">
-                <el-form-item label="用户名">
+            <el-form v-else ref="registerFormRef" :model="registerForm" :rules="registerRules" label-position="top">
+                <el-form-item label="用户名" prop="username">
                     <el-input v-model="registerForm.username" placeholder="请输入用户名"/>
                 </el-form-item>
-                <el-form-item label="邮箱">
+                <el-form-item label="邮箱" prop="email">
                     <el-input v-model="registerForm.email" placeholder="请输入邮箱"/>
                 </el-form-item>
-                <el-form-item label="验证码">
+                <el-form-item label="验证码" prop="verifyCode">
                     <div class="verification-row">
                         <el-input v-model="registerForm.verifyCode" class="verify-code-input"
                                   placeholder="请输入验证码"/>
@@ -36,21 +36,11 @@
                         </el-button>
                     </div>
                 </el-form-item>
-                <el-form-item label="性别">
-                    <el-select v-model="registerForm.gender" placeholder="请选择性别" style="width: 100%">
-                        <el-option label="男" value="男"/>
-                        <el-option label="女" value="女"/>
-                        <el-option label="其他" value="其他"/>
-                    </el-select>
+                <el-form-item label="密码" prop="password">
+                    <el-input v-model="registerForm.password" placeholder="请输入密码" type="password" show-password/>
                 </el-form-item>
-                <el-form-item label="年龄">
-                    <el-input-number v-model="registerForm.age" :max="100" :min="1" style="width: 100%"/>
-                </el-form-item>
-                <el-form-item label="基本信息">
-                    <el-input v-model="registerForm.basicInfo" :rows="2" placeholder="请输入基本信息" type="textarea"/>
-                </el-form-item>
-                <el-form-item label="简介">
-                    <el-input v-model="registerForm.intro" :rows="3" placeholder="请输入简介" type="textarea"/>
+                <el-form-item label="确认密码" prop="confirmPassword">
+                    <el-input v-model="registerForm.confirmPassword" placeholder="请再次输入密码" type="password" show-password/>
                 </el-form-item>
             </el-form>
 
@@ -85,6 +75,7 @@
 import {computed, ref} from 'vue'
 import {useUserStore} from '../stores/user'
 import {ElMessage} from 'element-plus'
+import {sendVerificationCode, register as apiRegister, login as apiLogin} from '../api'
 
 defineProps({
     modelValue: {
@@ -106,61 +97,147 @@ const loginForm = ref({
     password: ''
 })
 
+const registerFormRef = ref(null)
 const registerForm = ref({
     username: '',
     email: '',
     verifyCode: '',
-    gender: '',
-    age: 18,
-    basicInfo: '',
-    intro: ''
+    password: '',
+    confirmPassword: ''
 })
+
+// 表单校验规则
+const validateUsername = (rule, value, callback) => {
+    if (!value) {
+        callback(new Error('请输入用户名'))
+    } else if (value.length < 3) {
+        callback(new Error('用户名至少3个字符'))
+    } else {
+        callback()
+    }
+}
+
+const validateEmail = (rule, value, callback) => {
+    if (!value) {
+        callback(new Error('请输入邮箱'))
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        callback(new Error('请输入有效的邮箱地址'))
+    } else {
+        callback()
+    }
+}
+
+const validateVerifyCode = (rule, value, callback) => {
+    if (!value) {
+        callback(new Error('请输入验证码'))
+    } else if (!/^\d{6}$/.test(value)) {
+        callback(new Error('验证码为6位数字'))
+    } else {
+        callback()
+    }
+}
+
+const validatePassword = (rule, value, callback) => {
+    if (!value) {
+        callback(new Error('请输入密码'))
+    } else if (value.length < 6) {
+        callback(new Error('密码至少6个字符'))
+    } else {
+        callback()
+    }
+}
+
+const validateConfirmPassword = (rule, value, callback) => {
+    if (!value) {
+        callback(new Error('请再次输入密码'))
+    } else if (value !== registerForm.value.password) {
+        callback(new Error('两次输入的密码不一致'))
+    } else {
+        callback()
+    }
+}
+
+const registerRules = {
+    username: [{validator: validateUsername, trigger: 'blur'}],
+    email: [{validator: validateEmail, trigger: 'blur'}],
+    verifyCode: [{validator: validateVerifyCode, trigger: 'blur'}],
+    password: [{validator: validatePassword, trigger: 'blur'}],
+    confirmPassword: [{validator: validateConfirmPassword, trigger: 'blur'}]
+}
 
 const verifyCodeSent = ref(false)
 const countdown = ref(0)
 let countdownTimer = null
 
-const sendVerifyCode = () => {
-    if (!registerForm.value.email) {
-        ElMessage.warning('请先输入邮箱')
+const sendVerifyCode = async () => {
+    // 先校验邮箱格式
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.value.email)
+    if (!registerForm.value.email || !emailValid) {
+        ElMessage.warning('请先输入有效的邮箱')
         return
     }
-    verifyCodeSent.value = true
-    countdown.value = 60
-    ElMessage.success('验证码已发送')
-    countdownTimer = setInterval(() => {
-        countdown.value--
-        if (countdown.value <= 0) {
-            verifyCodeSent.value = false
-            clearInterval(countdownTimer)
-        }
-    }, 1000)
+    try {
+        await sendVerificationCode(registerForm.value.email)
+        ElMessage.success('验证码已发送')
+        verifyCodeSent.value = true
+        countdown.value = 60
+        countdownTimer = setInterval(() => {
+            countdown.value--
+            if (countdown.value <= 0) {
+                verifyCodeSent.value = false
+                clearInterval(countdownTimer)
+            }
+        }, 1000)
+    } catch (error) {
+        ElMessage.error(error.message || '发送验证码失败')
+    }
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
     if (isLogin.value) {
         if (loginForm.value.username && loginForm.value.password) {
-            userStore.login(loginForm.value.username, loginForm.value.password)
-            ElMessage.success('登录成功！')
-            emit('update:modelValue', false)
-            resetForms()
+            try {
+                const result = await apiLogin(loginForm.value)
+                if (result.success) {
+                    localStorage.setItem('token', result.token)
+                    userStore.setUserInfo(result.userInfo)
+                    ElMessage.success('登录成功！')
+                    emit('update:modelValue', false)
+                    resetForms()
+                }
+            } catch (error) {
+                ElMessage.error(error.message || '登录失败')
+            }
         } else {
             ElMessage.warning('请填写完整信息')
         }
     } else {
-        if (registerForm.value.username && registerForm.value.email && registerForm.value.verifyCode) {
-            userStore.register(registerForm.value)
-            ElMessage.success('注册成功！')
-            emit('update:modelValue', false)
-            resetForms()
-        } else {
-            ElMessage.warning('请填写完整信息')
-        }
+        // 注册时校验整个表单
+        if (!registerFormRef.value) return
+        await registerFormRef.value.validate(async (valid) => {
+            if (valid) {
+                try {
+                    const result = await apiRegister(registerForm.value)
+                    if (result.success) {
+                        localStorage.setItem('token', result.token)
+                        userStore.setUserInfo(result.userInfo)
+                        ElMessage.success('注册成功！')
+                        emit('update:modelValue', false)
+                        resetForms()
+                    }
+                } catch (error) {
+                    ElMessage.error(error.message || '注册失败')
+                }
+            } else {
+                ElMessage.warning('请填写完整且有效的注册信息')
+            }
+        })
     }
 }
 
 const handleLogout = () => {
     userStore.logout()
+    localStorage.removeItem('token')
     ElMessage.success('已退出登录')
     emit('update:modelValue', false)
     resetForms()
@@ -168,7 +245,7 @@ const handleLogout = () => {
 
 const resetForms = () => {
     loginForm.value = {username: '', password: ''}
-    registerForm.value = {username: '', email: '', verifyCode: '', gender: '', age: 18, basicInfo: '', intro: ''}
+    registerForm.value = {username: '', email: '', verifyCode: '', password: '', confirmPassword: ''}
     isLogin.value = true
 }
 </script>

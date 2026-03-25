@@ -7,32 +7,16 @@ export const useUserStore = defineStore('user', () => {
     const collectedRoutes = ref([])
     const showLoginModal = ref(false)
 
-    const register = (userData) => {
+    // 从 API 响应设置用户信息
+    const setUserInfo = (info) => {
         userInfo.value = {
-            username: userData.username,
-            email: userData.email,
-            gender: userData.gender,
-            age: userData.age,
-            basicInfo: userData.basicInfo,
-            intro: userData.intro,
-            avatar: userData.avatar || ''
+            uid: info.uid,
+            username: info.username,
+            email: info.email,
+            avatar: info.avatar || ''
         }
         isLoggedIn.value = true
         collectedRoutes.value = []
-    }
-
-    const login = (username, password) => {
-        if (username && password) {
-            userInfo.value = {
-                username: username,
-                email: '',
-                avatar: ''
-            }
-            isLoggedIn.value = true
-            collectedRoutes.value = []
-            return true
-        }
-        return false
     }
 
     const logout = () => {
@@ -60,16 +44,25 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
+    // 初始化时检查本地存储的 token
+    const initAuth = () => {
+        const token = localStorage.getItem('token')
+        if (token) {
+            // TODO: 可以在这里验证 token 有效性
+            // 目前简单处理，刷新页面后需要重新登录
+        }
+    }
+
     return {
         isLoggedIn,
         userInfo,
         collectedRoutes,
         showLoginModal,
-        register,
-        login,
+        setUserInfo,
         logout,
         updateField,
         addCollectedRoute,
-        removeCollectedRoute
+        removeCollectedRoute,
+        initAuth
     }
 })
