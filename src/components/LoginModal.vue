@@ -7,40 +7,41 @@
         class="login-modal"
         width="450px"
         @update:model-value="(val) => emit('update:modelValue', val)"
+        @closed="onDialogClosed"
     >
         <div class="login-container">
             <!-- 登录表单 -->
             <el-form v-if="isLogin" :model="loginForm" label-position="top">
                 <el-form-item label="用户名/邮箱">
-                    <el-input v-model="loginForm.username" placeholder="请输入用户名或邮箱" @keydown.enter.prevent="focusPassword"/>
+                    <el-input v-model="loginForm.username" placeholder="请输入用户名或邮箱" autocomplete="off" @keydown.enter.prevent="focusPassword"/>
                 </el-form-item>
                 <el-form-item label="密码">
-                    <el-input ref="passwordInputRef" v-model="loginForm.password" placeholder="请输入密码" type="password" @keydown.enter.prevent="handleSubmit"/>
+                    <el-input ref="passwordInputRef" v-model="loginForm.password" placeholder="请输入密码" type="password" autocomplete="off" @keydown.enter.prevent="handleSubmit"/>
                 </el-form-item>
             </el-form>
 
             <!-- 注册表单 -->
             <el-form v-else ref="registerFormRef" :model="registerForm" :rules="registerRules" label-position="top">
                 <el-form-item label="用户名" prop="username">
-                    <el-input v-model="registerForm.username" placeholder="请输入用户名" @keydown.enter.prevent="focusEmail"/>
+                    <el-input v-model="registerForm.username" placeholder="请输入用户名" autocomplete="off" @keydown.enter.prevent="focusEmail"/>
                 </el-form-item>
                 <el-form-item label="邮箱" prop="email">
-                    <el-input ref="emailInputRef" v-model="registerForm.email" placeholder="请输入邮箱" @keydown.enter.prevent="focusVerifyCode"/>
+                    <el-input ref="emailInputRef" v-model="registerForm.email" placeholder="请输入邮箱" autocomplete="off" @keydown.enter.prevent="focusVerifyCode"/>
                 </el-form-item>
                 <el-form-item label="验证码" prop="verifyCode">
                     <div class="verification-row">
                         <el-input ref="verifyCodeInputRef" v-model="registerForm.verifyCode" class="verify-code-input"
-                                  placeholder="请输入验证码" @keydown.enter.prevent="focusPasswordReg"/>
-                        <el-button :disabled="verifyCodeSent" class="send-code-btn" @click="sendVerifyCode">
-                            {{ verifyCodeSent ? `${countdown}s后重发` : '发送验证码' }}
+                                  placeholder="请输入验证码" autocomplete="off" @keydown.enter.prevent="focusPasswordReg"/>
+                        <el-button :disabled="verifyCodeSent || isSendingCode" class="send-code-btn" @click="sendVerifyCode">
+                            {{ isSendingCode ? '发送中...' : (verifyCodeSent ? `${countdown}s后重发` : '发送验证码') }}
                         </el-button>
                     </div>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
-                    <el-input ref="passwordRegInputRef" v-model="registerForm.password" placeholder="请输入密码" type="password" show-password @keydown.enter.prevent="focusConfirmPassword"/>
+                    <el-input ref="passwordRegInputRef" v-model="registerForm.password" placeholder="请输入密码" type="password" show-password autocomplete="off" @keydown.enter.prevent="focusConfirmPassword"/>
                 </el-form-item>
                 <el-form-item label="确认密码" prop="confirmPassword">
-                    <el-input v-model="registerForm.confirmPassword" placeholder="请再次输入密码" type="password" show-password @keydown.enter.prevent="handleSubmit"/>
+                    <el-input v-model="registerForm.confirmPassword" placeholder="请再次输入密码" type="password" show-password autocomplete="off" @keydown.enter.prevent="handleSubmit"/>
                 </el-form-item>
             </el-form>
 
@@ -183,8 +184,10 @@ const registerRules = {
 
 const verifyCodeSent = ref(false)
 const isSubmitting = ref(false)
+const isSendingCode = ref(false)
 const countdown = ref(0)
 let countdownTimer = null
+let loadingMessage = null
 
 const sendVerifyCode = async () => {
     // 先校验邮箱格式
@@ -193,8 +196,28 @@ const sendVerifyCode = async () => {
         ElMessage.warning('请先输入有效的邮箱')
         return
     }
+    // 显示加载动画通知
+    isSendingCode.value = true
+    loadingMessage = ElMessage({
+        message: `<div class="loading-notification">
+            <svg class="loading-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="#f0b344" stroke-width="2" stroke-dasharray="20 43" stroke-linecap="round">
+                    <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1.2s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+            <span>正在发送验证码...</span>
+        </div>`,
+        dangerouslyUseHTMLString: true,
+        duration: 0,
+        showClose: false
+    })
     try {
         await sendVerificationCode(registerForm.value.email)
+        // 关闭加载动画
+        if (loadingMessage) {
+            loadingMessage.close()
+            loadingMessage = null
+        }
         ElMessage.success('验证码已发送')
         verifyCodeSent.value = true
         countdown.value = 60
@@ -206,12 +229,24 @@ const sendVerifyCode = async () => {
             }
         }, 1000)
     } catch (error) {
+        // 关闭加载动画
+        if (loadingMessage) {
+            loadingMessage.close()
+            loadingMessage = null
+        }
         ElMessage.error(error.message || '发送验证码失败')
+    } finally {
+        isSendingCode.value = false
     }
 }
 
 const handleSubmit = async () => {
     if (isSubmitting.value) return
+    // 如果当前是注册模式，先切换到登录模式
+    if (!isLogin.value) {
+        isLogin.value = true
+        return
+    }
     isSubmitting.value = true
 
     try {
@@ -254,6 +289,11 @@ const handleSubmit = async () => {
 const resetForms = () => {
     loginForm.value = {username: '', password: ''}
     registerForm.value = {username: '', email: '', verifyCode: '', password: '', confirmPassword: ''}
+    isLogin.value = true
+}
+
+const onDialogClosed = () => {
+    // 弹窗关闭时重置为登录模式
     isLogin.value = true
 }
 </script>
@@ -330,6 +370,28 @@ const resetForms = () => {
 </style>
 
 <style>
+/* 加载动画通知 - 全局样式确保能影响到body下渲染的ElMessage */
+.loading-notification {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 14px !important;
+}
+
+.loading-icon {
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+}
+
+.loading-icon circle {
+    stroke: #f0b344 !important;
+}
+
+.loading-notification span {
+    color: #f0b344 !important;
+}
+
 .login-modal.el-dialog {
     background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
     border: 1px solid rgba(240, 179, 68, 0.25);
@@ -433,6 +495,7 @@ const resetForms = () => {
 }
 
 @media (max-width: 768px) {
+    /*noinspection CssUnusedSymbol*/
     .login-modal.el-dialog {
         width: 90% !important;
         max-width: 90vw;

@@ -2,73 +2,127 @@
     <div class="dialogue-view">
         <!-- 全屏对话区 -->
         <main class="fullscreen-conversation">
-            <!-- 标题栏 -->
-            <div class="page-header">
-                <h2 class="page-title">沉浸式电竞IP对话体验</h2>
-                <button class="switch-btn" @click="openCharSelector">🎭 切换角色</button>
-            </div>
-
-            <!-- 角色信息展示条 -->
-            <div v-if="activeCharacter" class="char-info-strip">
-                <div class="avatar-wrapper" @click="toggleAvatarDropdown">
-                    <img v-if="activeCharacter.avatar" :alt="activeCharacter.name" :src="activeCharacter.avatar"/>
-                    <div v-else class="avatar-placeholder">{{ activeCharacter.name.charAt(0) }}</div>
-                    <!-- 头像下拉菜单（移动端） -->
-                    <div v-if="showAvatarDropdown" class="avatar-dropdown" @click.stop>
-                        <button class="dropdown-btn" @click="openStory(activeCharacter); showAvatarDropdown = false">📖 故事</button>
-                        <button class="dropdown-btn" @click="openPhotos(activeCharacter); showAvatarDropdown = false">📷 照片</button>
+            <!-- PC端左侧边栏 -->
+            <aside class="sidebar">
+                <!-- 顶部选项卡 -->
+                <div class="sidebar-header">
+                    <div class="sidebar-tabs">
+                        <div
+                            v-for="(info, key) in categoryInfo"
+                            :key="key"
+                            :class="['sidebar-tab', { active: activeSidebarTab === key }]"
+                            @click="activeSidebarTab = key"
+                        >
+                            {{ info.name }}
+                        </div>
                     </div>
-                </div>
-                <div class="info-text">
-                    <h3>{{ activeCharacter.name }}</h3>
-                    <p>{{ activeCharacter.desc }}</p>
-                </div>
-                <div class="strip-actions desktop-only">
-                    <button class="strip-btn" @click="openStory(activeCharacter)">📖 故事</button>
-                    <button class="strip-btn" @click="openPhotos(activeCharacter)">📷 照片</button>
-                </div>
-            </div>
-
-            <!-- 欢迎状态 -->
-            <div v-if="!activeCharacter" class="welcome-state">
-                <div class="welcome-circle">
-                    <span class="welcome-icon">💬</span>
-                </div>
-                <p class="welcome-text">点击「切换角色」按钮，从角色库中选择一位开始对话</p>
-            </div>
-
-            <!-- 消息区 -->
-            <div v-else ref="messagesAreaRef" class="messages-area">
-                <div
-                    v-for="(msg, index) in messages"
-                    :key="index"
-                    :class="['msg-row', msg.type]"
-                >
-                    <div class="msg-avatar" :class="msg.type === 'user' ? '' : 'ai'">
-                        {{ msg.type === 'user' ? '我' : activeCharacter.name.charAt(0) }}
-                    </div>
-                    <div class="msg-bubble">
-                        <span class="msg-content">{{ msg.content }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 底部输入 -->
-            <div v-if="activeCharacter" class="input-bar">
-                <div class="input-row">
-                    <div class="input-placeholder">
-                        <input
-                            ref="inputRef"
-                            v-model="inputText"
-                            :placeholder="`与 ${activeCharacter.name} 对话...`"
-                            @keydown.enter.prevent="handleSend"
-                        />
-                    </div>
-                    <button class="send-btn" @click="handleSend">
-                        <div class="send-icon"></div>
+                    <button class="sidebar-add-btn" @click="openCharSelector" aria-label="选择角色">
+                        <svg class="sidebar-add-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <line x1="19" x2="19" y1="8" y2="14"/>
+                            <line x1="16" x2="22" y1="11" y2="11"/>
+                        </svg>
                     </button>
                 </div>
-            </div>
+
+                <!-- 角色列表 -->
+                <div
+                    :class="['sidebar-char-list', { 'scrollbar-visible': sidebarScrollbarVisible }]"
+                    @mouseenter="handleSidebarMouseEnter"
+                    @mouseleave="handleSidebarMouseLeave"
+                    @mousemove="handleSidebarMouseMove"
+                    @scroll.passive="handleSidebarScroll"
+                    @pointerdown="handleSidebarPointerDown"
+                >
+                    <div
+                        v-for="char in currentSidebarChars"
+                        :key="char.id"
+                        :class="['sidebar-char-item', { active: activeCharacter?.id === char.id }]"
+                        @click="selectCharacter(char)"
+                    >
+                        <div class="sidebar-char-avatar">
+                            <img v-if="char.avatar" :src="char.avatar" :alt="char.name"/>
+                            <div v-else class="avatar-placeholder">{{ char.name.charAt(0) }}</div>
+                        </div>
+                        <div class="sidebar-char-info">
+                            <div class="sidebar-char-name">{{ char.name }}</div>
+                            <div class="sidebar-char-quote">{{ char.desc }}</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 右侧对话区 -->
+            <section class="chat-area">
+                <!-- 移动端标题栏 -->
+                <div class="page-header mobile-only">
+                    <h2 class="page-title">沉浸式电竞IP对话体验</h2>
+                    <button class="switch-btn" @click="openCharSelector">🎭 切换角色</button>
+                </div>
+
+                <!-- 角色信息展示条 -->
+                <div v-if="activeCharacter" class="char-info-strip">
+                    <div class="avatar-wrapper" @click="toggleAvatarDropdown">
+                        <img v-if="activeCharacter.avatar" :alt="activeCharacter.name" :src="activeCharacter.avatar"/>
+                        <div v-else class="avatar-placeholder">{{ activeCharacter.name.charAt(0) }}</div>
+                        <!-- 头像下拉菜单 -->
+                        <div v-if="showAvatarDropdown" class="avatar-dropdown" @click.stop>
+                            <button class="dropdown-btn" @click="openStory(activeCharacter); showAvatarDropdown = false">📖 故事</button>
+                            <button class="dropdown-btn" @click="openPhotos(activeCharacter); showAvatarDropdown = false">📷 照片</button>
+                        </div>
+                    </div>
+                    <div class="info-text">
+                        <h3>{{ activeCharacter.name }}</h3>
+                        <p>{{ activeCharacter.desc }}</p>
+                    </div>
+                    <div class="strip-actions desktop-only">
+                        <button class="strip-btn" @click="openStory(activeCharacter)">📖 故事</button>
+                        <button class="strip-btn" @click="openPhotos(activeCharacter)">📷 照片</button>
+                    </div>
+                </div>
+
+                <!-- 欢迎状态 -->
+                <div v-if="!activeCharacter" class="welcome-state">
+                    <div class="welcome-circle">
+                        <span class="welcome-icon">💬</span>
+                    </div>
+                    <p class="welcome-text">从左侧列表选择一位角色，开始对话</p>
+                </div>
+
+                <!-- 消息区 -->
+                <div v-else ref="messagesAreaRef" class="messages-area" @scroll="handleMessagesScroll">
+                    <div
+                        v-for="(msg, index) in messages"
+                        :key="index"
+                        :class="['msg-row', msg.type]"
+                    >
+                        <div class="msg-avatar" :class="msg.type === 'user' ? '' : 'ai'">
+                            {{ msg.type === 'user' ? '我' : activeCharacter.name.charAt(0) }}
+                        </div>
+                        <div class="msg-bubble">
+                            <span class="msg-content">{{ msg.content }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部输入 -->
+                <div v-if="activeCharacter" class="input-bar">
+                    <div class="input-row">
+                        <div class="input-placeholder">
+                            <input
+                                ref="inputRef"
+                                v-model="inputText"
+                                :placeholder="`与 ${activeCharacter.name} 对话...`"
+                                @keydown.enter.prevent="handleSend"
+                            />
+                        </div>
+                        <button class="send-btn" @click="handleSend">
+                            <span class="send-arrow">↑</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <!-- 角色选择浮层 -->
@@ -94,7 +148,7 @@
                             v-for="char in selectorCharacters"
                             :key="char.id"
                             :class="['char-card', { active: activeCharacter?.id === char.id }]"
-                            @click="selectCharacter(char)"
+                            @click="selectCharacter(char); showCharSelector = false"
                         >
                             <div class="char-avatar-block">{{ char.name.charAt(0) }}</div>
                             <div class="char-name">{{ char.name }}</div>
@@ -127,7 +181,7 @@ import PhotoGallery from '../components/PhotoGallery.vue'
 import {categoryInfo, characterData, getCharacterWelcome, mockStreamReply} from '../data/characters'
 import {useStreamTimers} from '../composables/useStreamTimers'
 
-const activeCategory = ref('hero')
+const activeSidebarTab = ref('hero')
 const activeCharacter = ref(null)
 const messages = ref([])
 const inputText = ref('')
@@ -140,15 +194,80 @@ const showStoryModal = ref(false)
 const showPhotosModal = ref(false)
 const selectedCharacter = ref(null)
 const showAvatarDropdown = ref(false)
+const sidebarScrollbarVisible = ref(false)
+const sidebarDragging = ref(false)
+let sidebarScrollbarHideTimer = null
+
+// 用户滚动检测
+let userHasScrolled = false
+let previousScrollTop = 0
+
+const handleMessagesScroll = () => {
+    if (!messagesAreaRef.value) return
+    const {scrollTop} = messagesAreaRef.value
+    // 如果向上滚动，判定为用户滚动
+    if (scrollTop < previousScrollTop) {
+        userHasScrolled = true
+    }
+    previousScrollTop = scrollTop
+}
 
 // 流式输出定时器
 const {streamIntervalRef, streamTimeoutRef, thinkingTimeoutRef, clearStreamTimers} = useStreamTimers()
 
 const selectorCharacters = computed(() => characterData[selectorCategory.value] || [])
+const currentSidebarChars = computed(() => characterData[activeSidebarTab.value] || [])
 
 const openCharSelector = () => {
-    selectorCategory.value = activeCategory.value
+    selectorCategory.value = activeSidebarTab.value
     showCharSelector.value = true
+}
+
+const clearSidebarScrollbarHideTimer = () => {
+    if (sidebarScrollbarHideTimer) {
+        clearTimeout(sidebarScrollbarHideTimer)
+        sidebarScrollbarHideTimer = null
+    }
+}
+
+const showSidebarScrollbar = (delay = 1200) => {
+    sidebarScrollbarVisible.value = true
+    clearSidebarScrollbarHideTimer()
+    if (!sidebarDragging.value) {
+        sidebarScrollbarHideTimer = setTimeout(() => {
+            sidebarScrollbarVisible.value = false
+        }, delay)
+    }
+}
+
+const handleSidebarMouseEnter = () => {
+    showSidebarScrollbar(1200)
+}
+
+const handleSidebarMouseLeave = () => {
+    if (!sidebarDragging.value) {
+        showSidebarScrollbar(360)
+    }
+}
+
+const handleSidebarMouseMove = () => {
+    showSidebarScrollbar(1200)
+}
+
+const handleSidebarScroll = () => {
+    showSidebarScrollbar(1200)
+}
+
+const handleSidebarPointerDown = () => {
+    sidebarDragging.value = true
+    sidebarScrollbarVisible.value = true
+    clearSidebarScrollbarHideTimer()
+}
+
+const handleGlobalPointerUp = () => {
+    if (!sidebarDragging.value) return
+    sidebarDragging.value = false
+    showSidebarScrollbar(1200)
 }
 
 const toggleAvatarDropdown = () => {
@@ -164,7 +283,6 @@ const selectCharacter = (character) => {
         type: 'character',
         content: `${character.name}：${getCharacterWelcome(character.id)}`
     }]
-    showCharSelector.value = false
 
     // 重置输入状态
     inputText.value = ''
@@ -193,18 +311,23 @@ const handleSend = () => {
     // 清理之前的定时器，防止路由跳转后继续执行
     clearStreamTimers()
 
+    // 重置用户滚动状态
+    userHasScrolled = false
+
     messages.value.push({type: 'user', content: text})
     inputText.value = ''
 
     // 模拟流式输出过程
-    // 1. 先显示正在思考状态 - 在消息后添加状态行
+    // 1. 先显示正在思考状态
     const statusIndex = messages.value.length
     messages.value.push({type: 'status', content: '正在思考...'})
 
-    // 2. 1秒后切换到正在输出状态，并开始流式输出
+    // 2. 1秒后移除状态消息，显示角色气泡并开始流式输出
     thinkingTimeoutRef.value = setTimeout(() => {
-        // 替换状态为实际内容
-        messages.value[statusIndex] = {type: 'character', content: `${activeCharacter.value?.name || '智能体'}：`}
+        // 移除状态消息
+        messages.value.splice(statusIndex, 1)
+
+        // 添加角色消息气泡
         const msgIndex = messages.value.length
         messages.value.push({type: 'character', content: ''})
 
@@ -214,7 +337,9 @@ const handleSend = () => {
             if (charIndex < mockStreamReply.length) {
                 messages.value[msgIndex].content += mockStreamReply[charIndex]
                 charIndex++
-                scrollToBottom()
+                if (!userHasScrolled) {
+                    scrollToBottom()
+                }
             } else {
                 clearInterval(streamIntervalRef.value)
                 // 4. 输出完成后清理
@@ -238,33 +363,255 @@ const handleClickOutside = (e) => {
 
 onMounted(() => {
     document.addEventListener('click', handleClickOutside)
+    window.addEventListener('pointerup', handleGlobalPointerUp)
 })
 
 onUnmounted(() => {
     clearStreamTimers()
+    clearSidebarScrollbarHideTimer()
     document.removeEventListener('click', handleClickOutside)
+    window.removeEventListener('pointerup', handleGlobalPointerUp)
 })
 </script>
 
 <style scoped>
 .dialogue-view {
     flex: 1;
+    height: 100%;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background: #06090f;
+    background: linear-gradient(145deg, #1a2b5f 0%, #0d1b2a 100%);
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 8px auto;
+    width: 100%;
+    border: 1px solid rgba(240, 179, 68, 0.2);
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+/* 全屏对话区 */
+.fullscreen-conversation {
+    flex: 1;
+    display: flex;
+    min-height: 0;
     overflow: hidden;
 }
 
-/* 页面标题栏 */
+/* ==================== PC端侧边栏 ==================== */
+.sidebar {
+    width: 30%;
+    min-width: 280px;
+    max-width: 360px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(26, 43, 95, 0.95), rgba(13, 27, 42, 0.9));
+    border-right: 1px solid rgba(240, 179, 68, 0.15);
+}
+
+.sidebar-header {
+    flex-shrink: 0;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(240, 179, 68, 0.1);
+}
+
+.sidebar-tabs {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+}
+
+.sidebar-tab {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 8px;
+    background: rgba(21, 32, 53, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    transition: all 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-tab:hover {
+    border-color: rgba(240, 179, 68, 0.3);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.sidebar-tab.active {
+    background: linear-gradient(135deg, rgba(240, 179, 68, 0.2), rgba(14, 165, 233, 0.15));
+    border-color: #f0b344;
+    color: #f0b344;
+}
+
+.sidebar-add-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    background: rgba(21, 32, 53, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s;
+}
+
+.sidebar-add-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.sidebar-add-btn:hover {
+    border-color: #f0b344;
+    color: #f0b344;
+    background: rgba(240, 179, 68, 0.1);
+}
+
+/* 侧边栏角色列表 */
+.sidebar-char-list {
+    flex: 1;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-y: overlay;
+    overflow-x: hidden;
+    padding: 12px 16px 12px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    -ms-overflow-style: none;
+}
+
+.sidebar-char-list::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.sidebar-char-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-char-list::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.sidebar-char-list.scrollbar-visible {
+    scrollbar-color: rgba(240, 179, 68, 0.45) transparent;
+}
+
+.sidebar-char-list.scrollbar-visible::-webkit-scrollbar-thumb {
+    background: rgba(240, 179, 68, 0.45);
+}
+
+.sidebar-char-list.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+    background: rgba(240, 179, 68, 0.68);
+}
+
+.sidebar-char-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 6px;
+    border: 1px solid transparent;
+}
+
+.sidebar-char-item:hover {
+    background: rgba(240, 179, 68, 0.08);
+    border-color: rgba(240, 179, 68, 0.15);
+}
+
+.sidebar-char-item.active {
+    background: linear-gradient(135deg, rgba(240, 179, 68, 0.15), rgba(14, 165, 233, 0.1));
+    border-color: rgba(240, 179, 68, 0.3);
+}
+
+.sidebar-char-avatar {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(240, 179, 68, 0.3);
+}
+
+.sidebar-char-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sidebar-char-avatar .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f0b344, #e63946);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.sidebar-char-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sidebar-char-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 3px;
+}
+
+.sidebar-char-quote {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==================== 右侧对话区 ==================== */
+.chat-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* 移动端标题栏 */
 .page-header {
     flex-shrink: 0;
     padding: 16px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(180deg, rgba(13, 20, 32, 0.95), rgba(6, 9, 15, 0.9));
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(145deg, #1a2b5f 0%, #0d1b2a 100%);
+    border-bottom: 1px solid rgba(240, 179, 68, 0.15);
 }
 
 .page-title {
@@ -290,21 +637,17 @@ onUnmounted(() => {
     color: #f0b344;
 }
 
-/* 全屏对话区 */
-.fullscreen-conversation {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
+/* PC端隐藏移动端元素 */
+.mobile-only {
+    display: none;
 }
 
 /* 角色信息展示条 */
 .char-info-strip {
     flex-shrink: 0;
-    padding: 16px 24px;
-    background: #0d1420;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 10px 12px;
+    background: linear-gradient(145deg, #1a2b5f 0%, #0d1b2a 100%);
+    border-bottom: 1px solid rgba(240, 179, 68, 0.15);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -313,6 +656,12 @@ onUnmounted(() => {
 .avatar-wrapper {
     position: relative;
     cursor: pointer;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .avatar-wrapper img,
@@ -336,6 +685,7 @@ onUnmounted(() => {
 }
 
 .avatar-wrapper img {
+    display: block;
     border: 2px solid #f0b344;
     box-shadow: 0 0 20px rgba(240, 179, 68, 0.3);
     object-fit: cover;
@@ -429,14 +779,21 @@ onUnmounted(() => {
 
 /* 欢迎状态 */
 .welcome-state {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    flex: 0 1 auto;
+    width: 100%;
+    display: grid;
+    place-content: center;
+    justify-items: center;
     gap: 20px;
     text-align: center;
+    padding: 24px;
+    margin: auto 0;
+}
+
+@media (min-width: 769px) {
+    .dialogue-view {
+        max-height: calc(100dvh - 92px - 16px);
+    }
 }
 
 .welcome-circle {
@@ -513,6 +870,7 @@ onUnmounted(() => {
     font-size: 0.9rem;
     font-weight: 600;
     color: #fff;
+    margin-top: 2px;
 }
 
 .msg-avatar.ai {
@@ -541,8 +899,8 @@ onUnmounted(() => {
 /* 底部输入 */
 .input-bar {
     flex-shrink: 0;
-    padding: 16px 24px;
-    background: #0d1420;
+    padding: 10px 12px;
+    background: rgba(6, 9, 15, 0.95);
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -583,11 +941,11 @@ onUnmounted(() => {
 }
 
 .send-btn {
-    width: 50px;
-    height: 50px;
+    width: 46px;
+    height: 46px;
     background: linear-gradient(135deg, #f0b344, #d4962e);
     border: none;
-    border-radius: 50%;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -600,11 +958,12 @@ onUnmounted(() => {
     transform: scale(1.08);
 }
 
-.send-icon {
-    width: 18px;
-    height: 18px;
-    background: white;
-    border-radius: 50%;
+.send-arrow {
+    color: #fff;
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1;
+    transform: translateY(-2px);
 }
 
 /* 浮动角色选择面板 */
@@ -773,19 +1132,43 @@ onUnmounted(() => {
     color: #64748b;
 }
 
-/* 移动端适配 */
+/* 移动端适配 - 隐藏侧边栏，使用原来的布局 */
 @media (max-width: 768px) {
+    .dialogue-view {
+        height: auto;
+        max-height: none;
+        margin: 0 auto;
+        border: none;
+        border-radius: 0;
+    }
+
+    .fullscreen-conversation {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .chat-area {
+        width: 100%;
+    }
+
+    .welcome-state {
+        margin: 0;
+        flex: 1;
+    }
+
+    .mobile-only {
+        display: flex;
+    }
+
     .page-header {
         padding: 12px 16px;
     }
 
     .page-title {
         font-size: 1rem;
-    }
-
-    .switch-btn {
-        padding: 6px 12px;
-        font-size: 0.8rem;
     }
 
     .char-info-strip {
