@@ -123,6 +123,8 @@ const handleLogout = () => {
 <style scoped>
 .profile-layout {
     display: flex;
+    flex-direction: row;
+    width: 100%;
     min-height: calc(100vh - 80px);
     max-width: 1200px;
     margin: 0 auto;
@@ -310,7 +312,8 @@ const handleLogout = () => {
 
 /* 主内容区 */
 .profile-main {
-    flex: 1;
+    flex: 1 1 0;
+    width: 0;
     min-width: 0;
 }
 
@@ -335,6 +338,7 @@ const handleLogout = () => {
     background: rgba(30, 45, 80, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 12px;
+    width: 100%;
     padding: 28px;
     min-height: 500px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
@@ -384,6 +388,11 @@ const handleLogout = () => {
     .profile-layout {
         flex-direction: column;
         padding: 16px;
+    }
+
+    .profile-main {
+        width: 100%;
+        flex: 1 1 auto;
     }
 
     .profile-sidebar {

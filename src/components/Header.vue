@@ -419,6 +419,19 @@ const handleLogout = () => {
     animation: dropdownFadeIn 0.15s ease;
 }
 
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    background: rgba(30, 45, 80, 0.98);
+    border-left: 1px solid rgba(240, 179, 68, 0.2);
+    border-top: 1px solid rgba(240, 179, 68, 0.2);
+}
+
 @keyframes dropdownFadeIn {
     from {
         opacity: 0;
@@ -447,6 +460,12 @@ const handleLogout = () => {
     right: 16px;
     left: auto;
     transform: none;
+}
+
+.user-dropdown.mobile .dropdown-menu::before {
+    left: auto;
+    right: 20px;
+    transform: rotate(45deg);
 }
 
 .dropdown-item {

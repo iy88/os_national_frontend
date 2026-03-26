@@ -45,7 +45,10 @@ body {
 
 .main-content {
     flex: 1;
-    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0;
 }
 
 /* 全局滚动条样式 */
