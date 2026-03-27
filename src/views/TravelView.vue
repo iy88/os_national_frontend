@@ -90,62 +90,77 @@
             <h2 class="section-title">电竞文旅助手</h2>
 
             <!-- 快速规划选项 -->
-            <div class="quick-planners">
-                <div class="planner-item">
-                    <label>目标城市</label>
-                    <el-select v-model="selectedCity" clearable placeholder="可选" style="width: 100%">
-                        <el-option
-                            v-for="(name, key) in cityMap"
-                            :key="key"
-                            :label="name"
-                            :value="key"
-                        />
-                    </el-select>
-                </div>
-                <div class="planner-item">
-                    <label>旅行天数</label>
-                    <el-select v-model="travelDays" clearable placeholder="可选" style="width: 100%">
-                        <el-option :value="1" label="1天"/>
-                        <el-option :value="2" label="2天"/>
-                        <el-option :value="3" label="3天"/>
-                        <el-option :value="4" label="4天"/>
-                        <el-option :value="5" label="5天"/>
-                        <el-option :value="6" label="6天"/>
-                        <el-option :value="7" label="7天"/>
-                    </el-select>
-                </div>
-                <div class="planner-item">
-                    <label>出行人数</label>
-                    <el-select v-model="travelPeople" clearable placeholder="可选" style="width: 100%">
-                        <el-option :value="1" label="1人"/>
-                        <el-option :value="2" label="2人"/>
-                        <el-option :value="3" label="3-5人"/>
-                        <el-option :value="5" label="5-10人"/>
-                        <el-option :value="10" label="10人以上"/>
-                    </el-select>
-                </div>
-                <div class="planner-item">
-                    <label>关系类型</label>
-                    <el-select v-model="travelRelationship" clearable placeholder="可选" style="width: 100%">
-                        <el-option label="好友同行" value="好友同行"/>
-                        <el-option label="情侣出游" value="情侣出游"/>
-                        <el-option label="家庭出行" value="家庭出行"/>
-                        <el-option label="独自旅行" value="独自旅行"/>
-                    </el-select>
-                </div>
-                <div class="planner-item">
-                    <label>本命英雄</label>
-                    <el-select v-model="favoriteHero" clearable placeholder="可选" style="width: 100%">
-                        <el-option label="李白" value="李白"/>
-                        <el-option label="武则天" value="武则天"/>
-                        <el-option label="诸葛亮" value="诸葛亮"/>
-                    </el-select>
-                </div>
+            <div class="quick-planners-wrap">
+                <transition name="planner-collapse">
+                    <div v-show="!plannersCollapsed" class="quick-planners">
+                        <div class="planner-item">
+                            <label>目标城市</label>
+                            <el-select v-model="selectedCity" clearable placeholder="可选" style="width: 100%">
+                                <el-option
+                                    v-for="(name, key) in cityMap"
+                                    :key="key"
+                                    :label="name"
+                                    :value="key"
+                                />
+                            </el-select>
+                        </div>
+                        <div class="planner-item">
+                            <label>旅行天数</label>
+                            <el-select v-model="travelDays" clearable placeholder="可选" style="width: 100%">
+                                <el-option :value="1" label="1天"/>
+                                <el-option :value="2" label="2天"/>
+                                <el-option :value="3" label="3天"/>
+                                <el-option :value="4" label="4天"/>
+                                <el-option :value="5" label="5天"/>
+                                <el-option :value="6" label="6天"/>
+                                <el-option :value="7" label="7天"/>
+                            </el-select>
+                        </div>
+                        <div class="planner-item">
+                            <label>出行人数</label>
+                            <el-select v-model="travelPeople" clearable placeholder="可选" style="width: 100%">
+                                <el-option :value="1" label="1人"/>
+                                <el-option :value="2" label="2人"/>
+                                <el-option :value="3" label="3-5人"/>
+                                <el-option :value="5" label="5-10人"/>
+                                <el-option :value="10" label="10人以上"/>
+                            </el-select>
+                        </div>
+                        <div class="planner-item">
+                            <label>关系类型</label>
+                            <el-select v-model="travelRelationship" clearable placeholder="可选" style="width: 100%">
+                                <el-option label="好友同行" value="好友同行"/>
+                                <el-option label="情侣出游" value="情侣出游"/>
+                                <el-option label="家庭出行" value="家庭出行"/>
+                                <el-option label="独自旅行" value="独自旅行"/>
+                            </el-select>
+                        </div>
+                        <div class="planner-item">
+                            <label>本命英雄</label>
+                            <el-select v-model="favoriteHero" clearable placeholder="可选" style="width: 100%">
+                                <el-option label="李白" value="李白"/>
+                                <el-option label="武则天" value="武则天"/>
+                                <el-option label="诸葛亮" value="诸葛亮"/>
+                            </el-select>
+                        </div>
+                    </div>
+                </transition>
+
+                <button
+                    class="quick-planners-toggle"
+                    type="button"
+                    :aria-label="plannersCollapsed ? '展开快速规划选项' : '收起快速规划选项'"
+                    @click="plannersCollapsed = !plannersCollapsed"
+                >
+                    <span class="toggle-text">快速规划</span>
+                    <span :class="['toggle-chevron', plannersCollapsed ? 'down' : 'up']"></span>
+                </button>
             </div>
 
             <ChatBox
                 ref="chatBoxRef"
                 :messages="travelMessages"
+                :send-disabled="isProcessing"
                 placeholder="请输入..."
                 @send="sendTravelMessage"
             />
@@ -159,6 +174,7 @@ import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
 import citiesData from '../data/cities.json'
 import {useStreamTimers} from '../composables/useStreamTimers'
+import {sendChatMessage} from '../api'
 
 // 城市数据列表（直接使用 cities.json）
 const cityDataList = citiesData
@@ -176,6 +192,7 @@ const travelDays = ref(null)
 const travelPeople = ref(null)
 const travelRelationship = ref('')
 const favoriteHero = ref('')
+const plannersCollapsed = ref(false)
 
 const currentCity = ref(null)
 const showCityModal = ref(false)
@@ -183,8 +200,14 @@ const cityDialogRef = ref(null)
 const cityContentRef = ref(null)
 const chatBoxRef = ref(null)
 
+// 会话状态
+const currentSessionId = ref(null)
+const streamingMsgIndex = ref(-1)
+const isProcessing = ref(false) // 是否正在处理请求（禁用发送）
+const activeStreamToken = ref(0)
+
 // 流式输出定时器
-const {streamIntervalRef, streamTimeoutRef, thinkingTimeoutRef, clearStreamTimers} = useStreamTimers()
+const {streamIntervalRef, streamTimeoutRef, thinkingTimeoutRef, streamingCancelRef, clearStreamTimers, cancelStreaming} = useStreamTimers()
 
 // 外部页面滚动控制
 let isFirstRequest = true
@@ -257,7 +280,7 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('scroll', handlePageScroll)
     stopAutoScrollPage()
-    clearStreamTimers()
+    cancelStreaming()
 })
 
 const travelMessages = ref([
@@ -279,29 +302,16 @@ const showCityDetail = (cityKey) => {
     })
 }
 
-// 模拟流式输出的长回复
-const mockStreamResponse = `根据您的需求，我为您规划了一条从上海出发的3天电竞文旅路线，非常适合和女朋友一起体验：
-
-🏟️ 第一天：
-上午前往上海电竞中心，这里是KPL季后赛的举办地之一，可以参观选手训练室和荣誉墙。中午在附近的海底捞电竞主题店用餐。下午前往浦东新区的主题电竞馆体验VR游戏。
-
-🎮 第二天：
-上午参观王者荣耀线下体验店，购买限定周边。中午在网红电竞餐厅"英雄的厨房"用餐。下午前往上海体育馆观看KPL比赛（如有赛事安排）。
-
-🌆 第三天：
-上午游览外滩和豫园，感受海派文化。中午品尝上海特色美食。下午前往电竞主题咖啡厅休息，享受悠闲的下午茶时光。
-
-💡 贴心建议：
-1. 提前在官网预约KPL比赛门票
-2. 携带王者荣耀游戏ID可享受部分商家折扣
-3. 建议入住电竞主题酒店体验
-4. 不要错过王者荣耀限定周边商店
-
-祝您和女朋友有一个难忘的电竞文旅体验！🎉`
-
 const sendTravelMessage = (text) => {
-    // 清理之前的定时器，防止路由跳转后继续执行
-    clearStreamTimers()
+    const streamToken = Date.now()
+    activeStreamToken.value = streamToken
+    let streamStarted = false
+    let streamFinished = false
+    let hasAssistantOutput = false
+    let hasEnteredStreaming = false
+
+    // 清理之前的定时器和 SSE 连接
+    cancelStreaming()
 
     const cityName = selectedCity.value ? cityMap[selectedCity.value] : ''
     const hasPlanningInfo = cityName || travelDays.value || travelPeople.value || travelRelationship.value || favoriteHero.value
@@ -325,45 +335,74 @@ ${text}
 
     travelMessages.value.push({type: 'user', content: promptTemplate})
 
-    // 模拟流式输出过程
-    // 1. 先显示正在思考状态
+    // 禁用发送，显示 thinking 状态
+    isProcessing.value = true
     chatBoxRef.value?.setStatus('thinking')
 
-    // 2. 1秒后切换到正在输出状态，并开始流式输出
-    thinkingTimeoutRef.value = setTimeout(() => {
-        chatBoxRef.value?.setStatus('streaming')
+    // 调用 API 发送消息
+    const {eventSource, cancel} = sendChatMessage(promptTemplate, currentSessionId.value)
+    streamingCancelRef.value = cancel
 
-        // 第一次请求时，流式输出开始后启动外部页面滚动
-        if (isFirstRequest) {
-            userHasScrolledPage = false
-            startAutoScrollPage()
-        }
+    // 第一次请求时，启动外部页面滚动
+    if (isFirstRequest) {
+        userHasScrolledPage = false
+        startAutoScrollPage()
+    }
 
-        // 添加一条空消息用于流式填充
-        const msgIndex = travelMessages.value.length
-        travelMessages.value.push({type: 'character', content: ''})
+    // 监听 SSE 事件
+    eventSource.onmessage = (e) => {
+        if (streamToken !== activeStreamToken.value) return
 
-        // 3. 模拟逐字输出
-        let charIndex = 0
-        streamIntervalRef.value = setInterval(() => {
-            if (charIndex < mockStreamResponse.length) {
-                travelMessages.value[msgIndex].content += mockStreamResponse[charIndex]
-                charIndex++
-            } else {
-                clearInterval(streamIntervalRef.value)
-                // 4. 输出完成后恢复空闲状态
-                streamTimeoutRef.value = setTimeout(() => {
-                    chatBoxRef.value?.setStatus('idle')
-                    // 第一次请求完成，停止外部页面滚动
-                    if (isFirstRequest) {
-                        isFirstRequest = false
-                        isScrollDetectionActive = false
-                        stopAutoScrollPage()
-                    }
-                }, 300)
+        const data = e.data
+        if (data.type === 'start') {
+            streamStarted = true
+            currentSessionId.value = data.sid
+            // 添加一条空消息用于流式填充
+            streamingMsgIndex.value = travelMessages.value.length
+            travelMessages.value.push({type: 'character', content: ''})
+        } else if (data.type === 'content') {
+            // 第一次收到非 start 的流内容时，切换为 streaming
+            if (!hasEnteredStreaming) {
+                chatBoxRef.value?.setStatus('streaming')
+                hasEnteredStreaming = true
             }
-        }, 15) // 每15ms输出一个字符
-    }, 1000)
+            // 追加内容到气泡
+            if (streamingMsgIndex.value >= 0) {
+                travelMessages.value[streamingMsgIndex.value].content += data.content
+                if (data.content) {
+                    hasAssistantOutput = true
+                }
+            }
+        } else if (data.type === 'done') {
+            streamFinished = true
+            // 输出完成，恢复空闲状态
+            chatBoxRef.value?.setStatus('idle')
+            // 第一次请求完成，停止外部页面滚动
+            if (isFirstRequest) {
+                isFirstRequest = false
+                isScrollDetectionActive = false
+                stopAutoScrollPage()
+            }
+            // 取消 SSE 连接但不 abort fetch，让读取循环自然结束
+            cancelStreaming(false)
+            isProcessing.value = false
+        }
+    }
+
+    eventSource.onerror = (error) => {
+        if (streamToken !== activeStreamToken.value) return
+
+        const message = error?.message || ''
+        const isAbortLike = error?.name === 'AbortError' || /abort|aborted|load failed|failed to fetch/i.test(message)
+        const shouldShowErrorText = !streamFinished && !isAbortLike && (!streamStarted || !hasAssistantOutput)
+
+        chatBoxRef.value?.setStatus('idle')
+        if (shouldShowErrorText && streamingMsgIndex.value >= 0) {
+            travelMessages.value[streamingMsgIndex.value].content = '抱歉，发生错误，请重试。'
+        }
+        cancelStreaming()
+        isProcessing.value = false
+    }
 }
 </script>
 
@@ -391,11 +430,71 @@ ${text}
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 12px;
-    margin-bottom: 16px;
     padding: 16px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.quick-planners-wrap {
+    margin-bottom: 14px;
+}
+
+.quick-planners-toggle {
+    margin: 10px auto 2px;
+    min-width: 110px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.18);
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quick-planners-toggle:hover {
+    color: #fff;
+    border-color: rgba(240, 179, 68, 0.4);
+    background: rgba(240, 179, 68, 0.12);
+}
+
+.toggle-text {
+    font-size: 12px;
+    line-height: 1;
+}
+
+.toggle-chevron {
+    width: 8px;
+    height: 8px;
+    border-left: 2px solid currentColor;
+    border-top: 2px solid currentColor;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.toggle-chevron.up {
+    transform: rotate(45deg) translateY(1px);
+}
+
+.toggle-chevron.down {
+    transform: rotate(-135deg) translateY(-1px);
+}
+
+.planner-collapse-enter-active,
+.planner-collapse-leave-active {
+    transition: all 0.2s ease;
+    transform-origin: top;
+}
+
+.planner-collapse-enter-from,
+.planner-collapse-leave-to {
+    opacity: 0;
+    transform: scaleY(0.92);
 }
 
 .planner-item {

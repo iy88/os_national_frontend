@@ -242,15 +242,11 @@ const sendVerifyCode = async () => {
 
 const handleSubmit = async () => {
     if (isSubmitting.value) return
-    // 如果当前是注册模式，先切换到登录模式
-    if (!isLogin.value) {
-        isLogin.value = true
-        return
-    }
     isSubmitting.value = true
 
     try {
         if (isLogin.value) {
+            // 登录逻辑
             if (loginForm.value.username && loginForm.value.password) {
                 const result = await apiLogin(loginForm.value)
                 if (result.success) {

@@ -47,11 +47,7 @@ export const useUserStore = defineStore('user', () => {
 
     // 更新用户信息
     const updateUserProfile = async (data) => {
-        const result = await updateProfile(data)
-        if (result.success && result.userInfo) {
-            setUserInfo(result.userInfo)
-        }
-        return result
+        return await updateProfile(data)
     }
 
     // 统一登录处理

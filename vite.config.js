@@ -30,6 +30,10 @@ export default defineConfig({
             '/health': {
                 target: apiTarget,
                 changeOrigin: true
+            },
+            '/agent': {
+                target: apiTarget,
+                changeOrigin: true
             }
         }
     },

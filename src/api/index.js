@@ -112,4 +112,128 @@ export const uploadAvatar = (userId, file) => {
     })
 }
 
+// ============ Agent AI 对话接口 ============
+
+// 获取会话列表
+export const getChatSessions = () => {
+    return apiClient.get('/agent/travel-route-plan/chat')
+}
+
+// 获取会话详情
+export const getChatSession = (sid) => {
+    return apiClient.get(`/agent/travel-route-plan/chat/${sid}`)
+}
+
+// 使用 fetch 实现 SSE（带 POST 和自定义 headers）
+// 返回 { eventSource, cancel }
+export const sendChatMessageStream = (content, sid = null) => {
+    const token = localStorage.getItem('token')
+    const body = sid ? { content, sid } : { content }
+
+    let aborted = false
+    const controller = new AbortController()
+
+    const isAbortError = (error) => error?.name === 'AbortError'
+
+    const eventSource = {
+        onmessage: null,
+        onerror: null,
+        close: (abortFetch = true) => {
+            aborted = true
+            if (abortFetch) {
+                controller.abort()
+            }
+        }
+    }
+
+    fetch('/agent/travel-route-plan/message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        if (!response.body) {
+            throw new Error('SSE response body is empty')
+        }
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        const processEvents = () => {
+            // SSE 事件以两个换行符 \n\n 分隔
+            const eventDelimiter = '\n\n'
+            let eventIndex = buffer.indexOf(eventDelimiter)
+
+            while (eventIndex !== -1) {
+                const eventData = buffer.slice(0, eventIndex)
+                buffer = buffer.slice(eventIndex + eventDelimiter.length)
+
+                // 解析事件行（可能有多个 data: 行，需要合并）
+                const lines = eventData.split('\n')
+                let jsonStr = ''
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        jsonStr += line.slice(6)
+                    }
+                }
+
+                if (jsonStr && eventSource.onmessage) {
+                    try {
+                        const data = JSON.parse(jsonStr)
+                        eventSource.onmessage({ data })
+                    } catch (e) {
+                        // 忽略解析错误
+                    }
+                }
+
+                eventIndex = buffer.indexOf(eventDelimiter)
+            }
+        }
+
+        const read = () => {
+            if (aborted) return
+
+            reader.read().then(({ done, value }) => {
+                if (done || aborted) {
+                    return
+                }
+
+                buffer += decoder.decode(value, { stream: true })
+                processEvents()
+                read()
+            }).catch(error => {
+                if (!aborted && !isAbortError(error) && eventSource.onerror) {
+                    eventSource.onerror(error)
+                }
+            })
+        }
+
+        read()
+    })
+    .catch(error => {
+        if (!aborted && !isAbortError(error) && eventSource.onerror) {
+            eventSource.onerror(error)
+        }
+    })
+
+    return {
+        eventSource,
+        cancel: (abortFetch = true) => {
+            eventSource.close(abortFetch)
+        }
+    }
+}
+
+// 发送消息（SSE 流式响应）- 简化为直接使用 sendChatMessageStream
+export const sendChatMessage = sendChatMessageStream
+
 export default apiClient

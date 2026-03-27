@@ -9,7 +9,7 @@
                 :key="index"
                 :class="['message', msg.type]"
             >
-                <span class="message-content">{{ msg.content }}</span>
+                <div class="message-content" v-html="renderMessageContent(msg.content)"></div>
             </div>
         </div>
         <div class="chat-input">
@@ -21,16 +21,24 @@
                 ref="inputTextarea"
                 v-model="inputText"
                 :placeholder="placeholder"
+                :disabled="disabled"
                 rows="1"
                 @keydown="handleKeydown"
             ></textarea>
-            <button @click="handleSend">发送</button>
+            <button :disabled="isSendDisabled || !inputText.trim()" @click="handleSend">发送</button>
         </div>
     </div>
 </template>
 
 <script setup>
 import {computed, nextTick, ref, watch} from 'vue'
+import {marked} from 'marked'
+import DOMPurify from 'dompurify'
+
+marked.setOptions({
+    gfm: true,
+    breaks: true
+})
 
 const props = defineProps({
     messages: {
@@ -44,6 +52,14 @@ const props = defineProps({
     placeholder: {
         type: String,
         default: '请输入...'
+    },
+    disabled: {
+        type: Boolean,
+        default: false
+    },
+    sendDisabled: {
+        type: Boolean,
+        default: false
     }
 })
 
@@ -88,10 +104,17 @@ const statusText = computed(() => {
     return ''
 })
 
+const isSendDisabled = computed(() => props.disabled || props.sendDisabled)
+
+const renderMessageContent = (content = '') => {
+    const html = marked.parse(content, {async: false})
+    return DOMPurify.sanitize(typeof html === 'string' ? html : '')
+}
+
 const handleKeydown = (e) => {
+    // 任何时候都禁止 Enter 发送（防止误触）
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
-        handleSend()
     }
 }
 
@@ -104,7 +127,7 @@ const autoResize = () => {
 watch(inputText, autoResize)
 
 const handleSend = () => {
-    if (inputText.value.trim()) {
+    if (inputText.value.trim() && !isSendDisabled.value) {
         emit('send', inputText.value.trim())
         inputText.value = ''
         nextTick(() => {
@@ -214,8 +237,58 @@ defineExpose({
 
 .message-content {
     word-break: break-word;
-    white-space: pre-wrap;
     line-height: 1.6;
+}
+
+.message-content :deep(p),
+.message-content :deep(ul),
+.message-content :deep(ol),
+.message-content :deep(pre),
+.message-content :deep(blockquote),
+.message-content :deep(table) {
+    margin: 0 0 10px 0;
+}
+
+.message-content :deep(*:last-child) {
+    margin-bottom: 0;
+}
+
+.message-content :deep(ul),
+.message-content :deep(ol) {
+    padding-left: 20px;
+}
+
+.message-content :deep(code) {
+    font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.message-content :deep(pre) {
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px 12px;
+    overflow-x: auto;
+}
+
+.message-content :deep(pre code) {
+    background: transparent;
+    padding: 0;
+}
+
+.message-content :deep(a) {
+    color: #f0b344;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.message-content :deep(blockquote) {
+    border-left: 3px solid rgba(240, 179, 68, 0.5);
+    padding-left: 10px;
+    color: rgba(255, 255, 255, 0.75);
 }
 
 .message.user .message-content {
@@ -223,7 +296,8 @@ defineExpose({
     border: 1px solid rgba(74, 158, 255, 0.3);
     padding: 10px 14px;
     border-radius: 12px 12px 4px 12px;
-    max-width: 40%;
+    width: fit-content;
+    max-width: min(68%, 100%);
     color: rgba(255, 255, 255, 0.9);
 }
 
@@ -353,5 +427,13 @@ defineExpose({
     font-size: 12px;
     color: rgba(255, 255, 255, 0.6);
     white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .message.user .message-content {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
 }
 </style>

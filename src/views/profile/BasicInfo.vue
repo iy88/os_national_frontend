@@ -111,6 +111,8 @@
                     :on-change="handleFileChange"
                     :on-remove="handleFileRemove"
                     class="avatar-upload"
+                    @dragover="handleDragOver"
+                    @dragleave="handleDragLeave"
                 >
                     <!-- 无文件时显示默认内容 -->
                     <div v-if="!pendingFile" class="upload-content">
@@ -119,7 +121,7 @@
                             <polyline points="17 8 12 3 7 8"/>
                             <line x1="12" x2="12" y1="3" y2="15"/>
                         </svg>
-                        <p>点击或拖拽图片到此处</p>
+                        <p>{{ isDragging ? '松开鼠标上传图片' : '点击或拖拽图片到此处' }}</p>
                         <p class="upload-hint">支持 jpg、png、webp，最大 2MB</p>
                     </div>
                     <!-- 有文件时显示预览背景 -->
@@ -130,7 +132,7 @@
                                 <polyline points="17 8 12 3 7 8"/>
                                 <line x1="12" x2="12" y1="3" y2="15"/>
                             </svg>
-                            <p>点击或拖拽更换图片</p>
+                            <p>{{ isDragging ? '松开鼠标上传图片' : '点击或拖拽更换图片' }}</p>
                             <p class="upload-hint">支持 jpg、png、webp，最大 2MB</p>
                         </div>
                     </div>
@@ -206,6 +208,7 @@ const mobileFileInput = ref(null)
 const showUploadModal = ref(false)
 const pendingFile = ref(null)
 const previewUrl = ref('')
+const isDragging = ref(false)
 
 // 检测移动端
 const isMobile = ref(window.innerWidth <= 480)
@@ -271,6 +274,17 @@ const cancelUpload = () => {
     previewUrl.value = ''
     uploadRef.value?.clearFiles()
     showUploadModal.value = false
+    isDragging.value = false
+}
+
+const handleDragOver = (e) => {
+    e.preventDefault()
+    isDragging.value = true
+}
+
+const handleDragLeave = (e) => {
+    e.preventDefault()
+    isDragging.value = false
 }
 
 const confirmUpload = async () => {
@@ -305,12 +319,17 @@ const cancelEdit = () => {
 
 const saveAll = async () => {
     try {
-        const updateData = {}
+        // 直接用表单数据更新本地状态
         Object.keys(editableFields).forEach(key => {
             if (editingField[key]) {
-                updateData[key] = editForm[key]
+                userInfo.value[key] = editForm[key]
                 editingField[key] = false
             }
+        })
+        // 同时提交到后端保存
+        const updateData = {}
+        Object.keys(editableFields).forEach(key => {
+            updateData[key] = editForm[key]
         })
         await userStore.updateUserProfile(updateData)
         isEditing.value = false
@@ -484,9 +503,10 @@ const saveAll = async () => {
     justify-content: center;
 }
 
-.basic-info .avatar-upload :deep(.el-upload-dragger:hover) {
+.basic-info .avatar-upload :deep(.el-upload-dragger:hover),
+.basic-info .avatar-upload :deep(.el-upload-dragger.is-dragover) {
     border-color: #60a5fa;
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(59, 130, 246, 0.15);
 }
 
 .basic-info .upload-content {

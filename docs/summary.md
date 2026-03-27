@@ -12,8 +12,21 @@
 
 - **旅行探索**: 城市地图浏览、路线规划与收藏
 - **AI 对话**: 与角色进行沉浸式对话互动
+- **电竞文旅助手**: 基于 Agent AI 的旅行规划助手，支持 SSE 流式输出
 - **用户中心**: 个人信息管理、收藏路线管理
 - **故事体验**: 沉浸式故事展示与角色互动
+
+### ChatBox 聊天气泡
+
+- 支持 Markdown 格式自动解析渲染
+- 状态指示器：thinking（黄色脉冲）、streaming（绿色发光）
+- 发送/输入框在处理请求时自动禁用
+
+### 电竞文旅助手 (TravelView)
+
+- **Quick Planners**: 目标城市、旅行天数、出行人数、关系类型、本命英雄筛选
+- 可折叠/展开的筛选面板（底部箭头图标控制）
+- 基于 Agent AI 的 SSE 流式对话响应
 
 ## 项目结构
 
@@ -21,8 +34,15 @@
 src/
 ├── App.vue                    # 主组件，含全局样式和暗色主题配置
 ├── main.js                    # 应用入口
-├── router/index.js            # 路由配置（含 /profile 路由守卫）
-├── stores/user.js            # Pinia 用户状态管理
+├── api/index.js               # API 请求模块
+├── composables/               # Vue Composables
+│   └── useStreamTimers.js     # 流式输出定时器管理
+├── router/index.js             # 路由配置（含 /profile 路由守卫）
+├── stores/user.js             # Pinia 用户状态管理
+├── data/                      # 静态数据
+│   ├── cities.json            # 城市数据
+│   ├── characters.js          # 角色数据
+│   └── geo_city.json          # 地理数据
 ├── views/
 │   ├── TravelView.vue         # 旅行页（首页）
 │   ├── DialogueView.vue       # AI 对话页
@@ -32,12 +52,12 @@ src/
 │       └── FavoriteRoutes.vue # 收藏路线
 └── components/
     ├── Header.vue             # 页头导航
-    ├── LoginModal.vue         # 登录/注册弹窗
-    ├── ChatBox.vue            # 聊天组件
-    ├── StoryModal.vue         # 故事弹窗
-    ├── CharacterCard.vue      # 角色卡片
-    ├── CityMap.vue            # 城市地图
-    └── PhotoGallery.vue       # 照片画廊
+    ├── LoginModal.vue          # 登录/注册弹窗
+    ├── ChatBox.vue             # 聊天组件
+    ├── StoryModal.vue          # 故事弹窗
+    ├── CharacterCard.vue       # 角色卡片
+    ├── CityMap.vue             # 城市地图
+    └── PhotoGallery.vue        # 照片画廊
 ```
 
 ## 路由配置
@@ -91,6 +111,14 @@ src/
 | GET | /user/profile | 获取用户信息 |
 | PUT | /user/profile | 更新用户信息（增量更新） |
 
+#### Agent AI 接口
+
+| 方法 | URL | 说明 |
+|------|-----|------|
+| GET | /agent/travel-route-plan/chat | 获取会话列表 |
+| GET | /agent/travel-route-plan/chat/:sid | 获取会话详情 |
+| POST | /agent/travel-route-plan/message | 发送消息（SSE 流式） |
+
 ### 登录流程
 
 1. 路由守卫检测到访问 `/profile` 且未登录
@@ -142,7 +170,8 @@ src/
 
 ## 最近更新
 
+- 2026-03-28: 添加聊天气泡 Markdown 渲染支持
+- 2026-03-28: Quick Planners 添加可折叠/展开功能（箭头图标）
+- 2026-03-28: 电竞文旅助手对接 Agent AI API，SSE 流式输出
+- 2026-03-27: 完善登录注册表单，优化 UI/UX
 - 2026-03-25: 项目初始化，建立基本架构
-- 2026-03-25: 简化注册表单，仅保留用户名/密码/确认密码/邮箱/验证码，移除基本信息/简介，添加完整表单校验
-- 2026-03-25: 集成后端 API，使用 axios 实现登录/注册/发送验证码请求
-- 2026-03-25: 实现 profile 获取与更新功能，登录/注册后自动获取完整用户信息
