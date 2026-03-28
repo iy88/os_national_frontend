@@ -263,7 +263,7 @@ const handleLogout = () => {
     padding: 10px 0;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 260;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
 }
 
@@ -413,7 +413,7 @@ const handleLogout = () => {
     border-radius: 8px;
     padding: 6px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    z-index: 100;
+    z-index: 320;
     animation: dropdownFadeIn 0.15s ease;
 }
 
@@ -693,6 +693,20 @@ const handleLogout = () => {
 
     .mobile-nav {
         display: flex;
+    }
+}
+
+@media (max-width: 1024px) {
+    .user-dropdown .dropdown-menu {
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+
+    .user-dropdown .dropdown-menu::before {
+        left: auto;
+        right: 16px;
+        transform: rotate(45deg);
     }
 }
 </style>

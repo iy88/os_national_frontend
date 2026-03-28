@@ -1,5 +1,5 @@
 <template>
-    <div class="dialogue-view">
+    <div class="dialogue-view" :style="dialogueViewportStyle">
         <!-- 全屏对话区 -->
         <main class="fullscreen-conversation">
             <!-- PC端左侧边栏 -->
@@ -87,7 +87,8 @@
                     <div class="welcome-circle">
                         <span class="welcome-icon">💬</span>
                     </div>
-                    <p class="welcome-text">从左侧列表选择一位角色，开始对话</p>
+                    <p class="welcome-text mobile-only">点击上方的切换角色按钮</p>
+                    <p class="welcome-text desktop-only">从左侧列表选择一位角色，开始对话</p>
                 </div>
 
                 <!-- 消息区 -->
@@ -196,7 +197,9 @@ const selectedCharacter = ref(null)
 const showAvatarDropdown = ref(false)
 const sidebarScrollbarVisible = ref(false)
 const sidebarDragging = ref(false)
+const dynamicViewportHeight = ref('')
 let sidebarScrollbarHideTimer = null
+let viewportRafId = 0
 
 // 用户滚动检测
 let userHasScrolled = false
@@ -273,6 +276,34 @@ const handleGlobalPointerUp = () => {
 const toggleAvatarDropdown = () => {
     showAvatarDropdown.value = !showAvatarDropdown.value
 }
+
+const updateDynamicViewportHeight = () => {
+    if (typeof window === 'undefined') return
+    const isMobile = window.matchMedia('(max-width: 768px)').matches
+    if (!isMobile) {
+        dynamicViewportHeight.value = ''
+        return
+    }
+
+    const viewportHeight = window.visualViewport?.height || window.innerHeight
+    dynamicViewportHeight.value = `${Math.max(320, Math.round(viewportHeight))}px`
+}
+
+const scheduleViewportHeightUpdate = () => {
+    if (viewportRafId) return
+    viewportRafId = requestAnimationFrame(() => {
+        viewportRafId = 0
+        updateDynamicViewportHeight()
+    })
+}
+
+const dialogueViewportStyle = computed(() => {
+    if (!dynamicViewportHeight.value) return {}
+    return {
+        height: dynamicViewportHeight.value,
+        maxHeight: dynamicViewportHeight.value
+    }
+})
 
 const selectCharacter = (character) => {
     // 清理之前的定时器，防止切换角色后继续执行
@@ -362,15 +393,28 @@ const handleClickOutside = (e) => {
 }
 
 onMounted(() => {
+    updateDynamicViewportHeight()
     document.addEventListener('click', handleClickOutside)
     window.addEventListener('pointerup', handleGlobalPointerUp)
+    window.addEventListener('resize', scheduleViewportHeightUpdate)
+    window.addEventListener('orientationchange', scheduleViewportHeightUpdate)
+    window.visualViewport?.addEventListener('resize', scheduleViewportHeightUpdate)
+    window.visualViewport?.addEventListener('scroll', scheduleViewportHeightUpdate)
 })
 
 onUnmounted(() => {
+    if (viewportRafId) {
+        cancelAnimationFrame(viewportRafId)
+        viewportRafId = 0
+    }
     clearStreamTimers()
     clearSidebarScrollbarHideTimer()
     document.removeEventListener('click', handleClickOutside)
     window.removeEventListener('pointerup', handleGlobalPointerUp)
+    window.removeEventListener('resize', scheduleViewportHeightUpdate)
+    window.removeEventListener('orientationchange', scheduleViewportHeightUpdate)
+    window.visualViewport?.removeEventListener('resize', scheduleViewportHeightUpdate)
+    window.visualViewport?.removeEventListener('scroll', scheduleViewportHeightUpdate)
 })
 </script>
 
@@ -381,7 +425,7 @@ onUnmounted(() => {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(145deg, #1a2b5f 0%, #0d1b2a 100%);
+    background: linear-gradient(145deg, #141e37 0%, #0f1a2a 100%);
     overflow: hidden;
     max-width: 1200px;
     margin: 8px auto;
@@ -409,7 +453,7 @@ onUnmounted(() => {
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    background: linear-gradient(180deg, rgba(26, 43, 95, 0.95), rgba(13, 27, 42, 0.9));
+    background: linear-gradient(180deg, rgba(20, 30, 55, 0.96), rgba(15, 26, 42, 0.92));
     border-right: 1px solid rgba(240, 179, 68, 0.15);
 }
 
@@ -433,7 +477,7 @@ onUnmounted(() => {
     flex: 1;
     min-width: 0;
     padding: 8px 8px;
-    background: rgba(21, 32, 53, 0.6);
+    background: rgba(12, 22, 38, 0.72);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 6px;
     cursor: pointer;
@@ -461,7 +505,7 @@ onUnmounted(() => {
     width: 28px;
     height: 28px;
     flex-shrink: 0;
-    background: rgba(21, 32, 53, 0.8);
+    background: rgba(12, 22, 38, 0.88);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
     cursor: pointer;
@@ -610,7 +654,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(145deg, #1a2b5f 0%, #0d1b2a 100%);
+    background: linear-gradient(145deg, #141e37 0%, #0f1a2a 100%);
     border-bottom: 1px solid rgba(240, 179, 68, 0.15);
 }
 
@@ -623,7 +667,7 @@ onUnmounted(() => {
 
 .switch-btn {
     padding: 8px 16px;
-    background: rgba(21, 32, 53, 0.8);
+    background: rgba(12, 22, 38, 0.88);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     color: rgba(255, 255, 255, 0.8);
@@ -642,11 +686,16 @@ onUnmounted(() => {
     display: none;
 }
 
+/* 移动端隐藏桌面端元素 */
+.desktop-only {
+    display: block;
+}
+
 /* 角色信息展示条 */
 .char-info-strip {
     flex-shrink: 0;
     padding: 10px 12px;
-    background: linear-gradient(145deg, #1a2b5f 0%, #0d1b2a 100%);
+    background: linear-gradient(145deg, #141e37 0%, #0f1a2a 100%);
     border-bottom: 1px solid rgba(240, 179, 68, 0.15);
     display: flex;
     align-items: center;
@@ -1135,15 +1184,18 @@ onUnmounted(() => {
 /* 移动端适配 - 隐藏侧边栏，使用原来的布局 */
 @media (max-width: 768px) {
     .dialogue-view {
-        height: auto;
-        max-height: none;
+        height: 100%;
+        max-height: 100%;
         margin: 0 auto;
         border: none;
         border-radius: 0;
+        overflow: hidden;
     }
 
     .fullscreen-conversation {
         flex-direction: column;
+        height: 100%;
+        min-height: 0;
     }
 
     .sidebar {
@@ -1152,6 +1204,7 @@ onUnmounted(() => {
 
     .chat-area {
         width: 100%;
+        min-height: 0;
     }
 
     .welcome-state {
@@ -1161,6 +1214,10 @@ onUnmounted(() => {
 
     .mobile-only {
         display: flex;
+    }
+
+    .desktop-only {
+        display: none;
     }
 
     .page-header {
@@ -1184,6 +1241,8 @@ onUnmounted(() => {
     }
 
     .messages-area {
+        flex: 1;
+        min-height: 0;
         padding: 16px;
     }
 

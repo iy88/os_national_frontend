@@ -116,7 +116,7 @@ const goToTravel = () => {
     align-items: center;
     gap: 16px;
     padding: 20px 24px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(20, 30, 55, 0.52);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
     flex: 1;
@@ -132,8 +132,8 @@ const goToTravel = () => {
 }
 
 .stat-icon.blue {
-    background: rgba(45, 92, 246, 0.15);
-    color: #2d5cf6;
+    background: rgba(74, 158, 255, 0.16);
+    color: #4a9eff;
 }
 
 .stat-icon svg {
@@ -161,7 +161,7 @@ const goToTravel = () => {
 
 /* 收藏列表 */
 .routes-section {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(20, 30, 55, 0.52);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
     padding: 24px;

@@ -83,7 +83,17 @@
                 :send-disabled="isProcessing"
                 placeholder="描述旅行需求..."
                 @send="sendTravelMessage"
-            />
+                @copy="handleCopyMessage"
+                @favorite="handleFavoriteMessage"
+                @navigate="handleNavigateToDetail"
+            >
+                <div v-if="travelMessages.length === 0" class="chat-welcome">
+                    <div class="welcome-circle">
+                        <span class="welcome-icon">✈️</span>
+                    </div>
+                    <p class="welcome-text">告诉我您的旅行需求，我来帮您规划</p>
+                </div>
+            </ChatBox>
         </aside>
 
         <!-- 城市详情弹窗 -->
@@ -179,6 +189,7 @@ import ChatBox from '../components/ChatBox.vue'
 import citiesData from '../data/cities.json'
 import {useStreamTimers} from '../composables/useStreamTimers'
 import {sendChatMessage} from '../api'
+import {ElMessage} from 'element-plus'
 
 // 城市数据列表（直接使用 cities.json）
 const cityDataList = citiesData
@@ -235,6 +246,24 @@ const triggerMapReflow = () => {
     })
 }
 
+// 消息操作处理
+const handleCopyMessage = async (content) => {
+    try {
+        await navigator.clipboard.writeText(content)
+        ElMessage.success('已复制到剪贴板')
+    } catch {
+        ElMessage.error('复制失败')
+    }
+}
+
+const handleFavoriteMessage = () => {
+    ElMessage.info('已收藏')
+}
+
+const handleNavigateToDetail = () => {
+    ElMessage.info('跳转详细规划页面')
+}
+
 const updateDialogWidth = () => {
     if (typeof window === 'undefined') return
     const viewportWidth = window.innerWidth
@@ -264,9 +293,16 @@ watch([chatOpen, isDesktopLayout], () => {
 
 const travelMessages = ref([
     {
-        type: 'character', content: `欢迎来到电竞文旅助手！🎮
-
-我是您的专属电竞文旅规划师，熟悉各大电竞城市特色、KPL赛事资讯以及王者荣耀联动打卡点。无论您是想规划路线、了解电竞文化还是获取观赛攻略，都可以告诉我！`
+        type: 'user', content: '推荐一条上海的电竞文旅路线'
+    },
+    {
+        type: 'character', content: '上海电竞文旅路线推荐 ✈️\n\n**第一天**\n- 上午：前往上海电竞中心，参观电竞文化展\n- 下午：KPL赛事场馆观赛体验\n- 晚上：上海外滩夜景打卡\n\n**第二天**\n- 上午：王荣耀主题咖啡厅\n- 下午：电竞酒店体验\n- 晚上：返程\n\n需要我详细规划某个环节吗？'
+    },
+    {
+        type: 'user', content: '推荐一条上海的电竞文旅路线'
+    },
+    {
+        type: 'character', content: '上海电竞文旅路线推荐 ✈️\n\n**第一天**\n- 上午：前往上海电竞中心，参观电竞文化展\n- 下午：KPL赛事场馆观赛体验\n- 晚上：上海外滩夜景打卡\n\n**第二天**\n- 上午：王荣耀主题咖啡厅\n- 下午：电竞酒店体验\n- 晚上：返程\n\n需要我详细规划某个环节吗？'
     }
 ])
 
@@ -549,6 +585,60 @@ ${text}
     flex: 1;
     min-height: 0;
     max-height: none;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 欢迎状态 */
+.chat-welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px;
+    text-align: center;
+}
+
+.welcome-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(30, 45, 80, 0.6);
+    border: 2px solid rgba(240, 179, 68, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.welcome-circle::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    border: 1px dashed rgba(240, 179, 68, 0.2);
+    animation: spin 30s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.welcome-icon {
+    font-size: 2rem;
+    opacity: 0.7;
+}
+
+.welcome-text {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+    max-width: 240px;
+    line-height: 1.6;
+    margin: 0;
 }
 
 /* 聊天头部 */

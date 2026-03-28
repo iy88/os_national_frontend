@@ -4,7 +4,7 @@
             <!-- 可缩放拖拽的地图容器 -->
             <div
                 ref="containerRef"
-                class="map-container"
+                :class="['map-container', {interacting: isInteracting}]"
                 @mousedown="handleMouseDown"
                 @mouseleave="handleMouseUp"
                 @mousemove="handleMouseMove"
@@ -118,6 +118,16 @@ const clampViewWidth = (nextWidth) => {
 const isDragging = ref(false)
 const dragStartX = ref(0)
 const dragStartY = ref(0)
+const isInteracting = ref(false)
+
+// 交互更新节流：将高频移动/缩放合并到每帧一次
+let panRafId = 0
+let panPointerX = 0
+let panPointerY = 0
+let pinchRafId = 0
+let pinchDistance = 0
+let pinchCenterX = 0
+let pinchCenterY = 0
 
 // 提示显示
 const showHint = ref(true)
@@ -248,6 +258,69 @@ const getContainerScale = () => {
     }
 }
 
+const flushPanMove = () => {
+    panRafId = 0
+    const {scaleX, scaleY} = getContainerScale()
+    if (scaleX === 0 || scaleY === 0) return
+
+    const dx = panPointerX - dragStartX.value
+    const dy = panPointerY - dragStartY.value
+
+    vbX.value = vbX.value - dx / scaleX
+    vbY.value = vbY.value - dy / scaleY
+
+    dragStartX.value = panPointerX
+    dragStartY.value = panPointerY
+}
+
+const queuePanMove = (x, y) => {
+    panPointerX = x
+    panPointerY = y
+    if (panRafId) return
+    panRafId = requestAnimationFrame(flushPanMove)
+}
+
+const flushPinchZoom = () => {
+    pinchRafId = 0
+    if (vbW.value === 0 || vbH.value === 0 || lastTouchDistance.value <= 0 || pinchDistance <= 0) return
+
+    const scaleFactor = lastTouchDistance.value / pinchDistance
+    const aspect = vbH.value / vbW.value
+    const newW = clampViewWidth(vbW.value * scaleFactor)
+    const newH = newW * aspect
+
+    const container = containerRef.value
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0 || newW === 0 || newH === 0) return
+
+    const oldScaleX = rect.width / vbW.value
+    const oldScaleY = rect.height / vbH.value
+    const newScaleX = rect.width / newW
+    const newScaleY = rect.height / newH
+    if (oldScaleX === 0 || oldScaleY === 0 || newScaleX === 0 || newScaleY === 0) return
+
+    const centerSvgX = (pinchCenterX - rect.left) / oldScaleX + vbX.value
+    const centerSvgY = (pinchCenterY - rect.top) / oldScaleY + vbY.value
+
+    vbX.value = centerSvgX - (oldScaleX / newScaleX) * (centerSvgX - vbX.value)
+    vbY.value = centerSvgY - (oldScaleY / newScaleY) * (centerSvgY - vbY.value)
+    vbW.value = newW
+    vbH.value = newH
+
+    lastTouchDistance.value = pinchDistance
+    lastTouchCenterX.value = pinchCenterX
+    lastTouchCenterY.value = pinchCenterY
+}
+
+const queuePinchZoom = (distance, centerX, centerY) => {
+    pinchDistance = distance
+    pinchCenterX = centerX
+    pinchCenterY = centerY
+    if (pinchRafId) return
+    pinchRafId = requestAnimationFrame(flushPinchZoom)
+}
+
 // 滚轮缩放 - 以鼠标位置为中心缩放
 const handleWheel = (e) => {
     e.preventDefault()
@@ -296,6 +369,7 @@ const handleMouseDown = (e) => {
     if (e.button !== 0) return
 
     isDragging.value = true
+    isInteracting.value = true
     dragStartX.value = e.clientX
     dragStartY.value = e.clientY
 
@@ -305,27 +379,13 @@ const handleMouseDown = (e) => {
 // 鼠标移动拖拽 - 1:1跟随鼠标移动
 const handleMouseMove = (e) => {
     if (!isDragging.value) return
-
-    const {scaleX, scaleY} = getContainerScale()
-    // 防止scale为0
-    if (scaleX === 0 || scaleY === 0) return
-
-    // 鼠标在屏幕上的移动量（像素）
-    const dx = e.clientX - dragStartX.value
-    const dy = e.clientY - dragStartY.value
-
-    // 将屏幕像素转换为SVG单位（考虑当前缩放）
-    vbX.value = vbX.value - dx / scaleX
-    vbY.value = vbY.value - dy / scaleY
-
-    // 更新拖拽起点为当前位置（连续拖拽时保持1:1）
-    dragStartX.value = e.clientX
-    dragStartY.value = e.clientY
+    queuePanMove(e.clientX, e.clientY)
 }
 
 // 鼠标释放停止拖拽
 const handleMouseUp = () => {
     isDragging.value = false
+    isInteracting.value = false
 }
 
 // 恢复初始视图
@@ -363,6 +423,7 @@ const getTouchCenter = (touches) => {
 // 触摸开始
 const handleTouchStart = (e) => {
     showHint.value = false
+    isInteracting.value = true
 
     if (e.touches.length === 1) {
         isDragging.value = true
@@ -384,67 +445,11 @@ const handleTouchMove = (e) => {
 
     if (e.touches.length === 1 && isDragging.value) {
         const touch = e.touches[0]
-        const container = containerRef.value
-        if (!container) return
-
-        const {scaleX, scaleY} = getContainerScale()
-        // 防止scale为0
-        if (scaleX === 0 || scaleY === 0) return
-
-        // 触摸在屏幕上的移动量（像素）
-        const dx = touch.clientX - dragStartX.value
-        const dy = touch.clientY - dragStartY.value
-
-        // 将屏幕像素转换为SVG单位
-        vbX.value = vbX.value - dx / scaleX
-        vbY.value = vbY.value - dy / scaleY
-
-        // 更新拖拽起点
-        dragStartX.value = touch.clientX
-        dragStartY.value = touch.clientY
+        queuePanMove(touch.clientX, touch.clientY)
     } else if (e.touches.length === 2) {
-        // 双指缩放
-        if (vbW.value === 0 || vbH.value === 0) return
-
         const newDistance = getTouchDistance(e.touches)
         const center = getTouchCenter(e.touches)
-
-        if (lastTouchDistance.value > 0 && newDistance > 0) {
-            // 捏合缩小（newDistance < lastDistance），展开放大
-            const scaleFactor = lastTouchDistance.value / newDistance
-            const aspect = vbH.value / vbW.value
-            const newW = clampViewWidth(vbW.value * scaleFactor)
-            const newH = newW * aspect
-
-            // 以双指中心点为缩放中心
-            const container = containerRef.value
-            if (!container) return
-            const rect = container.getBoundingClientRect()
-            // 防止除零
-            if (rect.width === 0 || rect.height === 0 || newW === 0 || newH === 0) return
-            const oldScaleX = rect.width / vbW.value
-            const oldScaleY = rect.height / vbH.value
-            const newScaleX = rect.width / newW
-            const newScaleY = rect.height / newH
-
-            // 防止除零
-            if (oldScaleX === 0 || oldScaleY === 0 || newScaleX === 0 || newScaleY === 0) return
-
-            // 计算双指中心点在旧缩放下的SVG坐标（保持此位置不动）
-            const centerSvgX = (center.x - rect.left) / oldScaleX + vbX.value
-            const centerSvgY = (center.y - rect.top) / oldScaleY + vbY.value
-
-            // 缩放后，让中心SVG点保持在新视图的同一位置
-            // newScaleX * (centerSvgX - newVbX) = oldScaleX * (centerSvgX - oldVbX)
-            vbX.value = centerSvgX - (oldScaleX / newScaleX) * (centerSvgX - vbX.value)
-            vbY.value = centerSvgY - (oldScaleY / newScaleY) * (centerSvgY - vbY.value)
-            vbW.value = newW
-            vbH.value = newH
-        }
-
-        lastTouchDistance.value = newDistance
-        lastTouchCenterX.value = center.x
-        lastTouchCenterY.value = center.y
+        queuePinchZoom(newDistance, center.x, center.y)
     }
 }
 
@@ -452,9 +457,11 @@ const handleTouchMove = (e) => {
 const handleTouchEnd = (e) => {
     if (e.touches.length === 0) {
         isDragging.value = false
+        isInteracting.value = false
         lastTouchDistance.value = 0
     } else if (e.touches.length === 1) {
         isDragging.value = true
+        isInteracting.value = true
         const touch = e.touches[0]
         dragStartX.value = touch.clientX
         dragStartY.value = touch.clientY
@@ -536,6 +543,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+    if (panRafId) cancelAnimationFrame(panRafId)
+    if (pinchRafId) cancelAnimationFrame(pinchRafId)
     window.removeEventListener('resize', initializeMainlandView)
 })
 </script>
@@ -632,6 +641,16 @@ onUnmounted(() => {
     animation: pulse 2s infinite;
 }
 
+.map-container.interacting .city-marker .pulse-ring {
+    animation: none;
+    opacity: 0.3;
+}
+
+.map-container.interacting .city-marker .marker-dot,
+.map-container.interacting .city-marker:hover .marker-dot {
+    filter: none;
+}
+
 .city-marker .city-label {
     fill: #fff;
     font-size: 12px;
@@ -706,6 +725,7 @@ onUnmounted(() => {
     pointer-events: none;
     animation: fadeInOut 3s ease-in-out;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 220;
 }
 
 @keyframes fadeInOut {
@@ -761,6 +781,17 @@ onUnmounted(() => {
 
     .city-marker .pulse-ring {
         r: 8;
+    }
+}
+
+@media (pointer: coarse) {
+    .city-marker .pulse-ring {
+        animation: none;
+    }
+
+    .city-marker .marker-dot,
+    .city-marker:hover .marker-dot {
+        filter: none;
     }
 }
 </style>

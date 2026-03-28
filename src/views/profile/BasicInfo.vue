@@ -348,7 +348,7 @@ const saveAll = async () => {
 }
 
 .info-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(20, 30, 55, 0.52);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
     padding: 24px;
@@ -490,8 +490,8 @@ const saveAll = async () => {
 }
 
 .basic-info .avatar-upload :deep(.el-upload-dragger) {
-    background: rgba(59, 130, 246, 0.05);
-    border: 2px dashed #3b82f6;
+    background: rgba(74, 158, 255, 0.08);
+    border: 2px dashed rgba(74, 158, 255, 0.65);
     border-radius: 8px;
     padding: 0;
     transition: all 0.2s;
@@ -505,8 +505,8 @@ const saveAll = async () => {
 
 .basic-info .avatar-upload :deep(.el-upload-dragger:hover),
 .basic-info .avatar-upload :deep(.el-upload-dragger.is-dragover) {
-    border-color: #60a5fa;
-    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(74, 158, 255, 0.9);
+    background: rgba(74, 158, 255, 0.2);
 }
 
 .basic-info .upload-content {
@@ -635,8 +635,8 @@ const saveAll = async () => {
 
 /* 移动端上传区域 */
 .basic-info .mobile-upload {
-    background: rgba(59, 130, 246, 0.05);
-    border: 2px dashed #3b82f6;
+    background: rgba(74, 158, 255, 0.08);
+    border: 2px dashed rgba(74, 158, 255, 0.65);
     border-radius: 8px;
     padding: 48px 32px;
     text-align: center;
@@ -645,8 +645,8 @@ const saveAll = async () => {
 }
 
 .basic-info .mobile-upload:hover {
-    border-color: #60a5fa;
-    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(74, 158, 255, 0.9);
+    background: rgba(74, 158, 255, 0.15);
 }
 
 .basic-info .mobile-upload svg {

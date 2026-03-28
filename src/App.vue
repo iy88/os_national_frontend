@@ -24,11 +24,26 @@ const userStore = useUserStore()
     box-sizing: border-box;
 }
 
+html {
+    scrollbar-gutter: stable;
+}
+
 body {
     font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
-    background: linear-gradient(145deg, #1a2b5f 0%, #0d1b2a 100%);
+    background:
+        radial-gradient(circle at 70% 60%, rgba(74, 158, 255, 0.08) 0%, transparent 36%),
+        linear-gradient(180deg, #141e37 0%, #0f1a2a 100%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: auto, auto, 50px 50px, 50px 50px;
+    background-attachment: fixed;
     color: #fff;
     min-height: 100vh;
+}
+
+/* Element Plus lock-scroll 会给 body 加压缩宽度，导致底层布局横向抖动。 */
+body.el-popup-parent--hidden {
+    width: 100% !important;
 }
 
 #app {

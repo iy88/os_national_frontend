@@ -136,7 +136,7 @@ const handleLogout = () => {
 .profile-sidebar {
     width: 260px;
     flex-shrink: 0;
-    background: rgba(30, 45, 80, 0.5);
+    background: rgba(20, 30, 55, 0.62);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 12px;
     padding: 20px;
@@ -335,7 +335,7 @@ const handleLogout = () => {
 }
 
 .content-card {
-    background: rgba(30, 45, 80, 0.5);
+    background: rgba(20, 30, 55, 0.62);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 12px;
     width: 100%;
