@@ -2,15 +2,15 @@
     <header class="app-header">
         <div class="header-content">
             <div class="logo-section">
+                <div class="brand-icon">🏆</div>
                 <h1 class="logo">城竞共生</h1>
-                <p class="subtitle">电竞文旅 · 沉浸体验</p>
             </div>
             <div class="nav-tabs">
                 <button
                     :class="['tab-btn', { active: activeTab === 'travel' }]"
                     @click="$router.push('/travel')"
                 >
-                    文旅交互
+                    文旅探索
                 </button>
                 <button
                     :class="['tab-btn', { active: activeTab === 'dialogue' }]"
@@ -258,9 +258,9 @@ const handleLogout = () => {
 <!--suppress CssUnusedSymbol -->
 <style scoped>
 .app-header {
-    background: rgba(20, 30, 55, 0.95);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 16px 0;
+    background: rgba(15, 26, 42, 0.96);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 0;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -277,65 +277,63 @@ const handleLogout = () => {
 }
 
 .logo-section {
-    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f0b344 0%, #e63946 100%);
+    font-size: 0.88rem;
 }
 
 .logo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f0b344;
     margin: 0;
-    filter: drop-shadow(0 0 8px rgba(240, 179, 68, 0.3));
-}
-
-.subtitle {
-    color: rgba(240, 179, 68, 0.8);
-    font-size: 0.85rem;
-    margin: 4px 0 0 0;
+    letter-spacing: 0.2px;
 }
 
 .nav-tabs {
     display: flex;
-    gap: 12px;
+    gap: 6px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .tab-btn {
-    padding: 10px 22px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid transparent;
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.84rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .tab-btn:hover {
-    background: rgba(240, 179, 68, 0.1);
-    border-color: rgba(240, 179, 68, 0.3);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25),
-    0 0 12px rgba(240, 179, 68, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .tab-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3),
-    inset 0 2px 4px rgba(0, 0, 0, 0.15);
+    transform: none;
 }
 
 .tab-btn.active {
-    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: rgba(240, 179, 68, 0.1);
+    color: #f0b344;
+    border-color: rgba(240, 179, 68, 0.3);
 }
 
 .login-btn {

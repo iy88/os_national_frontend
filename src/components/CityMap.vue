@@ -1,6 +1,5 @@
 <template>
     <div class="city-map">
-        <h2 class="section-title">电竞文旅地图</h2>
         <div class="map-wrapper">
             <!-- 可缩放拖拽的地图容器 -->
             <div
@@ -69,7 +68,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue'
+import {nextTick, onMounted, onUnmounted, ref} from 'vue'
 import citiesData from '../data/cities.json'
 
 const emit = defineEmits(['select-city'])
@@ -93,7 +92,11 @@ const MAX_VIEW_WIDTH_RATIO = 2.2
 
 // 计算当前viewBox字符串
 const computeViewBox = () => {
-    return `${vbX.value} ${vbY.value} ${vbW.value} ${vbH.value}`
+    const safeX = Number.isFinite(vbX.value) ? vbX.value : 0
+    const safeY = Number.isFinite(vbY.value) ? vbY.value : 0
+    const safeW = Number.isFinite(vbW.value) && vbW.value > 0 ? vbW.value : SVG_WIDTH
+    const safeH = Number.isFinite(vbH.value) && vbH.value > 0 ? vbH.value : SVG_HEIGHT
+    return `${safeX} ${safeY} ${safeW} ${safeH}`
 }
 
 // 基于初始大陆视图计算当前设备下的动态缩放上下限
@@ -235,6 +238,9 @@ const getContainerScale = () => {
     const container = containerRef.value
     if (!container) return {scaleX: 1, scaleY: 1}
     const rect = container.getBoundingClientRect()
+    if (rect.width <= 0 || rect.height <= 0 || vbW.value <= 0 || vbH.value <= 0) {
+        return {scaleX: 1, scaleY: 1}
+    }
     return {
         scaleX: rect.width / vbW.value,
         scaleY: rect.height / vbH.value
@@ -250,9 +256,15 @@ const handleWheel = (e) => {
     if (!container) return
 
     const rect = container.getBoundingClientRect()
+    // 防止容器尺寸为0时出现除零错误
+    if (rect.width === 0 || rect.height === 0 || vbW.value === 0 || vbH.value === 0) return
+
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
     const {scaleX, scaleY} = getContainerScale()
+
+    // 防止scale为0
+    if (scaleX === 0 || scaleY === 0) return
 
     // 鼠标在SVG坐标系中的绝对位置
     const svgX = vbX.value + mouseX / scaleX
@@ -267,6 +279,9 @@ const handleWheel = (e) => {
     const newH = newW * aspect
     const newScaleX = rect.width / newW
     const newScaleY = rect.height / newH
+
+    // 防止newScale为0
+    if (newScaleX === 0 || newScaleY === 0) return
 
     // 计算新的viewBox起点，使鼠标位置保持不变
     vbX.value = svgX - mouseX / newScaleX
@@ -291,6 +306,8 @@ const handleMouseMove = (e) => {
     if (!isDragging.value) return
 
     const {scaleX, scaleY} = getContainerScale()
+    // 防止scale为0
+    if (scaleX === 0 || scaleY === 0) return
 
     // 鼠标在屏幕上的移动量（像素）
     const dx = e.clientX - dragStartX.value
@@ -370,6 +387,8 @@ const handleTouchMove = (e) => {
         if (!container) return
 
         const {scaleX, scaleY} = getContainerScale()
+        // 防止scale为0
+        if (scaleX === 0 || scaleY === 0) return
 
         // 触摸在屏幕上的移动量（像素）
         const dx = touch.clientX - dragStartX.value
@@ -384,6 +403,8 @@ const handleTouchMove = (e) => {
         dragStartY.value = touch.clientY
     } else if (e.touches.length === 2) {
         // 双指缩放
+        if (vbW.value === 0 || vbH.value === 0) return
+
         const newDistance = getTouchDistance(e.touches)
         const center = getTouchCenter(e.touches)
 
@@ -398,10 +419,15 @@ const handleTouchMove = (e) => {
             const container = containerRef.value
             if (!container) return
             const rect = container.getBoundingClientRect()
+            // 防止除零
+            if (rect.width === 0 || rect.height === 0 || newW === 0 || newH === 0) return
             const oldScaleX = rect.width / vbW.value
             const oldScaleY = rect.height / vbH.value
             const newScaleX = rect.width / newW
             const newScaleY = rect.height / newH
+
+            // 防止除零
+            if (oldScaleX === 0 || oldScaleY === 0 || newScaleX === 0 || newScaleY === 0) return
 
             // 计算双指中心点在旧缩放下的SVG坐标（保持此位置不动）
             const centerSvgX = (center.x - rect.left) / oldScaleX + vbX.value
@@ -456,12 +482,15 @@ const initializeMainlandView = () => {
     if (!container) return
 
     const rect = container.getBoundingClientRect()
+    if (rect.width <= 0 || rect.height <= 0) return
     const containerAspect = rect.width / rect.height
+    if (!Number.isFinite(containerAspect) || containerAspect <= 0) return
     const bounds = mainlandBounds.value
 
     // 计算大陆边界尺寸
     const boundsWidth = bounds.maxX - bounds.minX
     const boundsHeight = bounds.maxY - bounds.minY
+    if (boundsWidth <= 0 || boundsHeight <= 0) return
     const boundsAspect = boundsWidth / boundsHeight
 
     let newW, newH
@@ -493,48 +522,67 @@ const initializeMainlandView = () => {
 }
 
 onMounted(() => {
-    extractSvgPaths()
+    nextTick(() => {
+        extractSvgPaths()
+    })
+
+    window.addEventListener('resize', initializeMainlandView)
 
     // 3秒后隐藏提示
     setTimeout(() => {
         showHint.value = false
     }, 3000)
 })
+
+onUnmounted(() => {
+    window.removeEventListener('resize', initializeMainlandView)
+})
 </script>
 
 <!--suppress CssInvalidPropertyValue -->
 <style scoped>
 .city-map {
-    background: rgba(30, 45, 80, 0.5);
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #141e37 0%, #0f1a2a 100%);
     border-radius: 10px;
-    padding: 24px;
     border: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
-.section-title {
-    color: #fff;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 18px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
 }
 
 .map-wrapper {
     position: relative;
+    flex: 1;
+    min-height: 0;
 }
 
 .map-container {
-    height: 500px;
-    background: linear-gradient(145deg, rgba(25, 40, 75, 0.8) 0%, rgba(15, 25, 45, 0.9) 100%);
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background:
+        radial-gradient(circle at 30% 40%, rgba(240, 179, 68, 0.1) 0%, transparent 42%),
+        radial-gradient(circle at 70% 60%, rgba(74, 158, 255, 0.08) 0%, transparent 36%),
+        linear-gradient(180deg, #141e37 0%, #0f1a2a 100%);
     cursor: grab;
     user-select: none;
+}
+
+.map-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
 }
 
 .map-container:active {
@@ -542,6 +590,8 @@ onMounted(() => {
 }
 
 .china-map-svg {
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: 100%;
 }
@@ -679,21 +729,7 @@ onMounted(() => {
 /* 移动端适配 */
 @media (max-width: 768px) {
     .city-map {
-        padding: 16px;
-    }
-
-    .section-title {
-        font-size: 1.1rem;
-        margin-bottom: 12px;
-    }
-
-    .map-container {
-        height: 400px;
-        /* 增强触摸反馈 */
-        touch-action: none;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        user-select: none;
+        border-radius: 0;
     }
 
     .reset-btn {
@@ -724,19 +760,6 @@ onMounted(() => {
 
     .city-marker .pulse-ring {
         r: 8;
-    }
-}
-
-@media (max-width: 480px) {
-    .map-container {
-        height: 320px;
-    }
-
-    .reset-btn {
-        bottom: 10px;
-        right: 10px;
-        width: 36px;
-        height: 36px;
     }
 }
 </style>

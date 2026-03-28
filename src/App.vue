@@ -48,7 +48,18 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    height: 100%;
     padding: 0;
+    overflow: hidden;
+}
+
+/* 让所有直接子元素（如 router-view）填充剩余高度 */
+.main-content > * {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* 全局滚动条样式 */

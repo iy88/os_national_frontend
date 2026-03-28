@@ -1,6 +1,90 @@
 <template>
     <div class="travel-view">
-        <CityMap @select-city="showCityDetail"/>
+        <!-- 地图区域 -->
+        <section class="map-section" :class="{ 'chat-open': chatOpen && isDesktopLayout }">
+            <div class="map-host">
+                <CityMap @select-city="showCityDetail"/>
+            </div>
+        </section>
+
+        <!-- 侧边聊天浮窗 -->
+        <aside class="chat-sidebar" :class="{ open: chatOpen, mobile: !isDesktopLayout }">
+            <button
+                class="chat-toggle-btn"
+                type="button"
+                :aria-label="chatOpen ? '收起助手' : '展开助手'"
+                @click="chatOpen = !chatOpen"
+            >
+                <span class="toggle-icon">💬</span>
+                <span class="toggle-label">助手</span>
+                <span v-if="!chatOpen" class="toggle-badge"></span>
+            </button>
+
+            <!-- 聊天头部 -->
+            <div class="chat-header">
+                <div class="chat-icon">🤖</div>
+                <div class="chat-info">
+                    <h3>电竞文旅助手</h3>
+                    <p>在线 · 基于AI规划</p>
+                </div>
+                <button class="close-btn" type="button" @click="chatOpen = false">✕</button>
+            </div>
+
+            <!-- 快速规划选项 -->
+            <div class="planners-bar">
+                <div class="planner-item">
+                    <label>目标</label>
+                    <el-select v-model="selectedCity" clearable placeholder="可选">
+                        <el-option
+                            v-for="(name, key) in cityMap"
+                            :key="key"
+                            :label="name"
+                            :value="key"
+                        />
+                    </el-select>
+                </div>
+                <div class="planner-item">
+                    <label>天数</label>
+                    <el-select v-model="travelDays" clearable placeholder="可选">
+                        <el-option :value="1" label="1天"/>
+                        <el-option :value="2" label="2天"/>
+                        <el-option :value="3" label="3天"/>
+                        <el-option :value="4" label="4天"/>
+                        <el-option :value="5" label="5天"/>
+                        <el-option :value="6" label="6天"/>
+                        <el-option :value="7" label="7天"/>
+                    </el-select>
+                </div>
+                <div class="planner-item">
+                    <label>人数</label>
+                    <el-select v-model="travelPeople" clearable placeholder="可选">
+                        <el-option :value="1" label="1人"/>
+                        <el-option :value="2" label="2人"/>
+                        <el-option :value="3" label="3-5人"/>
+                        <el-option :value="5" label="5-10人"/>
+                        <el-option :value="10" label="10人以上"/>
+                    </el-select>
+                </div>
+                <div class="planner-item">
+                    <label>类型</label>
+                    <el-select v-model="travelRelationship" clearable placeholder="可选">
+                        <el-option label="好友同行" value="好友同行"/>
+                        <el-option label="情侣出游" value="情侣出游"/>
+                        <el-option label="家庭出行" value="家庭出行"/>
+                        <el-option label="独自旅行" value="独自旅行"/>
+                    </el-select>
+                </div>
+            </div>
+
+            <!-- 聊天消息区域 -->
+            <ChatBox
+                ref="chatBoxRef"
+                :messages="travelMessages"
+                :send-disabled="isProcessing"
+                placeholder="描述旅行需求..."
+                @send="sendTravelMessage"
+            />
+        </aside>
 
         <!-- 城市详情弹窗 -->
         <el-dialog
@@ -84,87 +168,6 @@
                 </div>
             </div>
         </el-dialog>
-
-        <!-- 电竞文旅助手 -->
-        <div class="travel-chat-section">
-            <h2 class="section-title">电竞文旅助手</h2>
-
-            <!-- 快速规划选项 -->
-            <div class="quick-planners-wrap">
-                <transition name="planner-collapse">
-                    <div v-show="!plannersCollapsed" class="quick-planners">
-                        <div class="planner-item">
-                            <label>目标城市</label>
-                            <el-select v-model="selectedCity" clearable placeholder="可选" style="width: 100%">
-                                <el-option
-                                    v-for="(name, key) in cityMap"
-                                    :key="key"
-                                    :label="name"
-                                    :value="key"
-                                />
-                            </el-select>
-                        </div>
-                        <div class="planner-item">
-                            <label>旅行天数</label>
-                            <el-select v-model="travelDays" clearable placeholder="可选" style="width: 100%">
-                                <el-option :value="1" label="1天"/>
-                                <el-option :value="2" label="2天"/>
-                                <el-option :value="3" label="3天"/>
-                                <el-option :value="4" label="4天"/>
-                                <el-option :value="5" label="5天"/>
-                                <el-option :value="6" label="6天"/>
-                                <el-option :value="7" label="7天"/>
-                            </el-select>
-                        </div>
-                        <div class="planner-item">
-                            <label>出行人数</label>
-                            <el-select v-model="travelPeople" clearable placeholder="可选" style="width: 100%">
-                                <el-option :value="1" label="1人"/>
-                                <el-option :value="2" label="2人"/>
-                                <el-option :value="3" label="3-5人"/>
-                                <el-option :value="5" label="5-10人"/>
-                                <el-option :value="10" label="10人以上"/>
-                            </el-select>
-                        </div>
-                        <div class="planner-item">
-                            <label>关系类型</label>
-                            <el-select v-model="travelRelationship" clearable placeholder="可选" style="width: 100%">
-                                <el-option label="好友同行" value="好友同行"/>
-                                <el-option label="情侣出游" value="情侣出游"/>
-                                <el-option label="家庭出行" value="家庭出行"/>
-                                <el-option label="独自旅行" value="独自旅行"/>
-                            </el-select>
-                        </div>
-                        <div class="planner-item">
-                            <label>本命英雄</label>
-                            <el-select v-model="favoriteHero" clearable placeholder="可选" style="width: 100%">
-                                <el-option label="李白" value="李白"/>
-                                <el-option label="武则天" value="武则天"/>
-                                <el-option label="诸葛亮" value="诸葛亮"/>
-                            </el-select>
-                        </div>
-                    </div>
-                </transition>
-
-                <button
-                    class="quick-planners-toggle"
-                    type="button"
-                    :aria-label="plannersCollapsed ? '展开快速规划选项' : '收起快速规划选项'"
-                    @click="plannersCollapsed = !plannersCollapsed"
-                >
-                    <span class="toggle-text">快速规划</span>
-                    <span :class="['toggle-chevron', plannersCollapsed ? 'down' : 'up']"></span>
-                </button>
-            </div>
-
-            <ChatBox
-                ref="chatBoxRef"
-                :messages="travelMessages"
-                :send-disabled="isProcessing"
-                placeholder="请输入..."
-                @send="sendTravelMessage"
-            />
-        </div>
     </div>
 </template>
 
@@ -187,12 +190,15 @@ const cityMap = Object.entries(citiesData).reduce((acc, [key, city]) => {
     return acc
 }, {})
 
+// 聊天侧边栏开关
+const chatOpen = ref(true)
+const isDesktopLayout = ref(true)
+const SIDEBAR_WIDTH = 380
+
 const selectedCity = ref('')
 const travelDays = ref(null)
 const travelPeople = ref(null)
 const travelRelationship = ref('')
-const favoriteHero = ref('')
-const plannersCollapsed = ref(false)
 
 const currentCity = ref(null)
 const showCityModal = ref(false)
@@ -207,79 +213,20 @@ const isProcessing = ref(false) // 是否正在处理请求（禁用发送）
 const activeStreamToken = ref(0)
 
 // 流式输出定时器
-const {streamIntervalRef, streamTimeoutRef, thinkingTimeoutRef, streamingCancelRef, clearStreamTimers, cancelStreaming} = useStreamTimers()
+const {streamingCancelRef, cancelStreaming} = useStreamTimers()
 
-// 外部页面滚动控制
-let isFirstRequest = true
-let isScrollDetectionActive = false
-let userHasScrolledPage = false
-let lastScrollTime = 0
-let scrollCheckInterval = null
-let previousPageScrollTop = 0 // 上一次的页面滚动位置
-
-const handlePageScroll = () => {
-    if (!isScrollDetectionActive) return
-
-    // 检查是否在程序滚动后的短时间内（50ms），如果是则跳过
-    const now = Date.now()
-    if (now - lastScrollTime < 50) return
-
-    const scrollTop = window.scrollY || document.documentElement.scrollTop
-
-    // 如果向上滚动（scrollTop < previous），判定为用户滚动
-    if (scrollTop < previousPageScrollTop) {
-        userHasScrolledPage = true
-        stopAutoScrollPage()
-    }
-
-    previousPageScrollTop = scrollTop
-}
-
-const stopAutoScrollPage = () => {
-    if (scrollCheckInterval) {
-        clearInterval(scrollCheckInterval)
-        scrollCheckInterval = null
-    }
-}
-
-const startAutoScrollPage = () => {
-    isScrollDetectionActive = true
-
-    scrollCheckInterval = setInterval(() => {
-        if (userHasScrolledPage) {
-            stopAutoScrollPage()
-            return
-        }
-
-        // 检查聊天框高度
-        const chatMessages = document.querySelector('.chat-messages')
-        if (chatMessages) {
-            const maxHeight = 400 // 与 ChatBox 的 max-height 一致
-            const currentHeight = chatMessages.clientHeight
-
-            // 达到最大可见高度，停止滚动
-            if (currentHeight >= maxHeight) {
-                stopAutoScrollPage()
-                return
-            }
-
-            // 滚动到页面底部
-            lastScrollTime = Date.now()
-            window.scrollTo({
-                top: document.documentElement.scrollHeight,
-                behavior: 'instant'
-            })
-        }
-    }, 100)
+const updateLayoutMode = () => {
+    if (typeof window === 'undefined') return
+    isDesktopLayout.value = window.innerWidth - SIDEBAR_WIDTH > window.innerHeight
 }
 
 onMounted(() => {
-    window.addEventListener('scroll', handlePageScroll, {passive: true})
+    updateLayoutMode()
+    window.addEventListener('resize', updateLayoutMode)
 })
 
 onUnmounted(() => {
-    window.removeEventListener('scroll', handlePageScroll)
-    stopAutoScrollPage()
+    window.removeEventListener('resize', updateLayoutMode)
     cancelStreaming()
 })
 
@@ -310,11 +257,11 @@ const sendTravelMessage = (text) => {
     let hasAssistantOutput = false
     let hasEnteredStreaming = false
 
-    // 清理之前的定时器和 SSE 连接
+    // 清理之前的 SSE 连接
     cancelStreaming()
 
     const cityName = selectedCity.value ? cityMap[selectedCity.value] : ''
-    const hasPlanningInfo = cityName || travelDays.value || travelPeople.value || travelRelationship.value || favoriteHero.value
+    const hasPlanningInfo = cityName || travelDays.value || travelPeople.value || travelRelationship.value
 
     let promptTemplate
     if (hasPlanningInfo) {
@@ -323,7 +270,6 @@ const sendTravelMessage = (text) => {
 旅行天数：${travelDays.value ? `${travelDays.value}天` : '未指定'}
 出行人数：${travelPeople.value ? `${travelPeople.value}人` : '未指定'}
 关系类型：${travelRelationship.value || '未指定'}
-本命英雄：${favoriteHero.value || '未指定'}
 
 【用户需求】
 ${text}
@@ -342,12 +288,6 @@ ${text}
     // 调用 API 发送消息
     const {eventSource, cancel} = sendChatMessage(promptTemplate, currentSessionId.value)
     streamingCancelRef.value = cancel
-
-    // 第一次请求时，启动外部页面滚动
-    if (isFirstRequest) {
-        userHasScrolledPage = false
-        startAutoScrollPage()
-    }
 
     // 监听 SSE 事件
     eventSource.onmessage = (e) => {
@@ -377,12 +317,6 @@ ${text}
             streamFinished = true
             // 输出完成，恢复空闲状态
             chatBoxRef.value?.setStatus('idle')
-            // 第一次请求完成，停止外部页面滚动
-            if (isFirstRequest) {
-                isFirstRequest = false
-                isScrollDetectionActive = false
-                stopAutoScrollPage()
-            }
             // 取消 SSE 连接但不 abort fetch，让读取循环自然结束
             cancelStreaming(false)
             isProcessing.value = false
@@ -407,127 +341,282 @@ ${text}
 </script>
 
 <style scoped>
+/* 布局 */
 .travel-view {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
 }
 
-.section-title {
-    color: #fff;
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* 快速规划选项 */
-.quick-planners {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    padding: 16px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.quick-planners-wrap {
-    margin-bottom: 14px;
-}
-
-.quick-planners-toggle {
-    margin: 10px auto 2px;
-    min-width: 110px;
-    height: 30px;
+/* 地图区域 */
+.map-section {
+    position: absolute;
+    inset: 0;
     display: flex;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    margin-right: 0;
+    transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-host {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+}
+
+.map-host > :deep(*) {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.map-host :deep(.city-map) {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.map-section.chat-open {
+    margin-right: 380px;
+}
+
+/* 聊天切换按钮 */
+.chat-toggle-btn {
+    position: absolute;
+    left: -48px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 60px;
+    background: rgba(20, 30, 55, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: none;
+    border-radius: 12px 0 0 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 0 12px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 999px;
-    background: rgba(0, 0, 0, 0.18);
-    color: rgba(255, 255, 255, 0.8);
-    cursor: pointer;
+    gap: 2px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.65rem;
     transition: all 0.2s ease;
+    z-index: 110;
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.3);
 }
 
-.quick-planners-toggle:hover {
-    color: #fff;
-    border-color: rgba(240, 179, 68, 0.4);
-    background: rgba(240, 179, 68, 0.12);
+.chat-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #f0b344;
 }
 
-.toggle-text {
-    font-size: 12px;
+.toggle-icon {
+    font-size: 1.2rem;
+}
+
+.toggle-label {
+    font-size: 0.65rem;
     line-height: 1;
 }
 
-.toggle-chevron {
+.toggle-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
     width: 8px;
     height: 8px;
-    border-left: 2px solid currentColor;
-    border-top: 2px solid currentColor;
-    display: inline-block;
-    transition: transform 0.2s ease;
+    background: #f0b344;
+    border-radius: 50%;
 }
 
-.toggle-chevron.up {
-    transform: rotate(45deg) translateY(1px);
+/* 侧边聊天浮窗 */
+.chat-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100%;
+    background: rgba(15, 26, 42, 0.98);
+    border-left: 1px solid rgba(240, 179, 68, 0.15);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.toggle-chevron.down {
-    transform: rotate(-135deg) translateY(-1px);
+.chat-sidebar.open {
+    transform: translateX(0);
 }
 
-.planner-collapse-enter-active,
-.planner-collapse-leave-active {
+.chat-sidebar.mobile {
+    width: 100%;
+    height: 40%;
+    min-height: 320px;
+    max-height: 70%;
+    top: auto;
+    bottom: 0;
+    border-left: none;
+    border-top: 1px solid rgba(240, 179, 68, 0.15);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+}
+
+.chat-sidebar.mobile.open {
+    transform: translateY(0);
+}
+
+.chat-sidebar.mobile .chat-toggle-btn {
+    left: 50%;
+    top: -36px;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 36px;
+    flex-direction: row;
+    gap: 6px;
+    border-radius: 10px 10px 0 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: none;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.chat-sidebar.mobile .planners-bar {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.chat-sidebar :deep(.chat-box) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.chat-sidebar :deep(.chat-messages) {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+}
+
+/* 聊天头部 */
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(30, 45, 80, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+}
+
+.chat-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #f0b344, #e63946);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.chat-info {
+    flex: 1;
+}
+
+.chat-info h3 {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0 0 2px 0;
+}
+
+.chat-info p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+    margin: 0;
+}
+
+.close-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
     transition: all 0.2s ease;
-    transform-origin: top;
 }
 
-.planner-collapse-enter-from,
-.planner-collapse-leave-to {
-    opacity: 0;
-    transform: scaleY(0.92);
+.close-btn:hover {
+    background: rgba(230, 57, 70, 0.2);
+    border-color: rgba(230, 57, 70, 0.4);
+    color: #e63946;
+}
+
+/* 快速规划选项栏 */
+.planners-bar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 12px;
+    background: rgba(30, 45, 80, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
 }
 
 .planner-item {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 3px;
 }
 
 .planner-item label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-@media (max-width: 900px) {
-    .quick-planners {
-        grid-template-columns: repeat(3, 1fr);
-    }
+.planner-item :deep(.el-select) {
+    width: 100%;
 }
 
-@media (max-width: 600px) {
-    .quick-planners {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.planner-item :deep(.el-input__wrapper) {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+    border-radius: 6px !important;
+    padding: 0 8px !important;
 }
 
-/* 电竞文旅对话 */
-.travel-chat-section {
-    background: rgba(30, 45, 80, 0.5);
-    border-radius: 10px;
-    padding: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+.planner-item :deep(.el-input__inner) {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 0.75rem !important;
+}
+
+.planner-item :deep(.el-select__caret) {
+    color: rgba(255, 255, 255, 0.4) !important;
 }
 
 /* 城市详情弹窗 */
@@ -634,7 +723,18 @@ ${text}
     color: rgba(255, 255, 255, 0.8);
 }
 
-@media (max-width: 768px) {
+/* 移动端适配 */
+@media (max-width: 900px) {
+    .chat-sidebar.mobile .planners-bar {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .chat-sidebar.mobile .planners-bar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     .city-content {
         grid-template-columns: 1fr;
     }
