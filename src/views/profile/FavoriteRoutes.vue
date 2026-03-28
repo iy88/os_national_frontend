@@ -35,8 +35,8 @@
                         </svg>
                     </div>
                     <div class="route-info">
-                        <span class="route-name">{{ route }}</span>
-                        <span class="route-meta">收藏于 {{ getDate(index) }}</span>
+                        <span class="route-name">{{ route.title || '未命名路线' }}</span>
+                        <span class="route-meta">收藏于 {{ formatDate(route.createdAt) }}</span>
                     </div>
                     <button class="remove-btn" title="移除收藏" @click="removeRoute(route)">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import {computed} from 'vue'
+import {computed, onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 import {useUserStore} from '../../stores/user'
 import {ElMessage} from 'element-plus'
@@ -81,16 +81,23 @@ const userStore = useUserStore()
 
 const collectedRoutes = computed(() => userStore.collectedRoutes)
 
-// 模拟收藏日期（实际项目中应该存储真实日期）
-const getDate = (index) => {
-    const date = new Date()
-    date.setDate(date.getDate() - index)
+onMounted(() => {
+    userStore.fetchCollectedRoutes()
+})
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
     return `${date.getMonth() + 1}月${date.getDate()}日`
 }
 
-const removeRoute = (route) => {
-    userStore.removeCollectedRoute(route)
-    ElMessage.success('已移除收藏')
+const removeRoute = async (route) => {
+    try {
+        await userStore.removeCollectedRoute(route.rid)
+        ElMessage.success('已移除收藏')
+    } catch (error) {
+        ElMessage.error(error.message || '移除失败')
+    }
 }
 
 const goToTravel = () => {

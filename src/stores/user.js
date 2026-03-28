@@ -1,11 +1,11 @@
 import {defineStore} from 'pinia'
 import {ref, computed} from 'vue'
-import {getProfile, updateProfile} from '../api'
+import {getProfile, updateProfile, getFavoriteRoutes, deleteFavoriteRoute} from '../api'
 
 export const useUserStore = defineStore('user', () => {
     const isLoggedIn = ref(false)
     const userInfo = ref(null)
-    const collectedRoutes = ref([])
+    const collectedRoutes = ref([]) // { rid, mid, title, content, createdAt }
     const showLoginModal = ref(false)
 
     // 头像URL计算属性
@@ -34,7 +34,6 @@ export const useUserStore = defineStore('user', () => {
             avatarToken: info.avatarToken || ''
         }
         isLoggedIn.value = true
-        collectedRoutes.value = []
     }
 
     // 获取用户完整信息
@@ -64,10 +63,29 @@ export const useUserStore = defineStore('user', () => {
         collectedRoutes.value = []
     }
 
-    const removeCollectedRoute = (route) => {
-        const index = collectedRoutes.value.indexOf(route)
-        if (index > -1) {
-            collectedRoutes.value.splice(index, 1)
+    // 获取收藏列表
+    const fetchCollectedRoutes = async () => {
+        try {
+            const result = await getFavoriteRoutes()
+            if (result.success && result.routes) {
+                collectedRoutes.value = result.routes
+            }
+        } catch (error) {
+            console.error('获取收藏列表失败:', error)
+        }
+    }
+
+    // 移除收藏
+    const removeCollectedRoute = async (rid) => {
+        try {
+            await deleteFavoriteRoute(rid)
+            const index = collectedRoutes.value.findIndex(r => r.rid === rid)
+            if (index > -1) {
+                collectedRoutes.value.splice(index, 1)
+            }
+            return true
+        } catch (error) {
+            throw error
         }
     }
 
@@ -83,6 +101,7 @@ export const useUserStore = defineStore('user', () => {
         setUserInfo,
         fetchUserProfile,
         updateUserProfile,
+        fetchCollectedRoutes,
         removeCollectedRoute
     }
 })

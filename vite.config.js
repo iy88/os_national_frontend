@@ -31,6 +31,10 @@ export default defineConfig({
                 target: apiTarget,
                 changeOrigin: true
             },
+            '/route': {
+                target: apiTarget,
+                changeOrigin: true
+            },
             '/agent': {
                 target: apiTarget,
                 changeOrigin: true

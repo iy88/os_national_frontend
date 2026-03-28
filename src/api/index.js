@@ -236,4 +236,26 @@ export const sendChatMessageStream = (content, sid = null) => {
 // 发送消息（SSE 流式响应）- 简化为直接使用 sendChatMessageStream
 export const sendChatMessage = sendChatMessageStream
 
+// ============ 路线收藏接口 ============
+
+// 获取收藏列表
+export const getFavoriteRoutes = () => {
+    return apiClient.get('/route/list')
+}
+
+// 获取收藏详情
+export const getFavoriteRouteDetail = (rid) => {
+    return apiClient.get(`/route/detail/${rid}`)
+}
+
+// 收藏路线
+export const favoriteRoute = (mid) => {
+    return apiClient.post('/route', { mid })
+}
+
+// 删除收藏
+export const deleteFavoriteRoute = (rid) => {
+    return apiClient.delete(`/route/delete/${rid}`)
+}
+
 export default apiClient

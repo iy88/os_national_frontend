@@ -188,7 +188,7 @@ import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
 import citiesData from '../data/cities.json'
 import {useStreamTimers} from '../composables/useStreamTimers'
-import {sendChatMessage} from '../api'
+import {sendChatMessage, favoriteRoute} from '../api'
 import {ElMessage} from 'element-plus'
 
 // 城市数据列表（直接使用 cities.json）
@@ -256,8 +256,17 @@ const handleCopyMessage = async (content) => {
     }
 }
 
-const handleFavoriteMessage = () => {
-    ElMessage.info('已收藏')
+const handleFavoriteMessage = async (mid) => {
+    if (!mid) {
+        ElMessage.warning('无法收藏此消息')
+        return
+    }
+    try {
+        await favoriteRoute(mid)
+        ElMessage.success('已收藏到路线')
+    } catch (error) {
+        ElMessage.error(error.message || '收藏失败')
+    }
 }
 
 const handleNavigateToDetail = () => {
@@ -291,20 +300,7 @@ watch([chatOpen, isDesktopLayout], () => {
     triggerMapReflow()
 })
 
-const travelMessages = ref([
-    {
-        type: 'user', content: '推荐一条上海的电竞文旅路线'
-    },
-    {
-        type: 'character', content: '上海电竞文旅路线推荐 ✈️\n\n**第一天**\n- 上午：前往上海电竞中心，参观电竞文化展\n- 下午：KPL赛事场馆观赛体验\n- 晚上：上海外滩夜景打卡\n\n**第二天**\n- 上午：王荣耀主题咖啡厅\n- 下午：电竞酒店体验\n- 晚上：返程\n\n需要我详细规划某个环节吗？'
-    },
-    {
-        type: 'user', content: '推荐一条上海的电竞文旅路线'
-    },
-    {
-        type: 'character', content: '上海电竞文旅路线推荐 ✈️\n\n**第一天**\n- 上午：前往上海电竞中心，参观电竞文化展\n- 下午：KPL赛事场馆观赛体验\n- 晚上：上海外滩夜景打卡\n\n**第二天**\n- 上午：王荣耀主题咖啡厅\n- 下午：电竞酒店体验\n- 晚上：返程\n\n需要我详细规划某个环节吗？'
-    }
-])
+const travelMessages = ref([])
 
 const showCityDetail = (cityKey) => {
     currentCity.value = cityDataList[cityKey]
@@ -365,9 +361,9 @@ ${text}
         if (data.type === 'start') {
             streamStarted = true
             currentSessionId.value = data.sid
-            // 添加一条空消息用于流式填充
+            // 添加一条空消息用于流式填充，存储 mid 用于收藏
             streamingMsgIndex.value = travelMessages.value.length
-            travelMessages.value.push({type: 'character', content: ''})
+            travelMessages.value.push({type: 'character', content: '', mid: data.mid})
         } else if (data.type === 'content') {
             // 第一次收到非 start 的流内容时，切换为 streaming
             if (!hasEnteredStreaming) {
