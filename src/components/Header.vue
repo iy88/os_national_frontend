@@ -26,12 +26,15 @@
                 @mouseenter="handleDesktopMouseEnter"
                 @mouseleave="handleDesktopMouseLeave"
             >
-                <button class="avatar-btn">
-                    <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
-                    <div v-else class="avatar-placeholder">
-                        {{ userInfo?.username?.charAt(0) || 'U' }}
-                    </div>
-                </button>
+                <div class="user-trigger">
+                    <button class="avatar-btn" type="button" aria-label="用户头像">
+                        <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
+                        <div v-else class="avatar-placeholder">
+                            {{ userInfo?.username?.charAt(0) || 'U' }}
+                        </div>
+                    </button>
+                    <span class="username-text" :title="userInfo?.username || ''">{{ userInfo?.username || '用户' }}</span>
+                </div>
                 <div v-show="dropdownOpen" class="dropdown-menu">
                     <button class="dropdown-item" @click="goToProfile">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -258,6 +261,7 @@ const handleLogout = () => {
 <!--suppress CssUnusedSymbol -->
 <style scoped>
 .app-header {
+    --desktop-dropdown-reserve: 86px;
     background: rgba(15, 26, 42, 0.96);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 10px 0;
@@ -268,9 +272,10 @@ const handleLogout = () => {
 }
 
 .header-content {
-    max-width: 1200px;
+    max-width: none;
+    width: 100%;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 var(--desktop-dropdown-reserve);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -280,6 +285,7 @@ const handleLogout = () => {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding-left: 0;
 }
 
 .brand-icon {
@@ -365,6 +371,31 @@ const handleLogout = () => {
 /* 用户头像下拉菜单 */
 .user-dropdown {
     position: relative;
+    padding-right: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.login-btn {
+    margin-right: 0;
+}
+
+.user-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.username-text {
+    max-width: 128px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 0.9rem;
+    line-height: 1;
 }
 
 .avatar-btn {
@@ -382,6 +413,15 @@ const handleLogout = () => {
 .avatar-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(240, 179, 68, 0.35);
+}
+
+.user-trigger:hover .avatar-btn {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.35);
+}
+
+.user-trigger:hover .username-text {
+    color: #f0b344;
 }
 
 .avatar-btn img {
@@ -455,7 +495,7 @@ const handleLogout = () => {
 .user-dropdown.mobile .dropdown-menu {
     position: absolute;
     top: 100%;
-    right: 16px;
+    right: 8px;
     left: auto;
     transform: none;
 }
@@ -515,7 +555,7 @@ const handleLogout = () => {
 /* 移动端导航 */
 .mobile-nav {
     display: none;
-    padding: 0 16px;
+    padding: 0 8px;
     align-items: center;
     justify-content: space-between;
     height: 56px;
@@ -696,17 +736,19 @@ const handleLogout = () => {
     }
 }
 
+@media (max-width: 1280px) {
+    .app-header {
+        --desktop-dropdown-reserve: 66px;
+    }
+}
+
 @media (max-width: 1024px) {
-    .user-dropdown .dropdown-menu {
-        left: auto;
-        right: 0;
-        transform: none;
+    .app-header {
+        --desktop-dropdown-reserve: 8px;
     }
 
-    .user-dropdown .dropdown-menu::before {
-        left: auto;
-        right: 16px;
-        transform: rotate(45deg);
+    .username-text {
+        max-width: 96px;
     }
 }
 </style>
