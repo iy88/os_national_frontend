@@ -1,5 +1,5 @@
 <template>
-    <div class="travel-view">
+    <div :class="['travel-view', { 'mobile-layout': !isDesktopLayout }]">
         <!-- 地图区域 -->
         <section class="map-section" :class="{ 'chat-open': chatOpen && isDesktopLayout }">
             <div class="map-host">
@@ -92,7 +92,8 @@
             v-model="showCityModal"
             :title="currentCity?.name"
             class="city-detail-modal"
-            width="800px"
+            modal-class="city-detail-overlay"
+            :width="cityDialogWidth"
         >
             <div v-if="currentCity" ref="cityContentRef" class="city-content">
                 <div class="content-left">
@@ -172,7 +173,7 @@
 </template>
 
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref} from 'vue'
+import {nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
 import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
 import citiesData from '../data/cities.json'
@@ -190,10 +191,15 @@ const cityMap = Object.entries(citiesData).reduce((acc, [key, city]) => {
     return acc
 }, {})
 
-// 聊天侧边栏开关
-const chatOpen = ref(true)
-const isDesktopLayout = ref(true)
 const SIDEBAR_WIDTH = 380
+const getIsDesktopLayout = () => {
+    if (typeof window === 'undefined') return true
+    return window.innerWidth - SIDEBAR_WIDTH > window.innerHeight
+}
+
+const isDesktopLayout = ref(getIsDesktopLayout())
+// 首帧按布局决定开关状态，避免移动端初始化时出现收拢动画
+const chatOpen = ref(isDesktopLayout.value)
 
 const selectedCity = ref('')
 const travelDays = ref(null)
@@ -205,6 +211,7 @@ const showCityModal = ref(false)
 const cityDialogRef = ref(null)
 const cityContentRef = ref(null)
 const chatBoxRef = ref(null)
+const cityDialogWidth = ref('800px')
 
 // 会话状态
 const currentSessionId = ref(null)
@@ -216,18 +223,43 @@ const activeStreamToken = ref(0)
 const {streamingCancelRef, cancelStreaming} = useStreamTimers()
 
 const updateLayoutMode = () => {
+    isDesktopLayout.value = getIsDesktopLayout()
+}
+
+const triggerMapReflow = () => {
     if (typeof window === 'undefined') return
-    isDesktopLayout.value = window.innerWidth - SIDEBAR_WIDTH > window.innerHeight
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.dispatchEvent(new Event('resize'))
+        })
+    })
+}
+
+const updateDialogWidth = () => {
+    if (typeof window === 'undefined') return
+    const viewportWidth = window.innerWidth
+    if (viewportWidth <= 900) {
+        cityDialogWidth.value = `${Math.max(280, viewportWidth - 24)}px`
+        return
+    }
+    cityDialogWidth.value = '800px'
 }
 
 onMounted(() => {
     updateLayoutMode()
+    updateDialogWidth()
     window.addEventListener('resize', updateLayoutMode)
+    window.addEventListener('resize', updateDialogWidth)
 })
 
 onUnmounted(() => {
     window.removeEventListener('resize', updateLayoutMode)
+    window.removeEventListener('resize', updateDialogWidth)
     cancelStreaming()
+})
+
+watch([chatOpen, isDesktopLayout], () => {
+    triggerMapReflow()
 })
 
 const travelMessages = ref([
@@ -352,6 +384,10 @@ ${text}
     overflow: hidden;
 }
 
+.travel-view.mobile-layout .map-section {
+    transition: none;
+}
+
 /* 地图区域 */
 .map-section {
     position: absolute;
@@ -447,7 +483,7 @@ ${text}
     right: 0;
     width: 380px;
     height: 100%;
-    background: rgba(15, 26, 42, 0.98);
+    background: #0f1a2a;
     border-left: 1px solid rgba(240, 179, 68, 0.15);
     display: flex;
     flex-direction: column;
@@ -455,6 +491,8 @@ ${text}
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
     transform: translateX(100%);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backface-visibility: hidden;
+    will-change: transform;
 }
 
 .chat-sidebar.open {
@@ -463,9 +501,9 @@ ${text}
 
 .chat-sidebar.mobile {
     width: 100%;
-    height: 40%;
-    min-height: 320px;
-    max-height: 70%;
+    height: 70%;
+    min-height: 400px;
+    max-height: 85%;
     top: auto;
     bottom: 0;
     border-left: none;
@@ -746,14 +784,25 @@ ${text}
 </style>
 
 <style>
-.city-detail-modal .el-dialog {
+.city-detail-modal.el-dialog {
     background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
     border: 1px solid rgba(240, 179, 68, 0.25);
     border-radius: 10px;
+    max-width: calc(100vw - 24px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    margin: 0 !important;
     margin-top: 0 !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    top: auto !important;
+    transform: none !important;
+    box-sizing: border-box;
+}
+
+.city-detail-overlay .el-overlay-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 .city-detail-modal .el-dialog__header {
@@ -888,10 +937,14 @@ ${text}
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-    .city-detail-modal .el-dialog {
-        width: 95% !important;
-        max-width: 95vw;
-        margin: 10px auto !important;
+    .city-detail-overlay .el-overlay-dialog {
+        padding: 0;
+    }
+
+    .city-detail-modal.el-dialog {
+        margin: 0 !important;
+        top: auto !important;
+        transform: none !important;
     }
 
     .city-detail-modal .el-dialog__body {

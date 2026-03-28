@@ -431,7 +431,7 @@ defineExpose({
 
 @media (max-width: 768px) {
     .message.user .message-content {
-        width: 100%;
+        width: fit-content;
         max-width: 100%;
         box-sizing: border-box;
     }

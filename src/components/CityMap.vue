@@ -89,6 +89,7 @@ const initialMainlandView = ref({x: 0, y: 0, w: SVG_WIDTH, h: SVG_HEIGHT})
 // 缩放范围（基于初始大陆视图宽度）
 const MIN_VIEW_WIDTH_RATIO = 0.35
 const MAX_VIEW_WIDTH_RATIO = 2.2
+const MAP_VISUAL_UPSHIFT_RATIO = 0.06
 
 // 计算当前viewBox字符串
 const computeViewBox = () => {
@@ -508,7 +509,7 @@ const initializeMainlandView = () => {
 
     // 设置viewBox使大陆居中
     vbX.value = bounds.minX - (newW - boundsWidth) / 2
-    vbY.value = bounds.minY - (newH - boundsHeight) / 2
+    vbY.value = bounds.minY - (newH - boundsHeight) / 2 + newH * MAP_VISUAL_UPSHIFT_RATIO
     vbW.value = newW
     vbH.value = newH
 
