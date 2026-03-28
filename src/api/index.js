@@ -116,12 +116,17 @@ export const uploadAvatar = (userId, file) => {
 
 // 获取会话列表
 export const getChatSessions = () => {
-    return apiClient.get('/agent/travel-route-plan/chat')
+    return apiClient.get('/agent/travel-route-plan/chat/list')
 }
 
 // 获取会话详情
 export const getChatSession = (sid) => {
-    return apiClient.get(`/agent/travel-route-plan/chat/${sid}`)
+    return apiClient.get(`/agent/travel-route-plan/chat/detail/${sid}`)
+}
+
+// 编辑会话标题
+export const editChatSessionTitle = (sid, title) => {
+    return apiClient.put(`/agent/travel-route-plan/chat/title/edit/${sid}`, { title })
 }
 
 // 使用 fetch 实现 SSE（带 POST 和自定义 headers）
@@ -250,12 +255,17 @@ export const getFavoriteRouteDetail = (rid) => {
 
 // 收藏路线
 export const favoriteRoute = (mid) => {
-    return apiClient.post('/route', { mid })
+    return apiClient.post('/route/favorite', { mid })
 }
 
 // 删除收藏
 export const deleteFavoriteRoute = (rid) => {
     return apiClient.delete(`/route/delete/${rid}`)
+}
+
+// 编辑收藏路线
+export const editFavoriteRoute = (rid, data) => {
+    return apiClient.put(`/route/edit/${rid}`, data)
 }
 
 export default apiClient

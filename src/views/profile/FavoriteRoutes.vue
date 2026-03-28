@@ -27,6 +27,7 @@
                     v-for="(route, index) in collectedRoutes"
                     :key="index"
                     class="route-item"
+                    @click="openRouteModal(route, 'readonly')"
                 >
                     <div class="route-icon">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -38,14 +39,22 @@
                         <span class="route-name">{{ route.title || '未命名路线' }}</span>
                         <span class="route-meta">收藏于 {{ formatDate(route.createdAt) }}</span>
                     </div>
-                    <button class="remove-btn" title="移除收藏" @click="removeRoute(route)">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            <line x1="10" x2="10" y1="11" y2="17"/>
-                            <line x1="14" x2="14" y1="11" y2="17"/>
-                        </svg>
-                    </button>
+                    <div class="route-actions" @click.stop>
+                        <button class="action-btn edit-btn" title="编辑" @click="openRouteModal(route, 'edit')">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn remove-btn" title="删除" @click="confirmDelete(route)">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                <line x1="10" x2="10" y1="11" y2="17"/>
+                                <line x1="14" x2="14" y1="11" y2="17"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -67,19 +76,107 @@
                 去逛逛
             </button>
         </div>
+
+        <!-- 路线详情/编辑弹窗 -->
+        <el-dialog
+            v-model="modalVisible"
+            :title="modalMode === 'edit' ? '编辑路线' : '路线详情'"
+            class="route-modal"
+            modal-class="route-modal-overlay"
+            width="90%"
+            :close-on-click-modal="false"
+            append-to-body
+            align-center
+        >
+            <div class="modal-content">
+                <div v-if="modalLoading" class="modal-loading">
+                    <span class="loading-spinner"></span>
+                    加载中...
+                </div>
+                <template v-else>
+                    <div class="modal-form" v-if="modalMode === 'edit'">
+                        <div class="form-item">
+                            <label>标题</label>
+                            <el-input v-model="editForm.title" placeholder="请输入路线标题" />
+                        </div>
+                        <div class="form-item">
+                            <label>内容</label>
+                            <el-input
+                                v-model="editForm.content"
+                                type="textarea"
+                                :rows="10"
+                                placeholder="请输入路线内容"
+                            />
+                        </div>
+                    </div>
+                    <div v-else class="modal-view">
+                        <h3 class="view-title">{{ currentRoute?.title || '未命名路线' }}</h3>
+                        <div class="view-meta">收藏于 {{ formatDateFull(currentRoute?.createdAt) }}</div>
+                        <div class="view-content" v-html="renderedContent()"></div>
+                    </div>
+                </template>
+            </div>
+            <template #footer>
+                <div class="modal-footer">
+                    <el-button v-if="modalMode === 'edit'" class="cancel-btn" @click="modalVisible = false">取消</el-button>
+                    <el-button v-if="modalMode === 'readonly'" type="primary" @click="modalVisible = false">确认</el-button>
+                    <el-button v-if="modalMode === 'edit'" type="primary" @click="saveRoute" :loading="saving">
+                        保存
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
+
+        <!-- 删除确认弹窗 -->
+        <el-dialog
+            v-model="deleteDialogVisible"
+            title="确认删除"
+            width="90%"
+            class="delete-dialog"
+            modal-class="delete-modal-overlay"
+            append-to-body
+            align-center
+        >
+            <p>确定要删除路线「{{ routeToDelete?.title || '未命名路线' }}」吗？此操作无法撤销。</p>
+            <template #footer>
+                <div class="modal-footer">
+                    <el-button @click="deleteDialogVisible = false">取消</el-button>
+                    <el-button type="danger" @click="executeDelete" :loading="deleting">删除</el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
 <script setup>
-import {computed, onMounted} from 'vue'
+import {ref, onMounted} from 'vue'
+import {storeToRefs} from 'pinia'
 import {useRouter} from 'vue-router'
 import {useUserStore} from '../../stores/user'
+import {getFavoriteRouteDetail, editFavoriteRoute} from '../../api'
 import {ElMessage} from 'element-plus'
+import {marked} from 'marked'
+import DOMPurify from 'dompurify'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const collectedRoutes = computed(() => userStore.collectedRoutes)
+const {collectedRoutes} = storeToRefs(userStore)
+
+marked.setOptions({ gfm: true, breaks: true })
+
+// 弹窗状态
+const modalVisible = ref(false)
+const modalMode = ref('readonly') // 'readonly' | 'edit'
+const modalLoading = ref(false)
+const currentRoute = ref(null)
+const editForm = ref({ title: '', content: '' })
+const saving = ref(false)
+
+// 删除弹窗状态
+const deleteDialogVisible = ref(false)
+const routeToDelete = ref(null)
+const deleting = ref(false)
 
 onMounted(() => {
     userStore.fetchCollectedRoutes()
@@ -91,12 +188,98 @@ const formatDate = (dateStr) => {
     return `${date.getMonth() + 1}月${date.getDate()}日`
 }
 
-const removeRoute = async (route) => {
+const formatDateFull = (dateStr) => {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+}
+
+const renderMarkdown = (content) => {
+    if (!content) return ''
+    const html = marked.parse(content)
+    return DOMPurify.sanitize(html)
+}
+
+const renderedContent = () => {
+    return renderMarkdown(currentRoute.value?.content || '')
+}
+
+const openRouteModal = async (route, mode) => {
+    currentRoute.value = route
+    modalMode.value = mode
+    modalVisible.value = true
+
+    // 获取完整详情（列表 API 不返回 content）
+    modalLoading.value = true
     try {
-        await userStore.removeCollectedRoute(route.rid)
-        ElMessage.success('已移除收藏')
+        const result = await getFavoriteRouteDetail(route.rid)
+        if (result.success && result.route) {
+            currentRoute.value = result.route
+        }
     } catch (error) {
-        ElMessage.error(error.message || '移除失败')
+        ElMessage.error('获取路线详情失败')
+    } finally {
+        modalLoading.value = false
+    }
+
+    if (mode === 'edit') {
+        editForm.value = {
+            title: currentRoute.value.title || '',
+            content: currentRoute.value.content || ''
+        }
+    }
+}
+
+const saveRoute = async () => {
+    if (!currentRoute.value) return
+
+    saving.value = true
+    try {
+        // 先更新本地数据（表单已是最新）
+        const index = collectedRoutes.value.findIndex(r => r.rid === currentRoute.value.rid)
+        if (index !== -1) {
+            collectedRoutes.value[index] = {
+                ...collectedRoutes.value[index],
+                title: editForm.value.title,
+                content: editForm.value.content
+            }
+        }
+        currentRoute.value.title = editForm.value.title
+        currentRoute.value.content = editForm.value.content
+
+        // 调用 API 保存到后端（返回数据无需处理）
+        await editFavoriteRoute(currentRoute.value.rid, {
+            title: editForm.value.title,
+            content: editForm.value.content
+        })
+
+        ElMessage.success('保存成功')
+        modalVisible.value = false
+    } catch (error) {
+        ElMessage.error(error.message || '保存失败')
+    } finally {
+        saving.value = false
+    }
+}
+
+const confirmDelete = (route) => {
+    routeToDelete.value = route
+    deleteDialogVisible.value = true
+}
+
+const executeDelete = async () => {
+    if (!routeToDelete.value) return
+
+    deleting.value = true
+    try {
+        await userStore.removeCollectedRoute(routeToDelete.value.rid)
+        ElMessage.success('已删除')
+        deleteDialogVisible.value = false
+        routeToDelete.value = null
+    } catch (error) {
+        ElMessage.error(error.message || '删除失败')
+    } finally {
+        deleting.value = false
     }
 }
 
@@ -348,5 +531,323 @@ const goToTravel = () => {
 .browse-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 14px rgba(240, 179, 68, 0.4);
+}
+
+/* 操作按钮 */
+.route-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid;
+}
+
+.action-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.edit-btn {
+    background: rgba(240, 179, 68, 0.1);
+    border-color: rgba(240, 179, 68, 0.2);
+    color: #f0b344;
+}
+
+.edit-btn:hover {
+    background: rgba(240, 179, 68, 0.2);
+    border-color: rgba(240, 179, 68, 0.35);
+    transform: scale(1.05);
+}
+
+.remove-btn {
+    background: rgba(230, 57, 70, 0.1);
+    border-color: rgba(230, 57, 70, 0.2);
+    color: #e63946;
+}
+
+.remove-btn:hover {
+    background: rgba(230, 57, 70, 0.2);
+    border-color: rgba(230, 57, 70, 0.35);
+    transform: scale(1.05);
+}
+
+/* 弹窗样式 */
+.modal-content {
+    height: min(560px, calc(100vh - 240px), calc(100svh - 240px));
+    max-height: min(560px, calc(100vh - 240px), calc(100svh - 240px));
+    min-height: 340px;
+    overflow: hidden;
+    overscroll-behavior: contain;
+}
+
+.modal-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    padding: 40px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #f0b344;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+}
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-item:last-child {
+    flex: 1;
+    min-height: 0;
+}
+
+.form-item label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-item :deep(.el-textarea__inner) {
+    background: rgba(15, 26, 42, 0.88);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    resize: none;
+    height: 100%;
+    min-height: 220px;
+}
+
+.form-item:last-child :deep(.el-textarea) {
+    height: 100%;
+}
+
+.form-item :deep(.el-input__wrapper) {
+    background: rgba(15, 26, 42, 0.88);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+}
+
+.form-item :deep(.el-input__inner) {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.modal-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
+
+.view-title {
+    margin: 0;
+    color: #f0b344;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.view-meta {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85rem;
+}
+
+.view-content {
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.7;
+    font-size: 0.95rem;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+@media (max-width: 900px) {
+    :deep(.route-modal-overlay .el-overlay-dialog),
+    :deep(.delete-modal-overlay .el-overlay-dialog) {
+        padding: 14px 10px;
+    }
+
+    .modal-content {
+        height: min(520px, calc(100vh - 220px), calc(100svh - 220px));
+        max-height: min(520px, calc(100vh - 220px), calc(100svh - 220px));
+        min-height: 300px;
+    }
+
+    .modal-footer {
+        gap: 8px;
+    }
+}
+
+.view-content :deep(h1),
+.view-content :deep(h2),
+.view-content :deep(h3) {
+    color: rgba(255, 255, 255, 0.95);
+    margin: 1em 0 0.5em;
+}
+
+.view-content :deep(p) {
+    margin: 0.5em 0;
+}
+
+.view-content :deep(ul),
+.view-content :deep(ol) {
+    padding-left: 1.5em;
+    margin: 0.5em 0;
+}
+
+.view-content :deep(code) {
+    background: rgba(240, 179, 68, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.view-content :deep(pre) {
+    background: rgba(15, 26, 42, 0.88);
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.view-content :deep(pre code) {
+    background: none;
+    padding: 0;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.modal-footer :deep(.cancel-btn) {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.modal-footer :deep(.cancel-btn:hover) {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+:deep(.route-modal-overlay),
+:deep(.delete-modal-overlay) {
+    overflow: hidden;
+}
+
+:deep(.route-modal-overlay .el-overlay-dialog),
+:deep(.delete-modal-overlay .el-overlay-dialog) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    box-sizing: border-box;
+}
+
+:deep(.route-modal-overlay .route-modal),
+:deep(.delete-modal-overlay .delete-dialog) {
+    margin: 0 !important;
+    max-height: calc(100vh - 40px);
+}
+
+/* Element Plus 弹窗覆盖 */
+:deep(.el-dialog) {
+    background: rgba(20, 30, 55, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    max-width: 600px;
+}
+
+:deep(.el-dialog__header) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 16px 20px;
+}
+
+:deep(.el-dialog__title) {
+    color: #f0b344;
+    font-weight: 600;
+}
+
+:deep(.el-dialog__body) {
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+:deep(.el-dialog__footer) {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 16px 20px;
+}
+
+:deep(.delete-dialog) .el-dialog__body p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+    :deep(.el-dialog) {
+        width: 95% !important;
+        max-width: 95%;
+    }
+
+    :deep(.el-dialog__header) {
+        padding: 14px 14px;
+    }
+
+    :deep(.el-dialog__body) {
+        padding: 14px;
+    }
+
+    :deep(.el-dialog__footer) {
+        padding: 12px 14px;
+    }
+
+    .modal-content {
+        height: min(480px, calc(100vh - 210px), calc(100svh - 210px));
+        max-height: min(480px, calc(100vh - 210px), calc(100svh - 210px));
+        min-height: 260px;
+    }
+
+    .modal-form {
+        gap: 12px;
+    }
+
+    .form-item:last-child :deep(.el-textarea__inner) {
+        min-height: 160px;
+    }
+
+    .view-content {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
 }
 </style>

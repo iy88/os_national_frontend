@@ -28,6 +28,20 @@
 - 可折叠/展开的筛选面板（底部箭头图标控制）
 - 基于 Agent AI 的 SSE 流式对话响应
 
+### 电竞文旅助手 (RoutePlanView)
+
+- **会话边栏**: 按时间分组（今日/昨日/更早）展示历史会话
+- **内联标题编辑**: hover 时显示编辑按钮，点击可编辑标题，按 Enter 或点击确认保存，失焦取消
+- **SSE 流式对话**: 实时流式输出，支持思考状态指示
+- **URL 路由同步**: 会话状态通过 URL query 参数同步，支持跳转和刷新恢复
+
+### 收藏路线 (FavoriteRoutes)
+
+- **路由详情弹窗**: 点击路线项打开只读弹窗，展示 Markdown 渲染内容
+- **编辑模式**: 点击编辑按钮进入编辑模式，支持修改标题和内容
+- **确认删除**: 删除前显示确认对话框
+- **移动端适配**: 弹窗宽度自适应，按钮样式优化
+
 ## 项目结构
 
 ```
@@ -37,26 +51,31 @@ src/
 ├── api/index.js               # API 请求模块
 ├── composables/               # Vue Composables
 │   └── useStreamTimers.js     # 流式输出定时器管理
-├── router/index.js             # 路由配置（含 /profile 路由守卫）
-├── stores/user.js             # Pinia 用户状态管理
+├── router/index.js            # 路由配置（含 /profile 路由守卫）
+├── stores/
+│   ├── user.js                # Pinia 用户状态管理
+│   └── conversation.js         # Pinia 会话状态管理
 ├── data/                      # 静态数据
 │   ├── cities.json            # 城市数据
 │   ├── characters.js          # 角色数据
 │   └── geo_city.json          # 地理数据
 ├── views/
 │   ├── TravelView.vue         # 旅行页（首页）
-│   ├── DialogueView.vue       # AI 对话页
+│   ├── DialogueView.vue        # AI 对话页
+│   ├── RoutePlanView.vue      # 电竞文旅助手（会话页面）
 │   ├── UserProfile.vue        # 用户中心（含子路由）
 │   └── profile/
 │       ├── BasicInfo.vue      # 基本信息设置
-│       └── FavoriteRoutes.vue # 收藏路线
+│       └── FavoriteRoutes.vue  # 收藏路线
 └── components/
     ├── Header.vue             # 页头导航
-    ├── LoginModal.vue          # 登录/注册弹窗
-    ├── ChatBox.vue             # 聊天组件
-    ├── StoryModal.vue          # 故事弹窗
+    ├── LoginModal.vue         # 登录/注册弹窗
+    ├── ChatBox.vue            # 聊天组件
+    ├── ConversationSidebar.vue # 会话边栏
+    ├── RouteChatBox.vue       # 路线规划聊天组件
+    ├── StoryModal.vue         # 故事弹窗
     ├── CharacterCard.vue       # 角色卡片
-    ├── CityMap.vue             # 城市地图
+    ├── CityMap.vue            # 城市地图
     └── PhotoGallery.vue        # 照片画廊
 ```
 
@@ -67,6 +86,7 @@ src/
 | `/` | - | 重定向至 /travel |
 | `/travel` | travel | 旅行首页 |
 | `/dialogue` | dialogue | AI 对话页 |
+| `/route-plan` | route-plan | 电竞文旅助手（会话页面） |
 | `/profile` | profile | 用户中心（含子路由） |
 | `/profile/basic` | basic-info | 基本信息 |
 | `/profile/favorites` | favorite-routes | 收藏路线 |
@@ -88,9 +108,19 @@ src/
   fetchUserProfile(),          // 获取用户完整信息
   updateUserProfile(),         // 更新用户信息
   logout(),                     // 登出
-  updateField(),                // 更新用户字段
-  addCollectedRoute(),          // 添加收藏
   removeCollectedRoute()        // 移除收藏
+}
+
+// stores/conversation.js
+{
+  sessions: array,              // 会话列表
+  currentSessionId: number,    // 当前会话 ID
+  currentMessages: array,      // 当前会话消息
+  groupedSessions: computed,   // 按时间分组的会话
+  fetchSessions(),            // 获取会话列表
+  fetchSessionDetail(),       // 获取会话详情
+  createNewSession(),         // 创建新会话
+  updateSessionTitle()         // 更新会话标题
 }
 ```
 
@@ -115,9 +145,20 @@ src/
 
 | 方法 | URL | 说明 |
 |------|-----|------|
-| GET | /agent/travel-route-plan/chat | 获取会话列表 |
-| GET | /agent/travel-route-plan/chat/:sid | 获取会话详情 |
+| GET | /agent/travel-route-plan/chat/list | 获取会话列表 |
+| GET | /agent/travel-route-plan/chat/detail/:sid | 获取会话详情 |
+| PUT | /agent/travel-route-plan/chat/title/edit/:sid | 编辑会话标题 |
 | POST | /agent/travel-route-plan/message | 发送消息（SSE 流式） |
+
+#### 路线收藏接口
+
+| 方法 | URL | 说明 |
+|------|-----|------|
+| GET | /route/list | 获取收藏列表 |
+| GET | /route/detail/:rid | 获取收藏详情 |
+| POST | /route/favorite | 收藏路线 |
+| PUT | /route/edit/:rid | 编辑收藏路线 |
+| DELETE | /route/delete/:rid | 删除收藏 |
 
 ### 登录流程
 
@@ -170,6 +211,8 @@ src/
 
 ## 最近更新
 
+- 2026-03-29: 添加收藏路线查看/编辑弹窗，内联标题编辑
+- 2026-03-29: 新增 RoutePlanView 电竞文旅助手页面，会话边栏和 URL 路由同步
 - 2026-03-28: 添加聊天气泡 Markdown 渲染支持
 - 2026-03-28: Quick Planners 添加可折叠/展开功能（箭头图标）
 - 2026-03-28: 电竞文旅助手对接 Agent AI API，SSE 流式输出

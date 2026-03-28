@@ -220,7 +220,7 @@ const cityMap = Object.entries(citiesData).reduce((acc, [key, city]) => {
     return acc
 }, {})
 
-const SIDEBAR_WIDTH = 380
+const SIDEBAR_WIDTH = 420
 const getIsDesktopLayout = () => {
     if (typeof window === 'undefined') return true
     return window.innerWidth - SIDEBAR_WIDTH > window.innerHeight
@@ -398,6 +398,10 @@ ${text}
             }
         } else if (data.type === 'done') {
             streamFinished = true
+            // 标记消息为已完成，启用操作按钮
+            if (streamingMsgIndex.value >= 0) {
+                travelMessages.value[streamingMsgIndex.value].completed = true
+            }
             // 输出完成，恢复空闲状态
             chatBoxRef.value?.setStatus('idle')
             // 取消 SSE 连接但不 abort fetch，让读取循环自然结束
@@ -476,7 +480,7 @@ ${text}
 }
 
 .map-section.chat-open {
-    margin-right: 380px;
+    margin-right: 28vw;
 }
 
 /* 聊天切换按钮 */
@@ -533,7 +537,9 @@ ${text}
     position: absolute;
     top: 0;
     right: 0;
-    width: 380px;
+    width: 28vw;
+    min-width: 320px;
+    max-width: 480px;
     height: 100%;
     background: #0f1a2a;
     border-left: 1px solid rgba(240, 179, 68, 0.15);
@@ -552,7 +558,11 @@ ${text}
 }
 
 .chat-sidebar.mobile {
+    left: 0;
+    right: 0;
     width: 100%;
+    min-width: 0;
+    max-width: none;
     height: 70%;
     min-height: 400px;
     max-height: 85%;

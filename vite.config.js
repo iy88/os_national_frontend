@@ -15,15 +15,15 @@ export default defineConfig({
         host: '0.0.0.0',
         port: 5173,
         proxy: {
-            '/email': {
+            '/email/': {
                 target: apiTarget,
                 changeOrigin: true
             },
-            '/user': {
+            '/user/': {
                 target: apiTarget,
                 changeOrigin: true
             },
-            '/file': {
+            '/file/': {
                 target: apiTarget,
                 changeOrigin: true
             },
@@ -31,11 +31,11 @@ export default defineConfig({
                 target: apiTarget,
                 changeOrigin: true
             },
-            '/route': {
+            '/route/': {
                 target: apiTarget,
                 changeOrigin: true
             },
-            '/agent': {
+            '/agent/': {
                 target: apiTarget,
                 changeOrigin: true
             }

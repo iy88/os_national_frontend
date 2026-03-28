@@ -89,6 +89,7 @@ const initialMainlandView = ref({x: 0, y: 0, w: SVG_WIDTH, h: SVG_HEIGHT})
 // 缩放范围（基于初始大陆视图宽度）
 const MIN_VIEW_WIDTH_RATIO = 0.35
 const MAX_VIEW_WIDTH_RATIO = 2.2
+const INITIAL_VIEW_ZOOM_OUT_RATIO = 1.08
 const MAP_VISUAL_UPSHIFT_RATIO = 0.06
 
 // 计算当前viewBox字符串
@@ -507,11 +508,14 @@ const computeMainlandFitView = (containerWidth, containerHeight) => {
         fitH = fitW / containerAspect
     }
 
+    const initialW = fitW * INITIAL_VIEW_ZOOM_OUT_RATIO
+    const initialH = fitH * INITIAL_VIEW_ZOOM_OUT_RATIO
+
     return {
-        x: bounds.minX - (fitW - boundsWidth) / 2,
-        y: bounds.minY - (fitH - boundsHeight) / 2 + fitH * MAP_VISUAL_UPSHIFT_RATIO,
-        w: fitW,
-        h: fitH
+        x: bounds.minX - (initialW - boundsWidth) / 2,
+        y: bounds.minY - (initialH - boundsHeight) / 2 + initialH * MAP_VISUAL_UPSHIFT_RATIO,
+        w: initialW,
+        h: initialH
     }
 }
 

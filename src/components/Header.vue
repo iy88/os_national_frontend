@@ -13,6 +13,12 @@
                     文旅探索
                 </button>
                 <button
+                    :class="['tab-btn', { active: activeTab === 'route-plan' }]"
+                    @click="$router.push('/route-plan')"
+                >
+                    路线规划
+                </button>
+                <button
                     :class="['tab-btn', { active: activeTab === 'dialogue' }]"
                     @click="$router.push('/dialogue')"
                 >
@@ -21,7 +27,7 @@
             </div>
             <!-- 登录后显示头像下拉 -->
             <div
-                v-if="isLoggedIn"
+                v-if="authReady && isLoggedIn"
                 class="user-dropdown"
                 @mouseenter="handleDesktopMouseEnter"
                 @mouseleave="handleDesktopMouseLeave"
@@ -53,7 +59,7 @@
                     </button>
                 </div>
             </div>
-            <button v-else class="login-btn" @click="handleLoginClick">
+            <button v-if="authReady && !isLoggedIn" class="login-btn" @click="handleLoginClick">
                 登录/注册
             </button>
         </div>
@@ -69,7 +75,7 @@
             </button>
             <h1 class="mobile-logo">城竞共生</h1>
             <!-- 移动端已登录显示头像下拉 -->
-            <div v-if="isLoggedIn" class="user-dropdown mobile">
+            <div v-if="authReady && isLoggedIn" class="user-dropdown mobile">
                 <button class="avatar-btn small" @click.stop="toggleMobileDropdown">
                     <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
                     <div v-else class="avatar-placeholder">
@@ -94,7 +100,7 @@
                     </button>
                 </div>
             </div>
-            <button v-else class="user-btn" @click="handleLoginClick">
+            <button v-if="authReady && !isLoggedIn" class="user-btn" @click="handleLoginClick">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="8" r="4"/>
                     <path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
@@ -132,6 +138,17 @@
                     文旅交互
                 </button>
                 <button
+                    :class="['sidebar-btn', { active: activeTab === 'route-plan' }]"
+                    @click="goToRoutePlan"
+                >
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 6h18"/>
+                        <path d="M7 12h10"/>
+                        <path d="M10 18h4"/>
+                    </svg>
+                    路线规划
+                </button>
+                <button
                     :class="['sidebar-btn', { active: activeTab === 'dialogue' }]"
                     @click="goToDialogue"
                 >
@@ -159,6 +176,8 @@ const emit = defineEmits(['open-login'])
 const sidebarOpen = ref(false)
 const dropdownOpen = ref(false)
 const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth <= 768 : false)
+const routeReady = ref(false)
+const authReady = ref(false)
 
 let hideTimer = null
 
@@ -208,6 +227,10 @@ const handleDocumentClick = (event) => {
 onMounted(() => {
     window.addEventListener('resize', updateViewport)
     document.addEventListener('click', handleDocumentClick)
+    router.isReady().then(() => {
+        routeReady.value = true
+        authReady.value = true
+    })
 })
 
 onUnmounted(() => {
@@ -217,9 +240,12 @@ onUnmounted(() => {
 })
 
 const activeTab = computed(() => {
+    if (!routeReady.value) return null
     if (route.path.startsWith('/profile')) return null
-    if (route.path.includes('dialogue')) return 'dialogue'
-    return 'travel'
+    if (route.path.startsWith('/route-plan')) return 'route-plan'
+    if (route.path.startsWith('/dialogue')) return 'dialogue'
+    if (route.path.startsWith('/travel')) return 'travel'
+    return null
 })
 
 const isLoggedIn = computed(() => userStore.isLoggedIn)
@@ -238,6 +264,11 @@ const goToTravel = () => {
 const goToDialogue = () => {
     sidebarOpen.value = false
     router.push('/dialogue')
+}
+
+const goToRoutePlan = () => {
+    sidebarOpen.value = false
+    router.push('/route-plan')
 }
 
 const handleLoginClick = () => {
@@ -744,11 +775,29 @@ const handleLogout = () => {
 
 @media (max-width: 1024px) {
     .app-header {
-        --desktop-dropdown-reserve: 8px;
+        --desktop-dropdown-reserve: 24px;
+    }
+
+    .header-content {
+        padding-left: max(24px, env(safe-area-inset-left));
+        padding-right: max(24px, env(safe-area-inset-right));
     }
 
     .username-text {
         max-width: 96px;
+    }
+
+    .header-content .user-dropdown .dropdown-menu {
+        left: auto;
+        right: 0;
+        transform: none;
+        max-width: min(220px, calc(100vw - 32px));
+    }
+
+    .header-content .user-dropdown .dropdown-menu::before {
+        left: auto;
+        right: 20px;
+        transform: rotate(45deg);
     }
 }
 </style>

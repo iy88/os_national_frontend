@@ -1,6 +1,7 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import TravelView from '../views/TravelView.vue'
 import DialogueView from '../views/DialogueView.vue'
+import RoutePlanView from '../views/RoutePlanView.vue'
 import UserProfile from '../views/UserProfile.vue'
 import BasicInfo from '../views/profile/BasicInfo.vue'
 import FavoriteRoutes from '../views/profile/FavoriteRoutes.vue'
@@ -21,6 +22,11 @@ const routes = [
         path: '/dialogue',
         name: 'dialogue',
         component: DialogueView
+    },
+    {
+        path: '/route-plan',
+        name: 'route-plan',
+        component: RoutePlanView
     },
     {
         path: '/profile',
