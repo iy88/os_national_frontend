@@ -1,7 +1,10 @@
 <template>
     <div :class="['travel-view', { 'mobile-layout': !isDesktopLayout }]">
         <!-- 地图区域 -->
-        <section class="map-section" :class="{ 'chat-open': chatOpen && isDesktopLayout }">
+        <section
+            class="map-section"
+            :class="{ 'chat-open': chatOpen && isDesktopLayout }"
+        >
             <div class="map-host">
                 <CityMap @select-city="showCityDetail"/>
             </div>
@@ -27,11 +30,26 @@
                     <h3>电竞文旅助手</h3>
                     <p>在线 · 基于AI规划</p>
                 </div>
+                <button
+                    :class="['planners-toggle-btn', { active: plannersVisible }]"
+                    type="button"
+                    :title="plannersVisible ? '隐藏筛选' : '显示筛选'"
+                    @click="plannersVisible = !plannersVisible"
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="4" y1="6" x2="20" y2="6"/>
+                        <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/>
+                        <line x1="4" y1="12" x2="20" y2="12"/>
+                        <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/>
+                        <line x1="4" y1="18" x2="20" y2="18"/>
+                        <circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/>
+                    </svg>
+                </button>
                 <button class="close-btn" type="button" @click="chatOpen = false">✕</button>
             </div>
 
             <!-- 快速规划选项 -->
-            <div class="planners-bar">
+            <div class="planners-bar" :class="{ collapsed: !plannersVisible }">
                 <div class="planner-item">
                     <label>目标</label>
                     <el-select v-model="selectedCity" clearable placeholder="可选">
@@ -211,6 +229,7 @@ const getIsDesktopLayout = () => {
 const isDesktopLayout = ref(getIsDesktopLayout())
 // 首帧按布局决定开关状态，避免移动端初始化时出现收拢动画
 const chatOpen = ref(isDesktopLayout.value)
+const plannersVisible = ref(true)
 
 const selectedCity = ref('')
 const travelDays = ref(null)
@@ -296,7 +315,7 @@ onUnmounted(() => {
     cancelStreaming()
 })
 
-watch([chatOpen, isDesktopLayout], () => {
+watch(isDesktopLayout, () => {
     triggerMapReflow()
 })
 
@@ -429,7 +448,8 @@ ${text}
     min-height: 0;
     min-width: 0;
     margin-right: 0;
-    transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: margin-right 0.38s linear;
+    will-change: margin-right;
 }
 
 .map-host {
@@ -522,7 +542,7 @@ ${text}
     z-index: 100;
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
     transform: translateX(100%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.38s linear;
     backface-visibility: hidden;
     will-change: transform;
 }
@@ -698,6 +718,34 @@ ${text}
     color: #e63946;
 }
 
+.planners-toggle-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s ease;
+}
+
+.planners-toggle-btn svg {
+    transition: transform 0.25s ease;
+}
+
+.planners-toggle-btn.active svg {
+    transform: rotate(180deg);
+}
+
+.planners-toggle-btn:hover {
+    background: rgba(240, 179, 68, 0.2);
+    border-color: rgba(240, 179, 68, 0.4);
+    color: #f0b344;
+}
+
 /* 快速规划选项栏 */
 .planners-bar {
     display: grid;
@@ -707,6 +755,19 @@ ${text}
     background: rgba(30, 45, 80, 0.6);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     flex-shrink: 0;
+    overflow: hidden;
+    max-height: 220px;
+    opacity: 1;
+    transition: max-height 0.28s ease, padding 0.2s ease, opacity 0.18s ease, border-color 0.2s ease;
+}
+
+.planners-bar.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-bottom-color: transparent;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .planner-item {
@@ -851,12 +912,22 @@ ${text}
 @media (max-width: 900px) {
     .chat-sidebar.mobile .planners-bar {
         grid-template-columns: repeat(3, 1fr);
+        max-height: 260px;
+    }
+
+    .chat-sidebar.mobile .planners-bar.collapsed {
+        max-height: 0;
     }
 }
 
 @media (max-width: 600px) {
     .chat-sidebar.mobile .planners-bar {
         grid-template-columns: repeat(2, 1fr);
+        max-height: 320px;
+    }
+
+    .chat-sidebar.mobile .planners-bar.collapsed {
+        max-height: 0;
     }
 
     .city-content {

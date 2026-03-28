@@ -134,6 +134,7 @@ const showHint = ref(true)
 
 // 容器引用
 const containerRef = ref(null)
+let containerResizeObserver = null
 
 // 城市标记数据（从 cities.json 导入）
 const cityMarkersData = Object.entries(citiesData).reduce((acc, [key, city]) => {
@@ -484,54 +485,94 @@ const handleCityTouch = (cityKey) => {
     emit('select-city', cityKey)
 }
 
+// 根据容器尺寸计算“大陆基准视图”（未考虑当前缩放/中心）
+const computeMainlandFitView = (containerWidth, containerHeight) => {
+    if (containerWidth <= 0 || containerHeight <= 0) return null
+    const containerAspect = containerWidth / containerHeight
+    if (!Number.isFinite(containerAspect) || containerAspect <= 0) return null
+
+    const bounds = mainlandBounds.value
+    const boundsWidth = bounds.maxX - bounds.minX
+    const boundsHeight = bounds.maxY - bounds.minY
+    if (boundsWidth <= 0 || boundsHeight <= 0) return null
+
+    const boundsAspect = boundsWidth / boundsHeight
+    let fitW, fitH
+
+    if (containerAspect > boundsAspect) {
+        fitH = boundsHeight
+        fitW = fitH * containerAspect
+    } else {
+        fitW = boundsWidth
+        fitH = fitW / containerAspect
+    }
+
+    return {
+        x: bounds.minX - (fitW - boundsWidth) / 2,
+        y: bounds.minY - (fitH - boundsHeight) / 2 + fitH * MAP_VISUAL_UPSHIFT_RATIO,
+        w: fitW,
+        h: fitH
+    }
+}
+
+const applyViewByContainerSize = (containerWidth, containerHeight, reset = false) => {
+    const fitView = computeMainlandFitView(containerWidth, containerHeight)
+    if (!fitView) return
+
+    const prevInitView = initialMainlandView.value
+    const hasPrevInit = prevInitView && prevInitView.w > 0 && prevInitView.h > 0
+
+    // 更新基准视图，使缩放边界与当前容器一致
+    initialMainlandView.value = fitView
+
+    if (reset || !hasPrevInit || vbW.value <= 0 || vbH.value <= 0) {
+        vbX.value = fitView.x
+        vbY.value = fitView.y
+        vbW.value = fitView.w
+        vbH.value = fitView.h
+        return
+    }
+
+    // 保持相对缩放比例与相对中心位置，保证不同尺寸下行为一致。
+    const prevCenterX = vbX.value + vbW.value / 2
+    const prevCenterY = vbY.value + vbH.value / 2
+    const centerRatioX = (prevCenterX - prevInitView.x) / prevInitView.w
+    const centerRatioY = (prevCenterY - prevInitView.y) / prevInitView.h
+    const zoomRatio = vbW.value / prevInitView.w
+
+    const targetCenterX = fitView.x + centerRatioX * fitView.w
+    const targetCenterY = fitView.y + centerRatioY * fitView.h
+    const aspect = fitView.h / fitView.w
+    const nextW = clampViewWidth(fitView.w * zoomRatio)
+    const nextH = nextW * aspect
+
+    vbW.value = nextW
+    vbH.value = nextH
+    vbX.value = targetCenterX - nextW / 2
+    vbY.value = targetCenterY - nextH / 2
+}
+
 // 初始化视图，使大陆区域居中并适应容器
 const initializeMainlandView = () => {
     const container = containerRef.value
     if (!container) return
-
     const rect = container.getBoundingClientRect()
-    if (rect.width <= 0 || rect.height <= 0) return
-    const containerAspect = rect.width / rect.height
-    if (!Number.isFinite(containerAspect) || containerAspect <= 0) return
-    const bounds = mainlandBounds.value
-
-    // 计算大陆边界尺寸
-    const boundsWidth = bounds.maxX - bounds.minX
-    const boundsHeight = bounds.maxY - bounds.minY
-    if (boundsWidth <= 0 || boundsHeight <= 0) return
-    const boundsAspect = boundsWidth / boundsHeight
-
-    let newW, newH
-
-    // 根据容器宽高比和大陆边界宽高比决定如何适应
-    if (containerAspect > boundsAspect) {
-        // 容器更宽，以高度为准
-        newH = boundsHeight
-        newW = newH * containerAspect
-    } else {
-        // 容器更高，以宽度为准
-        newW = boundsWidth
-        newH = newW / containerAspect
-    }
-
-    // 设置viewBox使大陆居中
-    vbX.value = bounds.minX - (newW - boundsWidth) / 2
-    vbY.value = bounds.minY - (newH - boundsHeight) / 2 + newH * MAP_VISUAL_UPSHIFT_RATIO
-    vbW.value = newW
-    vbH.value = newH
-
-    // 存储初始大陆视图用于重置
-    initialMainlandView.value = {
-        x: vbX.value,
-        y: vbY.value,
-        w: vbW.value,
-        h: vbH.value
-    }
+    applyViewByContainerSize(rect.width, rect.height, true)
 }
 
 onMounted(() => {
     nextTick(() => {
         extractSvgPaths()
+
+        const container = containerRef.value
+        if (container && typeof ResizeObserver !== 'undefined') {
+            containerResizeObserver = new ResizeObserver((entries) => {
+                const entry = entries?.[0]
+                if (!entry) return
+                applyViewByContainerSize(entry.contentRect.width, entry.contentRect.height)
+            })
+            containerResizeObserver.observe(container)
+        }
     })
 
     window.addEventListener('resize', initializeMainlandView)
@@ -545,6 +586,10 @@ onMounted(() => {
 onUnmounted(() => {
     if (panRafId) cancelAnimationFrame(panRafId)
     if (pinchRafId) cancelAnimationFrame(pinchRafId)
+    if (containerResizeObserver) {
+        containerResizeObserver.disconnect()
+        containerResizeObserver = null
+    }
     window.removeEventListener('resize', initializeMainlandView)
 })
 </script>
