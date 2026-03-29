@@ -202,6 +202,7 @@
 
 <script setup>
 import {nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
+import {useRouter} from 'vue-router'
 import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
 import citiesData from '../data/cities.json'
@@ -251,6 +252,7 @@ const activeStreamToken = ref(0)
 
 // 流式输出定时器
 const {streamingCancelRef, cancelStreaming} = useStreamTimers()
+const router = useRouter()
 
 const updateLayoutMode = () => {
     isDesktopLayout.value = getIsDesktopLayout()
@@ -289,7 +291,11 @@ const handleFavoriteMessage = async (mid) => {
 }
 
 const handleNavigateToDetail = () => {
-    ElMessage.info('跳转详细规划页面')
+    if (currentSessionId.value) {
+        router.push({ name: 'route-plan', query: { sid: currentSessionId.value } })
+    } else {
+        ElMessage.warning('当前没有进行中的会话')
+    }
 }
 
 const updateDialogWidth = () => {
@@ -396,6 +402,14 @@ ${text}
                     hasAssistantOutput = true
                 }
             }
+        } else if (data.type === 'error') {
+            // 错误消息已落盘到数据库，用 error message 替换消息内容
+            const errorMsg = typeof data.message === 'string' ? data.message : '生成失败，请稍后重试。'
+            if (streamingMsgIndex.value >= 0) {
+                travelMessages.value[streamingMsgIndex.value].content = errorMsg
+                travelMessages.value[streamingMsgIndex.value].completed = true
+            }
+            hasAssistantOutput = true
         } else if (data.type === 'done') {
             streamFinished = true
             // 标记消息为已完成，启用操作按钮
@@ -437,6 +451,9 @@ ${text}
     height: 100%;
     min-height: 0;
     overflow: hidden;
+    --assistant-transition-duration-desktop: 0.35s;
+    --assistant-transition-duration-mobile: 0.4s;
+    --assistant-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .travel-view.mobile-layout .map-section {
@@ -452,7 +469,7 @@ ${text}
     min-height: 0;
     min-width: 0;
     margin-right: 0;
-    transition: margin-right 0.38s linear;
+    transition: margin-right var(--assistant-transition-duration-desktop) var(--assistant-transition-easing);
     will-change: margin-right;
 }
 
@@ -548,7 +565,7 @@ ${text}
     z-index: 100;
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
     transform: translateX(100%);
-    transition: transform 0.38s linear;
+    transition: transform var(--assistant-transition-duration-desktop) var(--assistant-transition-easing);
     backface-visibility: hidden;
     will-change: transform;
 }
@@ -572,6 +589,7 @@ ${text}
     border-top: 1px solid rgba(240, 179, 68, 0.15);
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
+    transition-duration: var(--assistant-transition-duration-mobile);
 }
 
 .chat-sidebar.mobile.open {

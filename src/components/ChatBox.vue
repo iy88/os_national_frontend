@@ -1,6 +1,14 @@
 <template>
     <div class="chat-box">
-        <div ref="messagesContainer" class="chat-messages" @scroll="handleMessagesScroll">
+        <div
+            ref="messagesContainer"
+            :class="['chat-messages', { 'scrollbar-visible': scrollbarVisible }]"
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+            @mousemove="handleMouseMove"
+            @scroll="handleMessagesScroll"
+            @pointerdown="handlePointerDown"
+        >
             <slot></slot>
             <div
                 v-for="(msg, index) in messages"
@@ -60,7 +68,7 @@
 </template>
 
 <script setup>
-import {computed, nextTick, ref, watch} from 'vue'
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
 import {marked} from 'marked'
 import DOMPurify from 'dompurify'
 
@@ -106,11 +114,15 @@ const inputText = ref('')
 const messagesContainer = ref(null)
 const inputTextarea = ref(null)
 const status = ref('idle') // 'idle', 'thinking', 'streaming'
+const scrollbarVisible = ref(false)
 let userHasScrolled = false // 用户是否主动滚动过
 let streamingUnwatch = null // 流式输出时的监听函数
 let previousScrollTop = 0 // 上一次的滚动位置
+let dragging = false
+let scrollbarHideTimer = null
 
 const handleMessagesScroll = () => {
+    showScrollbar(1200)
     if (!messagesContainer.value) return
 
     const {scrollTop} = messagesContainer.value
@@ -125,6 +137,49 @@ const handleMessagesScroll = () => {
     }
 
     previousScrollTop = scrollTop
+}
+
+const clearScrollbarHideTimer = () => {
+    if (scrollbarHideTimer) {
+        clearTimeout(scrollbarHideTimer)
+        scrollbarHideTimer = null
+    }
+}
+
+const showScrollbar = (delay = 1200) => {
+    scrollbarVisible.value = true
+    clearScrollbarHideTimer()
+    if (!dragging) {
+        scrollbarHideTimer = setTimeout(() => {
+            scrollbarVisible.value = false
+        }, delay)
+    }
+}
+
+const handleMouseEnter = () => {
+    showScrollbar(1200)
+}
+
+const handleMouseLeave = () => {
+    if (!dragging) {
+        showScrollbar(360)
+    }
+}
+
+const handleMouseMove = () => {
+    showScrollbar(1200)
+}
+
+const handlePointerDown = () => {
+    dragging = true
+    scrollbarVisible.value = true
+    clearScrollbarHideTimer()
+}
+
+const handleGlobalPointerUp = () => {
+    if (!dragging) return
+    dragging = false
+    showScrollbar(1200)
 }
 
 const scrollToBottom = () => {
@@ -210,6 +265,15 @@ defineExpose({
         status.value = s
     },
     getStatus: () => status.value
+})
+
+onMounted(() => {
+    window.addEventListener('pointerup', handleGlobalPointerUp)
+})
+
+onUnmounted(() => {
+    clearScrollbarHideTimer()
+    window.removeEventListener('pointerup', handleGlobalPointerUp)
 })
 </script>
 

@@ -126,10 +126,15 @@ const handleLogout = () => {
     flex-direction: row;
     width: 100%;
     min-height: calc(100vh - 80px);
+    min-height: calc(100dvh - 80px);
+    height: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 24px;
     gap: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* 侧边栏 */
@@ -387,7 +392,10 @@ const handleLogout = () => {
 @media (max-width: 768px) {
     .profile-layout {
         flex-direction: column;
+        height: 100%;
+        min-height: 100%;
         padding: 16px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
     }
 
     .profile-main {

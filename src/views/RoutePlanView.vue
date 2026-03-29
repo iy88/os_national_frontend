@@ -46,8 +46,8 @@
           会话
         </button>
         <div class="topbar-title">
-          <h2>文旅路线规划</h2>
-          <p>AI 结合偏好和目的地，实时生成专属路线</p>
+          <h2>{{ topbarTitle }}</h2>
+          <p>{{ topbarSubtitle }}</p>
         </div>
       </header>
 
@@ -60,6 +60,7 @@
           @send="handleSendMessage"
           @copy="handleCopy"
           @favorite="handleFavorite"
+          @regenerate="handleRegenerate"
         >
           <div
             v-if="conversationStore.currentMessages.length === 0"
@@ -83,8 +84,8 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, nextTick, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { onMounted, onUnmounted, ref, watch } from "vue";
+import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import { useConversationStore } from "../stores/conversation";
 import { useStreamTimers } from "../composables/useStreamTimers";
 import { sendChatMessage, favoriteRoute } from "../api";
@@ -107,7 +108,30 @@ const mobileSidebarOpen = ref(false);
 const desktopViewportStyle = ref({});
 const desktopSidebarStyle = ref({});
 const sessionsReady = ref(false);
+const topbarTitle = ref("文旅路线规划");
+const topbarSubtitle = ref("AI 结合偏好和目的地，实时生成专属路线");
 let headerResizeObserver = null;
+
+const stopActiveStream = ({ markCurrentSessionIncomplete = false } = {}) => {
+  const hasActiveStream = Boolean(streamingCancelRef.value) || isProcessing.value;
+  if (!hasActiveStream) return;
+
+  const currentSid = conversationStore.currentSessionId;
+  if (markCurrentSessionIncomplete && currentSid) {
+    const session = conversationStore.sessions.find(
+      (s) => Number(s.sid) === Number(currentSid),
+    );
+    if (session) {
+      session.hasIncompleteMessage = true;
+    }
+  }
+
+  // 失效所有已注册的流回调，防止切换后旧回调继续写入 store。
+  activeStreamToken.value = Date.now();
+  cancelStreaming();
+  isProcessing.value = false;
+  chatBoxRef.value?.setStatus("idle");
+};
 
 const parseSidFromQuery = (sidQuery) => {
   const rawValue = Array.isArray(sidQuery) ? sidQuery[0] : sidQuery;
@@ -124,16 +148,14 @@ const clearSidQuery = async () => {
   await router.replace({ query: restQuery });
 };
 
-const scrollChatToBottom = async () => {
-  await nextTick();
-  if (typeof window !== "undefined") {
-    await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-  }
-  chatBoxRef.value?.scrollToBottom();
-};
-
 const syncSessionWithRoute = async (sidQuery) => {
   const sid = parseSidFromQuery(sidQuery);
+  const currentSid = conversationStore.currentSessionId;
+  const isSwitchingSession = currentSid !== null && sid !== currentSid;
+
+  if (isSwitchingSession) {
+    stopActiveStream({ markCurrentSessionIncomplete: true });
+  }
 
   if (sid === null) {
     if (route.query.sid !== undefined) {
@@ -153,12 +175,132 @@ const syncSessionWithRoute = async (sidQuery) => {
     sid === conversationStore.currentSessionId &&
     conversationStore.currentMessages.length > 0
   ) {
-    await scrollChatToBottom();
     return;
   }
 
   await conversationStore.fetchSessionDetail(sid);
-  await scrollChatToBottom();
+
+  // 更新 topbar 标题为会话标题
+  const session = conversationStore.sessions.find(s => s.sid === sid);
+  if (session) {
+    topbarTitle.value = session.title || "新对话";
+    topbarSubtitle.value = session.hasIncompleteMessage
+      ? "对话未完成，正在恢复..."
+      : "AI 结合偏好和目的地，实时生成专属路线";
+  }
+
+  // 检查是否需要恢复未完成的流
+  if (conversationStore.hasIncompleteMessage && conversationStore.incompleteMid) {
+    resumeIncompleteStream();
+  }
+};
+
+const resumeIncompleteStream = () => {
+  const streamToken = Date.now();
+  activeStreamToken.value = streamToken;
+
+  let streamStarted = false;
+  let streamFinished = false;
+  let hasAssistantOutput = false;
+  let hasEnteredStreaming = false;
+
+  stopActiveStream();
+
+  isProcessing.value = true;
+  chatBoxRef.value?.setStatus("thinking");
+
+  const sid = conversationStore.currentSessionId;
+  const mid = conversationStore.incompleteMid;
+
+  const { eventSource, cancel } = sendChatMessage(null, sid, mid);
+  streamingCancelRef.value = cancel;
+
+  let streamingMsgIndex = -1;
+  let streamingMidValue = mid;
+
+  eventSource.onmessage = (e) => {
+    if (streamToken !== activeStreamToken.value) return;
+
+    const data = e.data;
+
+    if (data.type === "start") {
+      streamStarted = true;
+      streamingMidValue = data.mid;
+      // 用后端返回的 mid 查找消息
+      streamingMsgIndex = conversationStore.currentMessages.findIndex(
+        m => m.mid === streamingMidValue
+      );
+    } else if (data.type === "catchup") {
+      // 恢复模式：一次性接收全量缓存内容，直接写入消息
+      const catchupContent = typeof data.content === "string" ? data.content : "";
+      if (streamingMsgIndex >= 0 && catchupContent) {
+        conversationStore.currentMessages[streamingMsgIndex].content = catchupContent;
+      }
+      hasEnteredStreaming = true;
+      hasAssistantOutput = !!catchupContent;
+      chatBoxRef.value?.setStatus("streaming");
+      conversationStore.fetchSessions();
+    } else if (data.type === "content") {
+      if (!hasEnteredStreaming) {
+        chatBoxRef.value?.setStatus("streaming");
+        hasEnteredStreaming = true;
+        conversationStore.fetchSessions();
+      }
+
+      const chunk = typeof data.content === "string" ? data.content : "";
+      if (!chunk) return;
+
+      if (streamingMsgIndex >= 0) {
+        conversationStore.appendToMessage(streamingMsgIndex, chunk);
+      }
+
+      hasAssistantOutput = true;
+    } else if (data.type === "error") {
+      // 错误消息已落盘到数据库，用 error message 替换消息内容
+      const errorMsg = typeof data.message === "string" ? data.message : "生成失败，请稍后重试。";
+      if (streamingMsgIndex >= 0) {
+        conversationStore.currentMessages[streamingMsgIndex].content = errorMsg;
+        conversationStore.currentMessages[streamingMsgIndex].completed = true;
+      }
+      hasAssistantOutput = true;
+    } else if (data.type === "done") {
+      streamFinished = true;
+
+      if (streamingMsgIndex >= 0) {
+        const finalContent =
+          conversationStore.currentMessages[streamingMsgIndex]?.content || "";
+        if (!finalContent.trim()) {
+          conversationStore.currentMessages.splice(streamingMsgIndex, 1);
+        } else {
+          conversationStore.currentMessages[streamingMsgIndex].completed = true;
+        }
+      }
+
+      chatBoxRef.value?.setStatus("idle");
+      cancelStreaming(false);
+      isProcessing.value = false;
+      conversationStore.finalizeMessage(data.title || null);
+      // 更新 topbar 标题为后端返回的标题
+      if (data.title) {
+        topbarTitle.value = data.title;
+        topbarSubtitle.value = "AI 结合偏好和目的地，实时生成专属路线";
+      }
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    if (streamToken !== activeStreamToken.value) return;
+
+    const isAbortLike =
+      error?.name === "AbortError" ||
+      /abort|aborted|load failed|failed to fetch/i.test(error?.message || "");
+
+    if (!streamFinished && !isAbortLike && (!streamStarted || !hasAssistantOutput)) {
+      chatBoxRef.value?.setStatus("error");
+      cancelStreaming();
+      isProcessing.value = false;
+    }
+  };
 };
 
 const updateViewportMode = () => {
@@ -210,6 +352,9 @@ const observeHeaderHeight = () => {
 };
 
 const handleSelectSession = (sid) => {
+  if (sid !== conversationStore.currentSessionId) {
+    stopActiveStream({ markCurrentSessionIncomplete: true });
+  }
   // 只更新 URL，由 watch 处理会话加载，避免重复请求
   router.replace({ query: sid ? { sid } : {} });
   if (isCompact.value) {
@@ -218,8 +363,11 @@ const handleSelectSession = (sid) => {
 };
 
 const handleNewChat = () => {
+  stopActiveStream({ markCurrentSessionIncomplete: true });
   conversationStore.createNewSession();
   router.replace({ query: {} });
+  topbarTitle.value = "文旅路线规划";
+  topbarSubtitle.value = "AI 结合偏好和目的地，实时生成专属路线";
   if (isCompact.value) {
     mobileSidebarOpen.value = false;
   }
@@ -231,6 +379,10 @@ const handleDeleteSession = async () => {
 
 const handleTitleUpdate = ({ sid, title }) => {
   conversationStore.updateSessionTitle(sid, title);
+  // 如果更新的是当前会话的标题，同步更新 topbar
+  if (sid === conversationStore.currentSessionId) {
+    topbarTitle.value = title;
+  }
 };
 
 const handleSendMessage = (text) => {
@@ -242,7 +394,7 @@ const handleSendMessage = (text) => {
   let hasAssistantOutput = false;
   let hasEnteredStreaming = false;
 
-  cancelStreaming();
+  stopActiveStream();
 
   conversationStore.currentMessages.push({ type: "user", content: text });
 
@@ -273,6 +425,8 @@ const handleSendMessage = (text) => {
       if (!hasEnteredStreaming) {
         chatBoxRef.value?.setStatus("streaming");
         hasEnteredStreaming = true;
+        // 首次输出时刷新会话列表（获取 sid）
+        conversationStore.fetchSessions();
       }
 
       const chunk = typeof data.content === "string" ? data.content : "";
@@ -306,7 +460,7 @@ const handleSendMessage = (text) => {
       chatBoxRef.value?.setStatus("idle");
       cancelStreaming(false);
       isProcessing.value = false;
-      conversationStore.finalizeMessage();
+      conversationStore.finalizeMessage(data.title || null);
     }
   };
 
@@ -361,6 +515,119 @@ const handleFavorite = async (mid) => {
   }
 };
 
+const handleRegenerate = (mid) => {
+  if (!mid) {
+    ElMessage.warning("无法重新生成此消息");
+    return;
+  }
+
+  const streamToken = Date.now();
+  activeStreamToken.value = streamToken;
+
+  let streamStarted = false;
+  let streamFinished = false;
+  let hasAssistantOutput = false;
+  let hasEnteredStreaming = false;
+
+  // 找到要重新生成的消息索引
+  const oldMsgIndex = conversationStore.currentMessages.findIndex(
+    (m) => m.mid === mid
+  );
+  if (oldMsgIndex < 0) {
+    ElMessage.warning("未找到要重新生成的消息");
+    return;
+  }
+
+  stopActiveStream();
+
+  isProcessing.value = true;
+  chatBoxRef.value?.setStatus("thinking");
+
+  const sid = conversationStore.currentSessionId;
+
+  const { eventSource, cancel } = sendChatMessage(null, sid, null, mid);
+  streamingCancelRef.value = cancel;
+
+  let streamingMsgIndex = oldMsgIndex;
+  let streamingMidValue = null;
+
+  eventSource.onmessage = (e) => {
+    if (streamToken !== activeStreamToken.value) return;
+
+    const data = e.data;
+
+    if (data.type === "start") {
+      streamStarted = true;
+      // 重新生成会返回新的 mid，用新 mid 替换旧消息的 mid
+      streamingMidValue = data.mid;
+      // 更新消息的 mid
+      conversationStore.currentMessages[streamingMsgIndex].mid = streamingMidValue;
+    } else if (data.type === "content") {
+      if (!hasEnteredStreaming) {
+        chatBoxRef.value?.setStatus("streaming");
+        hasEnteredStreaming = true;
+        conversationStore.fetchSessions();
+      }
+
+      const chunk = typeof data.content === "string" ? data.content : "";
+      if (!chunk) return;
+
+      // 重新生成时，清空旧内容后追加新内容
+      if (streamingMsgIndex >= 0) {
+        if (!hasAssistantOutput) {
+          conversationStore.currentMessages[streamingMsgIndex].content = chunk;
+          hasAssistantOutput = true;
+        } else {
+          conversationStore.appendToMessage(streamingMsgIndex, chunk);
+        }
+      }
+    } else if (data.type === "error") {
+      // 错误消息已落盘到数据库，用 error message 替换消息内容
+      const errorMsg = typeof data.message === "string" ? data.message : "生成失败，请稍后重试。";
+      if (streamingMsgIndex >= 0) {
+        conversationStore.currentMessages[streamingMsgIndex].content = errorMsg;
+        conversationStore.currentMessages[streamingMsgIndex].completed = true;
+      }
+      hasAssistantOutput = true;
+    } else if (data.type === "done") {
+      streamFinished = true;
+
+      if (streamingMsgIndex >= 0) {
+        const finalContent =
+          conversationStore.currentMessages[streamingMsgIndex]?.content || "";
+        if (!finalContent.trim()) {
+          conversationStore.currentMessages.splice(streamingMsgIndex, 1);
+        } else {
+          conversationStore.currentMessages[streamingMsgIndex].completed = true;
+        }
+      }
+
+      chatBoxRef.value?.setStatus("idle");
+      cancelStreaming(false);
+      isProcessing.value = false;
+      conversationStore.finalizeMessage(data.title || null);
+      if (data.title) {
+        topbarTitle.value = data.title;
+        topbarSubtitle.value = "AI 结合偏好和目的地，实时生成专属路线";
+      }
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    if (streamToken !== activeStreamToken.value) return;
+
+    const isAbortLike =
+      error?.name === "AbortError" ||
+      /abort|aborted|load failed|failed to fetch/i.test(error?.message || "");
+
+    if (!streamFinished && !isAbortLike && (!streamStarted || !hasAssistantOutput)) {
+      chatBoxRef.value?.setStatus("error");
+      cancelStreaming();
+      isProcessing.value = false;
+    }
+  };
+};
+
 onMounted(async () => {
   // 无 sid 时先清理历史会话态，避免首屏闪烁旧消息
   if (parseSidFromQuery(route.query.sid) === null) {
@@ -377,6 +644,10 @@ onMounted(async () => {
   await syncSessionWithRoute(route.query.sid);
 });
 
+onBeforeRouteLeave(() => {
+  stopActiveStream({ markCurrentSessionIncomplete: true });
+});
+
 // 监听路由变化（用户通过浏览器前进/后退时处理）
 watch(
   () => route.query.sid,
@@ -387,7 +658,7 @@ watch(
 );
 
 onUnmounted(() => {
-  cancelStreaming();
+  stopActiveStream();
   conversationStore.createNewSession();
   headerResizeObserver?.disconnect();
   headerResizeObserver = null;
@@ -439,6 +710,7 @@ onUnmounted(() => {
   flex-direction: column;
   padding: 12px;
   gap: 10px;
+  overflow: hidden;
 }
 
 .chat-topbar {
@@ -479,8 +751,16 @@ onUnmounted(() => {
 .chat-surface {
   flex: 1;
   min-height: 0;
+  display: flex;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.chat-surface :deep(.route-chat-box) {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .chat-welcome {

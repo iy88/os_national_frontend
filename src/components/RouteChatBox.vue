@@ -65,6 +65,24 @@
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                             </svg>
                         </button>
+                        <button
+                            class="action-btn"
+                            title="重新生成"
+                            @click="emit('regenerate', msg.mid)"
+                        >
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <polyline points="23 4 23 10 17 10"/>
+                                <polyline points="1 20 1 14 7 14"/>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -130,7 +148,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["send", "copy", "favorite"]);
+const emit = defineEmits(["send", "copy", "favorite", "regenerate"]);
 
 const inputText = ref("");
 const messagesContainer = ref(null);
@@ -174,7 +192,10 @@ const renderMessageContent = (content) => {
 const handleMessagesScroll = () => {
     showScrollbar(1200);
     if (!messagesContainer.value) return;
+
     const {scrollTop} = messagesContainer.value;
+
+    // 如果向上滚动（scrollTop < previous），判定为用户滚动
     if (scrollTop < previousScrollTop) {
         userHasScrolled = true;
         if (streamingUnwatch) {
@@ -182,6 +203,7 @@ const handleMessagesScroll = () => {
             streamingUnwatch = null;
         }
     }
+
     previousScrollTop = scrollTop;
 };
 
@@ -245,9 +267,7 @@ const autoResize = () => {
 watch(
     () => props.messages.length,
     () => {
-        if (!userHasScrolled) {
-            scrollToBottom();
-        }
+        scrollToBottom();
     },
 );
 
@@ -297,10 +317,6 @@ defineExpose({
         status.value = s;
     },
     getStatus: () => status.value,
-    scrollToBottom: () => {
-        userHasScrolled = false;
-        scrollToBottom();
-    },
 });
 
 onMounted(() => {
@@ -323,6 +339,7 @@ onUnmounted(() => {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     overflow: hidden;
+    overscroll-behavior: contain;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
@@ -332,6 +349,9 @@ onUnmounted(() => {
     min-height: 0;
     max-height: 100%;
     overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -493,7 +513,7 @@ onUnmounted(() => {
 
 .chat-input {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 8px;
     padding: 12px;
     background: rgba(15, 26, 42, 0.86);

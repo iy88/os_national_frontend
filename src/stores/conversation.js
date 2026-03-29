@@ -9,6 +9,8 @@ export const useConversationStore = defineStore('conversation', () => {
     const currentMessages = ref([])
     const isLoading = ref(false)
     const error = ref(null)
+    const hasIncompleteMessage = ref(false) // 当前会话是否有未完成消息
+    const incompleteMid = ref(null) // 未完成消息的 mid
 
     // Getters
     const currentSession = computed(() =>
@@ -68,16 +70,32 @@ export const useConversationStore = defineStore('conversation', () => {
         isLoading.value = true
         error.value = null
         try {
+            // 从会话列表中查找该会话的 hasIncompleteMessage 状态
+            const sessionFromList = sessions.value.find(s => s.sid === sid)
+            const incompleteFlag = sessionFromList?.hasIncompleteMessage || false
+
             const result = await getChatSession(sid)
             if (result.success) {
                 currentSessionId.value = sid
-                currentMessages.value = result.session.messages.map(msg => ({
+                hasIncompleteMessage.value = incompleteFlag
+
+                const messages = result.session.messages.map(msg => ({
                     type: msg.role === 'user' ? 'user' : 'character',
                     content: msg.content,
                     mid: msg.mid,
                     createdAt: msg.createdAt,
                     completed: true  // 历史消息已完成，可显示操作按钮
                 }))
+
+                currentMessages.value = messages
+
+                // 如果有未完成消息，找到最后一条 AI 消息的 mid
+                if (incompleteFlag) {
+                    const lastAiMsg = [...messages].reverse().find(m => m.type === 'character')
+                    incompleteMid.value = lastAiMsg?.mid || null
+                } else {
+                    incompleteMid.value = null
+                }
             }
         } catch (e) {
             error.value = e.message
@@ -95,6 +113,8 @@ export const useConversationStore = defineStore('conversation', () => {
     const createNewSession = () => {
         currentSessionId.value = null
         currentMessages.value = []
+        hasIncompleteMessage.value = false
+        incompleteMid.value = null
     }
 
     // 更新会话标题
@@ -122,7 +142,13 @@ export const useConversationStore = defineStore('conversation', () => {
     }
 
     // Finalize streaming message
-    const finalizeMessage = () => {
+    const finalizeMessage = (title) => {
+        if (title && currentSessionId.value) {
+            const session = sessions.value.find(s => s.sid === currentSessionId.value)
+            if (session) {
+                session.title = title
+            }
+        }
         fetchSessions()
     }
 
@@ -132,6 +158,8 @@ export const useConversationStore = defineStore('conversation', () => {
         currentMessages,
         isLoading,
         error,
+        hasIncompleteMessage,
+        incompleteMid,
         currentSession,
         groupedSessions,
         fetchSessions,

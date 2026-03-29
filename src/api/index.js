@@ -131,9 +131,20 @@ export const editChatSessionTitle = (sid, title) => {
 
 // 使用 fetch 实现 SSE（带 POST 和自定义 headers）
 // 返回 { eventSource, cancel }
-export const sendChatMessageStream = (content, sid = null) => {
+// mid 用于恢复模式（不传 content 表示恢复未完成的流）
+// regenerateMid 用于重新生成模式（不传 content）
+export const sendChatMessageStream = (content, sid = null, mid = null, regenerateMid = null) => {
     const token = localStorage.getItem('token')
-    const body = sid ? { content, sid } : { content }
+    let body
+    if (regenerateMid !== null) {
+        // 重新生成模式：只传 sid 和 regenerateMid，不传 content
+        body = { sid, regenerateMid }
+    } else if (mid !== null) {
+        // 恢复模式：只传 sid 和 mid，不传 content
+        body = { sid, mid }
+    } else {
+        body = sid ? { content, sid } : { content }
+    }
 
     let aborted = false
     const controller = new AbortController()

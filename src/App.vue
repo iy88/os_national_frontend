@@ -49,13 +49,17 @@ body.el-popup-parent--hidden {
 #app {
     width: 100%;
     min-height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
 }
 
 .app-container {
     width: 100%;
-    min-height: 100vh;
+    min-height: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .main-content {
@@ -63,7 +67,6 @@ body.el-popup-parent--hidden {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    height: 100%;
     padding: 0;
     overflow-x: hidden;
     overflow-y: hidden;
