@@ -270,9 +270,19 @@ export const getRoleplayMessageList = (rid) => {
 }
 
 // 发送角色消息（SSE 流式响应）
-export const sendRoleplayMessageStream = (rid, content) => {
+// content: 正常发送内容
+// mid: 恢复未完成流（不传 content）
+// regenerateMid: 重新生成模式（不传 content）
+export const sendRoleplayMessageStream = (rid, content = null, mid = null, regenerateMid = null) => {
     const token = localStorage.getItem('token')
-    const body = { content }
+    let body
+    if (regenerateMid !== null) {
+        body = {regenerateMid}
+    } else if (mid !== null) {
+        body = {mid}
+    } else {
+        body = {content}
+    }
 
     let aborted = false
     const controller = new AbortController()

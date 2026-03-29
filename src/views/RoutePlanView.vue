@@ -112,6 +112,12 @@ const topbarTitle = ref("文旅路线规划");
 const topbarSubtitle = ref("AI 结合偏好和目的地，实时生成专属路线");
 let headerResizeObserver = null;
 
+const applyTopbarTitleFromDone = (title) => {
+  if (!title) return;
+  topbarTitle.value = title;
+  topbarSubtitle.value = "AI 结合偏好和目的地，实时生成专属路线";
+};
+
 const stopActiveStream = ({ markCurrentSessionIncomplete = false } = {}) => {
   const hasActiveStream = Boolean(streamingCancelRef.value) || isProcessing.value;
   if (!hasActiveStream) return;
@@ -280,11 +286,7 @@ const resumeIncompleteStream = () => {
       cancelStreaming(false);
       isProcessing.value = false;
       conversationStore.finalizeMessage(data.title || null);
-      // 更新 topbar 标题为后端返回的标题
-      if (data.title) {
-        topbarTitle.value = data.title;
-        topbarSubtitle.value = "AI 结合偏好和目的地，实时生成专属路线";
-      }
+      applyTopbarTitleFromDone(data.title);
     }
   };
 
@@ -461,6 +463,7 @@ const handleSendMessage = (text) => {
       cancelStreaming(false);
       isProcessing.value = false;
       conversationStore.finalizeMessage(data.title || null);
+      applyTopbarTitleFromDone(data.title);
     }
   };
 
@@ -606,10 +609,7 @@ const handleRegenerate = (mid) => {
       cancelStreaming(false);
       isProcessing.value = false;
       conversationStore.finalizeMessage(data.title || null);
-      if (data.title) {
-        topbarTitle.value = data.title;
-        topbarSubtitle.value = "AI 结合偏好和目的地，实时生成专属路线";
-      }
+      applyTopbarTitleFromDone(data.title);
     }
   };
 

@@ -105,8 +105,29 @@
                             <div class="msg-avatar" :class="msg.type === 'user' ? '' : 'ai'">
                                 {{ msg.type === 'user' ? '我' : activeCharacter.name.charAt(0) }}
                             </div>
-                            <div class="msg-bubble">
-                                <div class="msg-content" v-html="renderMessageContent(msg.content)"></div>
+                            <div class="msg-column">
+                                <div class="msg-bubble">
+                                    <div class="msg-content" v-html="renderMessageContent(msg.content)"></div>
+                                </div>
+                                <div
+                                    v-if="msg.type === 'character' && msg.completed"
+                                    :class="['msg-actions', { latest: isLatestCharacter(index) }]"
+                                >
+                                    <button class="action-btn" title="复制" @click="handleCopy(msg.content)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn" title="重新生成" @click="handleRegenerate(msg.mid)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 2v6h-6"/>
+                                            <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                                            <path d="M3 22v-6h6"/>
+                                            <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -324,6 +345,8 @@ const sidebarDragging = ref(false)
 const dynamicViewportHeight = ref('')
 const isHistoryLoading = ref(false)
 const streamStatus = ref('idle')
+const hasIncompleteMessage = ref(false)
+const incompleteMid = ref(null)
 const charactersByCategory = reactive({
     hero: [],
     player: [],
@@ -435,6 +458,15 @@ const currentSidebarError = computed(() => categoryError[activeSidebarTab.value]
 const selectorLoading = computed(() => categoryLoading[selectorCategory.value])
 const selectorError = computed(() => categoryError[selectorCategory.value])
 
+const latestCharacterIndex = computed(() => {
+    for (let i = messages.value.length - 1; i >= 0; i--) {
+        if (messages.value[i].type === 'character') return i
+    }
+    return -1
+})
+
+const isLatestCharacter = (index) => index === latestCharacterIndex.value
+
 const showCategoryErrorToast = (categoryKey, message) => {
     const shouldShow = activeSidebarTab.value === categoryKey || (showCharSelector.value && selectorCategory.value === categoryKey)
     if (shouldShow) {
@@ -502,6 +534,8 @@ const loadCategoryCharacters = async (categoryKey) => {
                 messages.value = []
                 inputText.value = ''
                 streamStatus.value = 'idle'
+                hasIncompleteMessage.value = false
+                incompleteMid.value = null
             }
         }
 
@@ -651,6 +685,11 @@ const loadCharacterMessages = async (character, requestToken) => {
             throw new Error(result?.message || '历史消息加载失败')
         }
 
+        const serverIncompleteMid = Number(result?.incompleteMid)
+        const hasServerIncomplete = Number.isInteger(serverIncompleteMid) && serverIncompleteMid > 0
+        hasIncompleteMessage.value = hasServerIncomplete
+        incompleteMid.value = hasServerIncomplete ? serverIncompleteMid : null
+
         const history = Array.isArray(result?.messages)
             ? result.messages.map(mapRoleplayMessage)
             : []
@@ -668,6 +707,8 @@ const loadCharacterMessages = async (character, requestToken) => {
         scrollToBottom()
     } catch (error) {
         if (requestToken !== activeCharacterRequestToken.value) return
+        hasIncompleteMessage.value = false
+        incompleteMid.value = null
         messages.value = [{
             type: 'character',
             content: buildWelcomeMessage(character),
@@ -678,6 +719,148 @@ const loadCharacterMessages = async (character, requestToken) => {
         if (requestToken === activeCharacterRequestToken.value) {
             isHistoryLoading.value = false
         }
+    }
+}
+
+const resumeIncompleteStream = (character, resumeMid, requestToken) => {
+    const normalizedMid = Number(resumeMid)
+    if (!character || !Number.isInteger(normalizedMid) || normalizedMid <= 0) return
+
+    let streamStarted = false
+    let streamFinished = false
+    let hasAssistantOutput = false
+    let hasEnteredStreaming = false
+
+    stopActiveStream({keepIdleStatus: false})
+    const streamToken = Date.now()
+    activeStreamToken.value = streamToken
+    streamStatus.value = 'thinking'
+
+    const {eventSource, cancel} = sendRoleplayMessageStream(character.rid, null, normalizedMid)
+    streamingCancelRef.value = cancel
+
+    let streamingMidValue = normalizedMid
+    let streamingMsgIndex = messages.value.findIndex(msg => Number(msg.mid) === normalizedMid)
+
+    eventSource.onmessage = (e) => {
+        if (streamToken !== activeStreamToken.value) return
+        if (requestToken !== activeCharacterRequestToken.value) return
+
+        const data = e.data
+
+        if (data.type === 'start') {
+            streamStarted = true
+            streamingMidValue = Number(data.mid) || normalizedMid
+            if (streamingMsgIndex < 0) {
+                streamingMsgIndex = messages.value.findIndex(msg => Number(msg.mid) === streamingMidValue)
+            }
+            return
+        }
+
+        if (data.type === 'catchup') {
+            const catchupContent = typeof data.content === 'string' ? data.content : ''
+            if (streamingMsgIndex < 0) {
+                streamingMsgIndex = messages.value.length
+                messages.value.push({
+                    type: 'character',
+                    content: catchupContent,
+                    mid: streamingMidValue,
+                    completed: false
+                })
+            } else {
+                messages.value[streamingMsgIndex].mid = streamingMidValue
+                if (catchupContent) {
+                    messages.value[streamingMsgIndex].content = catchupContent
+                }
+                messages.value[streamingMsgIndex].completed = false
+            }
+
+            hasEnteredStreaming = true
+            hasAssistantOutput = Boolean(messages.value[streamingMsgIndex]?.content?.trim())
+            streamStatus.value = 'streaming'
+            return
+        }
+
+        if (data.type === 'content') {
+            if (!hasEnteredStreaming) {
+                hasEnteredStreaming = true
+                streamStatus.value = 'streaming'
+            }
+
+            const chunk = typeof data.content === 'string' ? data.content : ''
+            if (!chunk) return
+
+            if (streamingMsgIndex < 0) {
+                streamingMsgIndex = messages.value.length
+                messages.value.push({
+                    type: 'character',
+                    content: chunk,
+                    mid: streamingMidValue,
+                    completed: false
+                })
+            } else {
+                messages.value[streamingMsgIndex].content += chunk
+            }
+
+            hasAssistantOutput = true
+            return
+        }
+
+        if (data.type === 'error') {
+            const errorMessage = typeof data.message === 'string'
+                ? data.message
+                : '生成失败，请稍后重试。'
+
+            if (streamingMsgIndex < 0) {
+                streamingMsgIndex = messages.value.length
+                messages.value.push({
+                    type: 'character',
+                    content: errorMessage,
+                    mid: streamingMidValue,
+                    completed: true
+                })
+            } else {
+                messages.value[streamingMsgIndex].content = errorMessage
+                messages.value[streamingMsgIndex].completed = true
+            }
+
+            hasAssistantOutput = true
+            return
+        }
+
+        if (data.type === 'done') {
+            streamFinished = true
+
+            if (streamingMsgIndex >= 0) {
+                const finalContent = messages.value[streamingMsgIndex]?.content || ''
+                if (!finalContent.trim()) {
+                    messages.value.splice(streamingMsgIndex, 1)
+                } else {
+                    messages.value[streamingMsgIndex].completed = true
+                }
+            }
+
+            hasIncompleteMessage.value = false
+            incompleteMid.value = null
+            streamStatus.value = 'idle'
+            cancelStreaming(false)
+        }
+    }
+
+    eventSource.onerror = (error) => {
+        if (streamToken !== activeStreamToken.value) return
+        if (requestToken !== activeCharacterRequestToken.value) return
+
+        const isAbortLike =
+            error?.name === 'AbortError' ||
+            /abort|aborted|load failed|failed to fetch/i.test(error?.message || '')
+
+        if (!streamFinished && !isAbortLike && (!streamStarted || !hasAssistantOutput)) {
+            ElMessage.error('恢复未完成对话失败，请稍后重试')
+        }
+
+        streamStatus.value = 'idle'
+        cancelStreaming()
     }
 }
 
@@ -701,6 +884,11 @@ const selectCharacter = async (character) => {
         loadCharacterMessages(activeCharacter.value, requestToken),
         loadCharacterDetail(activeCharacter.value, requestToken)
     ])
+
+    if (requestToken !== activeCharacterRequestToken.value) return
+    if (hasIncompleteMessage.value && incompleteMid.value) {
+        resumeIncompleteStream(activeCharacter.value, incompleteMid.value, requestToken)
+    }
 }
 
 const openStory = (character) => {
@@ -793,6 +981,149 @@ const handleSend = () => {
             if (streamingMsgIndex < 0) {
                 streamingMsgIndex = messages.value.length
                 messages.value.push({
+                    type: 'character',
+                    content: errorMessage,
+                    mid: streamingMid || data.mid || null,
+                    completed: true
+                })
+            } else {
+                messages.value[streamingMsgIndex].content = errorMessage
+                messages.value[streamingMsgIndex].completed = true
+            }
+
+            hasAssistantOutput = true
+            return
+        }
+
+        if (data.type === 'done') {
+            streamFinished = true
+
+            if (streamingMsgIndex >= 0) {
+                const finalContent = messages.value[streamingMsgIndex]?.content || ''
+                if (!finalContent.trim()) {
+                    messages.value.splice(streamingMsgIndex, 1)
+                } else {
+                    messages.value[streamingMsgIndex].completed = true
+                }
+            }
+
+            streamStatus.value = 'idle'
+            cancelStreaming(false)
+        }
+    }
+
+    eventSource.onerror = (error) => {
+        if (streamToken !== activeStreamToken.value) return
+
+        const isAbortLike =
+            error?.name === 'AbortError' ||
+            /abort|aborted|load failed|failed to fetch/i.test(error?.message || '')
+
+        if (!streamFinished && !isAbortLike && (!streamStarted || !hasAssistantOutput)) {
+            messages.value.push({
+                type: 'character',
+                content: '抱歉，发生错误，请稍后重试。',
+                completed: true
+            })
+            ElMessage.error('消息发送失败，请稍后重试')
+        }
+
+        streamStatus.value = 'idle'
+        cancelStreaming()
+    }
+}
+
+const handleCopy = async (content) => {
+    try {
+        await navigator.clipboard.writeText(content)
+        ElMessage.success('已复制到剪贴板')
+    } catch {
+        ElMessage.error('复制失败')
+    }
+}
+
+const handleRegenerate = async (mid) => {
+    if (!mid || !activeCharacter.value || streamStatus.value !== 'idle') return
+
+    const midNum = Number(mid)
+    const oldMsgIndex = messages.value.findIndex(m => Number(m.mid) === midNum)
+    if (oldMsgIndex < 0) {
+        ElMessage.warning('未找到要重新生成的消息')
+        return
+    }
+
+    stopActiveStream({keepIdleStatus: false})
+    const streamToken = Date.now()
+    activeStreamToken.value = streamToken
+
+    // 立即撤销旧回复内容，显示「正在思考...」状态
+    const regenerateInsertIndex = oldMsgIndex
+    messages.value.splice(oldMsgIndex, 1)
+
+    streamStatus.value = 'thinking'
+
+    let streamStarted = false
+    let streamFinished = false
+    let hasAssistantOutput = false
+    let hasEnteredStreaming = false
+    let streamingMsgIndex = -1
+    let streamingMid = null
+
+    const {eventSource, cancel} = sendRoleplayMessageStream(activeCharacter.value.rid, null, null, midNum)
+    streamingCancelRef.value = cancel
+
+    eventSource.onmessage = (e) => {
+        if (streamToken !== activeStreamToken.value) return
+        const data = e.data
+
+        if (data.type === 'start') {
+            streamStarted = true
+            streamingMid = data.mid
+            return
+        }
+
+        if (data.type === 'content') {
+            if (!hasEnteredStreaming) {
+                hasEnteredStreaming = true
+                streamStatus.value = 'streaming'
+                if (streamingMsgIndex >= 0) {
+                    messages.value[streamingMsgIndex].completed = false
+                }
+            }
+
+            const chunk = typeof data.content === 'string' ? data.content : ''
+            if (!chunk) return
+
+            if (streamingMsgIndex < 0) {
+                const insertIndex = Math.min(regenerateInsertIndex, messages.value.length)
+                streamingMsgIndex = insertIndex
+                messages.value.splice(insertIndex, 0, {
+                    type: 'character',
+                    content: chunk,
+                    mid: streamingMid || data.mid || null,
+                    completed: false
+                })
+            } else {
+                if (!hasAssistantOutput) {
+                    messages.value[streamingMsgIndex].content = chunk
+                } else {
+                    messages.value[streamingMsgIndex].content += chunk
+                }
+            }
+
+            hasAssistantOutput = true
+            return
+        }
+
+        if (data.type === 'error') {
+            const errorMessage = typeof data.message === 'string'
+                ? data.message
+                : '生成失败，请稍后重试。'
+
+            if (streamingMsgIndex < 0) {
+                const insertIndex = Math.min(regenerateInsertIndex, messages.value.length)
+                streamingMsgIndex = insertIndex
+                messages.value.splice(insertIndex, 0, {
                     type: 'character',
                     content: errorMessage,
                     mid: streamingMid || data.mid || null,
@@ -1471,6 +1802,16 @@ onUnmounted(() => {
     flex-direction: row-reverse;
 }
 
+.msg-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.msg-row.user .msg-column {
+    align-items: flex-end;
+}
+
 .status-row {
     max-width: 80%;
 }
@@ -1574,6 +1915,39 @@ onUnmounted(() => {
     padding: 0;
     font-size: 0.85rem;
     line-height: 1.5;
+}
+
+.msg-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.msg-row:hover .msg-actions,
+.msg-row:active .msg-actions,
+.msg-actions.latest {
+    opacity: 1;
+}
+
+.action-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.56);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    color: #f0b344;
+    background: rgba(240, 179, 68, 0.15);
+    border-color: rgba(240, 179, 68, 0.3);
 }
 
 /* 底部输入 */
