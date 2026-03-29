@@ -209,6 +209,7 @@ import citiesData from '../data/cities.json'
 import {useStreamTimers} from '../composables/useStreamTimers'
 import {sendChatMessage, favoriteRoute} from '../api'
 import {ElMessage} from 'element-plus'
+import {useUserStore} from '../stores/user'
 
 // 城市数据列表（直接使用 cities.json）
 const cityDataList = citiesData
@@ -253,6 +254,17 @@ const activeStreamToken = ref(0)
 // 流式输出定时器
 const {streamingCancelRef, cancelStreaming} = useStreamTimers()
 const router = useRouter()
+const userStore = useUserStore()
+
+const ensureLoginBeforeSend = () => {
+    const hasToken = Boolean(userStore.getToken())
+    const loggedIn = userStore.isLoggedIn || hasToken
+    if (loggedIn) return true
+
+    userStore.showLoginModal = true
+    ElMessage.warning('请先登录后再使用助手')
+    return false
+}
 
 const updateLayoutMode = () => {
     isDesktopLayout.value = getIsDesktopLayout()
@@ -354,6 +366,8 @@ const showCityDetail = (cityKey) => {
 }
 
 const sendTravelMessage = (text) => {
+    if (!ensureLoginBeforeSend()) return
+
     const streamToken = Date.now()
     activeStreamToken.value = streamToken
     let streamStarted = false

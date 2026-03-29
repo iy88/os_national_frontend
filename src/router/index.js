@@ -96,7 +96,8 @@ router.beforeEach(async (to, from) => {
 
     // 统一跳转和弹窗处理
     function redirectToLogin(to) {
-        if (to.path.startsWith('/profile')) {
+        const protectedPaths = ['/profile', '/route-plan', '/dialogue']
+        if (protectedPaths.some(p => to.path.startsWith(p))) {
             userStore.showLoginModal = true
             return '/travel'
         } else {
