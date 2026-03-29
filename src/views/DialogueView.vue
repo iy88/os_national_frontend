@@ -35,6 +35,9 @@
                     @scroll.passive="handleSidebarScroll"
                     @pointerdown="handleSidebarPointerDown"
                 >
+                    <div v-if="currentSidebarLoading" class="sidebar-loading">角色加载中...</div>
+                    <div v-else-if="currentSidebarError" class="sidebar-empty">{{ currentSidebarError }}</div>
+                    <div v-else-if="!currentSidebarChars.length" class="sidebar-empty">暂无角色</div>
                     <div
                         v-for="char in currentSidebarChars"
                         :key="char.id"
@@ -47,7 +50,6 @@
                         </div>
                         <div class="sidebar-char-info">
                             <div class="sidebar-char-name">{{ char.name }}</div>
-                            <div class="sidebar-char-quote">{{ char.desc }}</div>
                         </div>
                     </div>
                 </div>
@@ -93,18 +95,28 @@
 
                 <!-- 消息区 -->
                 <div v-else ref="messagesAreaRef" class="messages-area" @scroll="handleMessagesScroll">
-                    <div
-                        v-for="(msg, index) in messages"
-                        :key="index"
-                        :class="['msg-row', msg.type]"
-                    >
-                        <div class="msg-avatar" :class="msg.type === 'user' ? '' : 'ai'">
-                            {{ msg.type === 'user' ? '我' : activeCharacter.name.charAt(0) }}
+                    <div v-if="isHistoryLoading" class="history-loading">正在加载历史对话...</div>
+                    <template v-else>
+                        <div
+                            v-for="(msg, index) in messages"
+                            :key="index"
+                            :class="['msg-row', msg.type]"
+                        >
+                            <div class="msg-avatar" :class="msg.type === 'user' ? '' : 'ai'">
+                                {{ msg.type === 'user' ? '我' : activeCharacter.name.charAt(0) }}
+                            </div>
+                            <div class="msg-bubble">
+                                <div class="msg-content" v-html="renderMessageContent(msg.content)"></div>
+                            </div>
                         </div>
-                        <div class="msg-bubble">
-                            <span class="msg-content">{{ msg.content }}</span>
+
+                        <div v-if="streamStatus === 'thinking'" class="msg-row status-row">
+                            <div class="msg-avatar ai">{{ activeCharacter.name.charAt(0) }}</div>
+                            <div class="msg-bubble">
+                                <span class="msg-content">正在思考...</span>
+                            </div>
                         </div>
-                    </div>
+                    </template>
                 </div>
 
                 <!-- 底部输入 -->
@@ -115,10 +127,15 @@
                                 ref="inputRef"
                                 v-model="inputText"
                                 :placeholder="`与 ${activeCharacter.name} 对话...`"
+                                :disabled="streamStatus !== 'idle' || isHistoryLoading"
                                 @keydown.enter.prevent="handleSend"
                             />
                         </div>
-                        <button class="send-btn" @click="handleSend">
+                        <button
+                            class="send-btn"
+                            :disabled="streamStatus !== 'idle' || isHistoryLoading || !inputText.trim()"
+                            @click="handleSend"
+                        >
                             <span class="send-arrow">↑</span>
                         </button>
                     </div>
@@ -144,7 +161,10 @@
                     </div>
                 </div>
                 <div class="panel-body">
-                    <div class="char-grid">
+                    <div v-if="selectorLoading" class="selector-loading">角色加载中...</div>
+                    <div v-else-if="selectorError" class="selector-empty">{{ selectorError }}</div>
+                    <div v-else-if="!selectorCharacters.length" class="selector-empty">暂无角色</div>
+                    <div v-else class="char-grid">
                         <div
                             v-for="char in selectorCharacters"
                             :key="char.id"
@@ -153,7 +173,6 @@
                         >
                             <div class="char-avatar-block">{{ char.name.charAt(0) }}</div>
                             <div class="char-name">{{ char.name }}</div>
-                            <div class="char-desc">{{ char.desc }}</div>
                         </div>
                     </div>
                 </div>
@@ -176,11 +195,116 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from 'vue'
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {ElMessage} from 'element-plus'
+import {marked} from 'marked'
+import DOMPurify from 'dompurify'
 import StoryModal from '../components/StoryModal.vue'
 import PhotoGallery from '../components/PhotoGallery.vue'
-import {categoryInfo, characterData, getCharacterWelcome, mockStreamReply} from '../data/characters'
+import {categoryInfo} from '../data/characters'
 import {useStreamTimers} from '../composables/useStreamTimers'
+import {
+    getRoleplayCharacterDetail,
+    getRoleplayCharacterList,
+    getRoleplayMessageList,
+    sendRoleplayMessageStream
+} from '../api'
+
+const route = useRoute()
+const router = useRouter()
+
+marked.setOptions({
+    gfm: true,
+    breaks: true
+})
+
+const roleplayTypeMap = Object.freeze({
+    hero: 'game_hero',
+    player: 'esports_player',
+    celebrity: 'game_expert'
+})
+
+
+const createPlaceholderSvg = (name, color, subtitle = '电竞人物') => {
+    const safeName = String(name || '角色').slice(0, 14)
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:${color};stop-opacity:0.34" />
+        <stop offset="100%" style="stop-color:#1a2b5f;stop-opacity:0.92" />
+      </linearGradient>
+    </defs>
+    <rect width="320" height="320" fill="url(#grad)"/>
+    <circle cx="160" cy="118" r="52" fill="${color}" opacity="0.65"/>
+    <text x="160" y="226" text-anchor="middle" fill="#fff" font-size="26" font-weight="bold">${safeName}</text>
+    <text x="160" y="262" text-anchor="middle" fill="rgba(255,255,255,0.66)" font-size="14">${subtitle}</text>
+  </svg>`
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
+const buildMockPhotos = (name, color) => {
+    return [
+        createPlaceholderSvg(`${name}-1`, color, '角色画面'),
+        createPlaceholderSvg(`${name}-2`, color, '互动场景'),
+        createPlaceholderSvg(`${name}-3`, color, '高光瞬间')
+    ]
+}
+
+const buildMockStory = (name, categoryKey, detail = null) => {
+    const categoryName = categoryInfo[categoryKey]?.name || '电竞角色'
+    const bio = typeof detail?.bio === 'string' ? detail.bio.trim() : ''
+    const phraseList = Array.isArray(detail?.phrases)
+        ? detail.phrases.filter(item => typeof item === 'string' && item.trim())
+        : []
+
+    const intro = bio || `${name}是一位${categoryName}，随时可以与你展开沉浸式对话。`
+    if (!phraseList.length) {
+        return `${intro}\n\n和TA聊聊你的问题，看看这位角色会给出怎样的回应。`
+    }
+
+    return `${intro}\n\n常用语：\n${phraseList.map(item => `- ${item}`).join('\n')}`
+}
+
+const buildWelcomeMessage = (character) => {
+    return `你好，我是${character.name}。${character.desc || '很高兴认识你。'}`
+}
+
+const mapRoleplayMessage = (msg) => ({
+    type: msg?.role === 'user' ? 'user' : 'character',
+    content: typeof msg?.content === 'string' ? msg.content : '',
+    mid: msg?.mid ?? null,
+    createdAt: msg?.createdAt || null,
+    completed: true
+})
+
+const renderMessageContent = (content) => {
+    if (!content) return ''
+    const html = marked.parse(content)
+    return DOMPurify.sanitize(typeof html === 'string' ? html : '')
+}
+
+const mapRoleplayCharacter = (item, categoryKey) => {
+    const color = categoryInfo[categoryKey]?.color || '#f0b344'
+    const rid = Number(item?.rid)
+    const name = typeof item?.name === 'string' && item.name.trim()
+        ? item.name.trim()
+        : `角色${Number.isFinite(rid) ? rid : ''}`
+
+    return {
+        id: Number.isFinite(rid) ? rid : `${categoryKey}-${Date.now()}`,
+        rid,
+        categoryKey,
+        roleplayType: roleplayTypeMap[categoryKey],
+        name,
+        avatar: createPlaceholderSvg(name, color),
+        story: buildMockStory(name, categoryKey),
+        photos: buildMockPhotos(name, color),
+        avatarId: item?.avatarId ?? null,
+        createdAt: item?.createdAt || null,
+        detailLoaded: false
+    }
+}
 
 const activeSidebarTab = ref('hero')
 const activeCharacter = ref(null)
@@ -198,8 +322,90 @@ const showAvatarDropdown = ref(false)
 const sidebarScrollbarVisible = ref(false)
 const sidebarDragging = ref(false)
 const dynamicViewportHeight = ref('')
+const isHistoryLoading = ref(false)
+const streamStatus = ref('idle')
+const charactersByCategory = reactive({
+    hero: [],
+    player: [],
+    celebrity: []
+})
+const categoryLoading = reactive({
+    hero: false,
+    player: false,
+    celebrity: false
+})
+const categoryError = reactive({
+    hero: '',
+    player: '',
+    celebrity: ''
+})
+const categoryRequestToken = reactive({
+    hero: 0,
+    player: 0,
+    celebrity: 0
+})
+const activeCharacterRequestToken = ref(0)
+const activeStreamToken = ref(0)
 let sidebarScrollbarHideTimer = null
 let viewportRafId = 0
+let streamingUnwatch = null
+
+// 路由参数解析与同步
+const reverseCategoryMap = Object.freeze({
+    game_hero: 'hero',
+    esports_player: 'player',
+    game_expert: 'celebrity'
+})
+
+const parseParamsFromQuery = (query) => {
+    const type = typeof query.type === 'string' ? query.type.trim().toLowerCase() : ''
+    const ridRaw = Array.isArray(query.rid) ? query.rid[0] : query.rid
+    const rid = Number(ridRaw)
+    if (!type || !reverseCategoryMap[type] || !Number.isInteger(rid) || rid <= 0) {
+        return null
+    }
+    return {
+        type,
+        categoryKey: reverseCategoryMap[type],
+        rid
+    }
+}
+
+const hasCharacterByRid = (categoryKey, rid) => {
+    const list = charactersByCategory[categoryKey] || []
+    return list.some(item => Number(item.rid) === rid)
+}
+
+const syncCharacterWithRoute = async (query) => {
+    const params = parseParamsFromQuery(query)
+    if (!params) return
+
+    const { type, categoryKey, rid } = params
+
+    // 确保列表已加载
+    if (!charactersByCategory[categoryKey]?.length) {
+        await loadCategoryCharacters(categoryKey)
+    }
+
+    // 检查角色是否已在列表中
+    if (!hasCharacterByRid(categoryKey, rid)) return
+
+    const currentChar = activeCharacter.value
+    if (currentChar && Number(currentChar.rid) === rid) {
+        // 相同角色，不需要切换
+        return
+    }
+
+    // 查找并选中该角色
+    const char = charactersByCategory[categoryKey].find(item => Number(item.rid) === rid)
+    if (char) {
+        await selectCharacter(char)
+        // 更新 URL 参数
+        router.replace({ query: { type, rid } })
+    }
+}
+
+const charactersReady = ref(false)
 
 // 用户滚动检测
 let userHasScrolled = false
@@ -211,19 +417,112 @@ const handleMessagesScroll = () => {
     // 如果向上滚动，判定为用户滚动
     if (scrollTop < previousScrollTop) {
         userHasScrolled = true
+        if (streamingUnwatch) {
+            streamingUnwatch()
+            streamingUnwatch = null
+        }
     }
     previousScrollTop = scrollTop
 }
 
 // 流式输出定时器
-const {streamIntervalRef, streamTimeoutRef, thinkingTimeoutRef, clearStreamTimers} = useStreamTimers()
+const {streamingCancelRef, cancelStreaming, clearStreamTimers} = useStreamTimers()
 
-const selectorCharacters = computed(() => characterData[selectorCategory.value] || [])
-const currentSidebarChars = computed(() => characterData[activeSidebarTab.value] || [])
+const selectorCharacters = computed(() => charactersByCategory[selectorCategory.value] || [])
+const currentSidebarChars = computed(() => charactersByCategory[activeSidebarTab.value] || [])
+const currentSidebarLoading = computed(() => categoryLoading[activeSidebarTab.value])
+const currentSidebarError = computed(() => categoryError[activeSidebarTab.value])
+const selectorLoading = computed(() => categoryLoading[selectorCategory.value])
+const selectorError = computed(() => categoryError[selectorCategory.value])
+
+const showCategoryErrorToast = (categoryKey, message) => {
+    const shouldShow = activeSidebarTab.value === categoryKey || (showCharSelector.value && selectorCategory.value === categoryKey)
+    if (shouldShow) {
+        ElMessage.error(message)
+    }
+}
+
+const stopActiveStream = ({keepIdleStatus = true} = {}) => {
+    activeStreamToken.value = Date.now()
+    cancelStreaming()
+    if (streamingUnwatch) {
+        streamingUnwatch()
+        streamingUnwatch = null
+    }
+    if (keepIdleStatus) {
+        streamStatus.value = 'idle'
+    }
+}
+
+const updateCharacterInCategory = (character, updates) => {
+    const list = charactersByCategory[character.categoryKey] || []
+    const targetIndex = list.findIndex(item => Number(item.rid) === Number(character.rid))
+    if (targetIndex < 0) return
+
+    list[targetIndex] = {
+        ...list[targetIndex],
+        ...updates
+    }
+}
+
+const loadCategoryCharacters = async (categoryKey) => {
+    const roleplayType = roleplayTypeMap[categoryKey]
+    if (!roleplayType) return
+
+    const requestToken = Date.now()
+    categoryRequestToken[categoryKey] = requestToken
+    categoryLoading[categoryKey] = true
+    categoryError[categoryKey] = ''
+
+    try {
+        const result = await getRoleplayCharacterList(roleplayType)
+        if (categoryRequestToken[categoryKey] !== requestToken) return
+        if (!result?.success) {
+            throw new Error(result?.message || '角色列表加载失败')
+        }
+
+        const characterList = Array.isArray(result?.characters)
+            ? result.characters.map(item => mapRoleplayCharacter(item, categoryKey))
+            : []
+
+        if (activeCharacter.value?.categoryKey === categoryKey) {
+            const matched = characterList.find(item => Number(item.rid) === Number(activeCharacter.value.rid))
+            if (matched) {
+                const merged = {
+                    ...matched,
+                    ...activeCharacter.value
+                }
+                const matchedIndex = characterList.findIndex(item => Number(item.rid) === Number(merged.rid))
+                characterList.splice(matchedIndex, 1, merged)
+                activeCharacter.value = merged
+                selectedCharacter.value = merged
+            } else {
+                activeCharacter.value = null
+                selectedCharacter.value = null
+                messages.value = []
+                inputText.value = ''
+                streamStatus.value = 'idle'
+            }
+        }
+
+        charactersByCategory[categoryKey] = characterList
+    } catch (error) {
+        if (categoryRequestToken[categoryKey] !== requestToken) return
+        const message = error?.message || '角色列表加载失败'
+        charactersByCategory[categoryKey] = []
+        categoryError[categoryKey] = message
+        showCategoryErrorToast(categoryKey, message)
+    } finally {
+        if (categoryRequestToken[categoryKey] === requestToken) {
+            categoryLoading[categoryKey] = false
+        }
+    }
+}
 
 const openCharSelector = () => {
     selectorCategory.value = activeSidebarTab.value
     showCharSelector.value = true
+    loadCategoryCharacters(selectorCategory.value)
 }
 
 const clearSidebarScrollbarHideTimer = () => {
@@ -305,18 +604,103 @@ const dialogueViewportStyle = computed(() => {
     }
 })
 
-const selectCharacter = (character) => {
-    // 清理之前的定时器，防止切换角色后继续执行
-    clearStreamTimers()
+const loadCharacterDetail = async (character, requestToken) => {
+    // 防止重复获取详情（但如果已有 desc 则直接使用）
+    if (character.detailLoaded && character.desc) return
 
-    activeCharacter.value = character
-    messages.value = [{
-        type: 'character',
-        content: `${character.name}：${getCharacterWelcome(character.id)}`
-    }]
+    try {
+        const result = await getRoleplayCharacterDetail(character.rid)
+        if (requestToken !== activeCharacterRequestToken.value) return
+        if (!result?.success || !result?.character) return
 
-    // 重置输入状态
+        const detail = result.character
+        const bio = typeof detail.bio === 'string' ? detail.bio.trim() : ''
+        const phrases = Array.isArray(detail.phrases)
+            ? detail.phrases.filter(item => typeof item === 'string' && item.trim())
+            : []
+        const updates = {
+            desc: bio || character.desc,
+            story: buildMockStory(character.name, character.categoryKey, {bio, phrases}),
+            detailLoaded: true,
+            detailAvatarId: detail.detailAvatarId ?? null,
+            phrases
+        }
+
+        updateCharacterInCategory(character, updates)
+
+        if (activeCharacter.value && Number(activeCharacter.value.rid) === Number(character.rid)) {
+            activeCharacter.value = {
+                ...activeCharacter.value,
+                ...updates
+            }
+            selectedCharacter.value = activeCharacter.value
+        }
+    } catch (error) {
+        if (requestToken !== activeCharacterRequestToken.value) return
+        ElMessage.warning(error?.message || '角色详情加载失败')
+    }
+}
+
+const loadCharacterMessages = async (character, requestToken) => {
+    isHistoryLoading.value = true
+
+    try {
+        const result = await getRoleplayMessageList(character.rid)
+        if (requestToken !== activeCharacterRequestToken.value) return
+        if (!result?.success) {
+            throw new Error(result?.message || '历史消息加载失败')
+        }
+
+        const history = Array.isArray(result?.messages)
+            ? result.messages.map(mapRoleplayMessage)
+            : []
+
+        messages.value = history.length
+            ? history
+            : [{
+                type: 'character',
+                content: buildWelcomeMessage(character),
+                completed: true
+            }]
+
+        userHasScrolled = false
+        previousScrollTop = 0
+        scrollToBottom()
+    } catch (error) {
+        if (requestToken !== activeCharacterRequestToken.value) return
+        messages.value = [{
+            type: 'character',
+            content: buildWelcomeMessage(character),
+            completed: true
+        }]
+        ElMessage.error(error?.message || '历史消息加载失败')
+    } finally {
+        if (requestToken === activeCharacterRequestToken.value) {
+            isHistoryLoading.value = false
+        }
+    }
+}
+
+const selectCharacter = async (character) => {
+    stopActiveStream()
+
+    const requestToken = Date.now()
+    activeCharacterRequestToken.value = requestToken
+
+    activeCharacter.value = {...character}
+    selectedCharacter.value = activeCharacter.value
+    messages.value = []
     inputText.value = ''
+    showAvatarDropdown.value = false
+
+    // 更新路由参数
+    const type = roleplayTypeMap[character.categoryKey]
+    router.replace({ query: { type, rid: character.rid } })
+
+    await Promise.all([
+        loadCharacterMessages(activeCharacter.value, requestToken),
+        loadCharacterDetail(activeCharacter.value, requestToken)
+    ])
 }
 
 const openStory = (character) => {
@@ -330,56 +714,135 @@ const openPhotos = (character) => {
 }
 
 const scrollToBottom = () => {
-    if (messagesAreaRef.value) {
-        messagesAreaRef.value.scrollTop = messagesAreaRef.value.scrollHeight
-    }
+    nextTick(() => {
+        if (messagesAreaRef.value) {
+            messagesAreaRef.value.scrollTop = messagesAreaRef.value.scrollHeight
+        }
+    })
 }
 
 const handleSend = () => {
     const text = inputText.value.trim()
-    if (!text || !activeCharacter.value) return
+    if (!text || !activeCharacter.value || streamStatus.value !== 'idle') return
 
-    // 清理之前的定时器，防止路由跳转后继续执行
-    clearStreamTimers()
+    stopActiveStream({keepIdleStatus: false})
+    const streamToken = Date.now()
+    activeStreamToken.value = streamToken
 
     // 重置用户滚动状态
     userHasScrolled = false
+    previousScrollTop = 0
 
-    messages.value.push({type: 'user', content: text})
+    // 如果第一条消息是欢迎消息（用户还没发过言），则移除
+    if (messages.value.length === 1 && messages.value[0].type === 'character') {
+        messages.value.shift()
+    }
+
+    messages.value.push({type: 'user', content: text, completed: true})
     inputText.value = ''
+    streamStatus.value = 'thinking'
 
-    // 模拟流式输出过程
-    // 1. 先显示正在思考状态
-    const statusIndex = messages.value.length
-    messages.value.push({type: 'status', content: '正在思考...'})
+    let streamStarted = false
+    let streamFinished = false
+    let hasAssistantOutput = false
+    let streamingMsgIndex = -1
+    let streamingMid = null
 
-    // 2. 1秒后移除状态消息，显示角色气泡并开始流式输出
-    thinkingTimeoutRef.value = setTimeout(() => {
-        // 移除状态消息
-        messages.value.splice(statusIndex, 1)
+    const {eventSource, cancel} = sendRoleplayMessageStream(activeCharacter.value.rid, text)
+    streamingCancelRef.value = cancel
 
-        // 添加角色消息气泡
-        const msgIndex = messages.value.length
-        messages.value.push({type: 'character', content: ''})
+    eventSource.onmessage = (e) => {
+        if (streamToken !== activeStreamToken.value) return
+        const data = e.data
 
-        // 3. 模拟逐字输出
-        let charIndex = 0
-        streamIntervalRef.value = setInterval(() => {
-            if (charIndex < mockStreamReply.length) {
-                messages.value[msgIndex].content += mockStreamReply[charIndex]
-                charIndex++
-                if (!userHasScrolled) {
-                    scrollToBottom()
-                }
-            } else {
-                clearInterval(streamIntervalRef.value)
-                // 4. 输出完成后清理
-                streamTimeoutRef.value = setTimeout(() => {
-                    clearStreamTimers()
-                }, 300)
+        if (data.type === 'start') {
+            streamStarted = true
+            streamingMid = data.mid
+            return
+        }
+
+        if (data.type === 'content') {
+            if (streamStatus.value !== 'streaming') {
+                streamStatus.value = 'streaming'
             }
-        }, 15) // 每15ms输出一个字符
-    }, 1000)
+
+            const chunk = typeof data.content === 'string' ? data.content : ''
+            if (!chunk) return
+
+            if (streamingMsgIndex < 0) {
+                streamingMsgIndex = messages.value.length
+                messages.value.push({
+                    type: 'character',
+                    content: chunk,
+                    mid: streamingMid || data.mid || null,
+                    completed: false
+                })
+            } else {
+                messages.value[streamingMsgIndex].content += chunk
+            }
+
+            hasAssistantOutput = true
+            return
+        }
+
+        if (data.type === 'error') {
+            const errorMessage = typeof data.message === 'string'
+                ? data.message
+                : '生成失败，请稍后重试。'
+
+            if (streamingMsgIndex < 0) {
+                streamingMsgIndex = messages.value.length
+                messages.value.push({
+                    type: 'character',
+                    content: errorMessage,
+                    mid: streamingMid || data.mid || null,
+                    completed: true
+                })
+            } else {
+                messages.value[streamingMsgIndex].content = errorMessage
+                messages.value[streamingMsgIndex].completed = true
+            }
+
+            hasAssistantOutput = true
+            return
+        }
+
+        if (data.type === 'done') {
+            streamFinished = true
+
+            if (streamingMsgIndex >= 0) {
+                const finalContent = messages.value[streamingMsgIndex]?.content || ''
+                if (!finalContent.trim()) {
+                    messages.value.splice(streamingMsgIndex, 1)
+                } else {
+                    messages.value[streamingMsgIndex].completed = true
+                }
+            }
+
+            streamStatus.value = 'idle'
+            cancelStreaming(false)
+        }
+    }
+
+    eventSource.onerror = (error) => {
+        if (streamToken !== activeStreamToken.value) return
+
+        const isAbortLike =
+            error?.name === 'AbortError' ||
+            /abort|aborted|load failed|failed to fetch/i.test(error?.message || '')
+
+        if (!streamFinished && !isAbortLike && (!streamStarted || !hasAssistantOutput)) {
+            messages.value.push({
+                type: 'character',
+                content: '抱歉，发生错误，请稍后重试。',
+                completed: true
+            })
+            ElMessage.error('消息发送失败，请稍后重试')
+        }
+
+        streamStatus.value = 'idle'
+        cancelStreaming()
+    }
 }
 
 // 点击空白处关闭头像下拉菜单
@@ -392,7 +855,66 @@ const handleClickOutside = (e) => {
     }
 }
 
-onMounted(() => {
+watch(
+    () => activeSidebarTab.value,
+    (newCategory) => {
+        loadCategoryCharacters(newCategory)
+    },
+    {immediate: true}
+)
+
+watch(
+    () => selectorCategory.value,
+    (newCategory) => {
+        if (!showCharSelector.value) return
+        loadCategoryCharacters(newCategory)
+    }
+)
+
+watch(
+    () => showCharSelector.value,
+    (visible) => {
+        if (!visible) return
+        loadCategoryCharacters(selectorCategory.value)
+    }
+)
+
+watch(
+    () => messages.value.length,
+    () => {
+        scrollToBottom()
+    }
+)
+
+watch(streamStatus, (newStatus) => {
+    if (newStatus === 'streaming') {
+        userHasScrolled = false
+
+        if (streamingUnwatch) {
+            streamingUnwatch()
+            streamingUnwatch = null
+        }
+
+        streamingUnwatch = watch(
+            () => messages.value[messages.value.length - 1]?.content.length ?? 0,
+            () => {
+                if (userHasScrolled) {
+                    streamingUnwatch?.()
+                    streamingUnwatch = null
+                    return
+                }
+                scrollToBottom()
+            }
+        )
+    } else if (newStatus === 'idle') {
+        if (streamingUnwatch) {
+            streamingUnwatch()
+            streamingUnwatch = null
+        }
+    }
+})
+
+onMounted(async () => {
     updateDynamicViewportHeight()
     document.addEventListener('click', handleClickOutside)
     window.addEventListener('pointerup', handleGlobalPointerUp)
@@ -400,13 +922,38 @@ onMounted(() => {
     window.addEventListener('orientationchange', scheduleViewportHeightUpdate)
     window.visualViewport?.addEventListener('resize', scheduleViewportHeightUpdate)
     window.visualViewport?.addEventListener('scroll', scheduleViewportHeightUpdate)
+
+    // 预加载所有分类角色列表
+    await Promise.all([
+        loadCategoryCharacters('hero'),
+        loadCategoryCharacters('player'),
+        loadCategoryCharacters('celebrity')
+    ])
+    charactersReady.value = true
+
+    // 路由参数同步
+    if (parseParamsFromQuery(route.query)) {
+        await syncCharacterWithRoute(route.query)
+    }
 })
+
+// 监听路由变化（用户通过浏览器前进/后退时处理）
+watch(
+    () => [route.query.type, route.query.rid],
+    async () => {
+        if (!charactersReady.value) return
+        if (parseParamsFromQuery(route.query)) {
+            await syncCharacterWithRoute(route.query)
+        }
+    }
+)
 
 onUnmounted(() => {
     if (viewportRafId) {
         cancelAnimationFrame(viewportRafId)
         viewportRafId = 0
     }
+    stopActiveStream()
     clearStreamTimers()
     clearSidebarScrollbarHideTimer()
     document.removeEventListener('click', handleClickOutside)
@@ -568,6 +1115,18 @@ onUnmounted(() => {
     background: rgba(240, 179, 68, 0.68);
 }
 
+.sidebar-loading,
+.sidebar-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 64px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.58);
+    text-align: center;
+    padding: 10px 8px;
+}
+
 .sidebar-char-item {
     display: flex;
     align-items: center;
@@ -577,17 +1136,21 @@ onUnmounted(() => {
     cursor: pointer;
     transition: all 0.2s;
     margin-bottom: 6px;
-    border: 1px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-char-item:hover {
     background: rgba(240, 179, 68, 0.08);
-    border-color: rgba(240, 179, 68, 0.15);
+    border-color: rgba(240, 179, 68, 0.25);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-char-item.active {
     background: linear-gradient(135deg, rgba(240, 179, 68, 0.15), rgba(14, 165, 233, 0.1));
-    border-color: rgba(240, 179, 68, 0.3);
+    border-color: rgba(240, 179, 68, 0.4);
+    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.15);
 }
 
 .sidebar-char-avatar {
@@ -620,21 +1183,14 @@ onUnmounted(() => {
 .sidebar-char-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: center;
 }
 
 .sidebar-char-name {
     font-size: 0.9rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 3px;
-}
-
-.sidebar-char-quote {
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.45);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* ==================== 右侧对话区 ==================== */
@@ -896,6 +1452,14 @@ onUnmounted(() => {
     background: radial-gradient(ellipse at 50% 30%, rgba(240, 179, 68, 0.03), transparent 60%);
 }
 
+.history-loading {
+    width: 100%;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 0.85rem;
+    padding: 24px 0;
+}
+
 .msg-row {
     display: flex;
     gap: 12px;
@@ -905,6 +1469,14 @@ onUnmounted(() => {
 .msg-row.user {
     margin-left: auto;
     flex-direction: row-reverse;
+}
+
+.status-row {
+    max-width: 80%;
+}
+
+.status-row .msg-bubble {
+    border-style: dashed;
 }
 
 .msg-avatar {
@@ -940,9 +1512,68 @@ onUnmounted(() => {
 
 .msg-content {
     word-break: break-word;
-    white-space: pre-wrap;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.85);
+}
+
+.msg-content :deep(p) {
+    margin: 0 0 8px;
+}
+
+.msg-content :deep(p:last-child) {
+    margin-bottom: 0;
+}
+
+.msg-content :deep(ul),
+.msg-content :deep(ol) {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.msg-content :deep(li + li) {
+    margin-top: 4px;
+}
+
+.msg-content :deep(a) {
+    color: #89c3ff;
+    text-decoration: underline;
+}
+
+.msg-content :deep(strong) {
+    font-weight: 700;
+}
+
+.msg-content :deep(blockquote) {
+    margin: 8px 0;
+    padding: 6px 12px;
+    border-left: 3px solid rgba(240, 179, 68, 0.45);
+    color: rgba(255, 255, 255, 0.72);
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 6px;
+}
+
+.msg-content :deep(code) {
+    background: rgba(0, 0, 0, 0.32);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.86em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.msg-content :deep(pre) {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    margin: 8px 0;
+}
+
+.msg-content :deep(pre code) {
+    background: transparent;
+    padding: 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
 }
 
 /* 底部输入 */
@@ -985,6 +1616,11 @@ onUnmounted(() => {
     font-size: 0.95rem;
 }
 
+.input-placeholder input:disabled {
+    color: rgba(255, 255, 255, 0.45);
+    cursor: not-allowed;
+}
+
 .input-placeholder input::placeholder {
     color: #64748b;
 }
@@ -1005,6 +1641,13 @@ onUnmounted(() => {
 
 .send-btn:hover {
     transform: scale(1.08);
+}
+
+.send-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .send-arrow {
@@ -1126,6 +1769,17 @@ onUnmounted(() => {
     padding: 20px;
 }
 
+.selector-loading,
+.selector-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+}
+
 .char-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -1174,11 +1828,6 @@ onUnmounted(() => {
     font-weight: 600;
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.9);
-}
-
-.char-desc {
-    font-size: 0.7rem;
-    color: #64748b;
 }
 
 /* 移动端适配 - 隐藏侧边栏，使用原来的布局 */

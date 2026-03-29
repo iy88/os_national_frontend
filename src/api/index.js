@@ -252,6 +252,129 @@ export const sendChatMessageStream = (content, sid = null, mid = null, regenerat
 // 发送消息（SSE 流式响应）- 简化为直接使用 sendChatMessageStream
 export const sendChatMessage = sendChatMessageStream
 
+// ============ Roleplay 角色扮演接口 ============
+
+// 获取角色列表
+export const getRoleplayCharacterList = (type) => {
+    return apiClient.get(`/agent/roleplay/list/${type}`)
+}
+
+// 获取角色详情
+export const getRoleplayCharacterDetail = (rid) => {
+    return apiClient.get(`/agent/roleplay/detail/${rid}`)
+}
+
+// 获取角色历史消息
+export const getRoleplayMessageList = (rid) => {
+    return apiClient.get(`/agent/roleplay/message/list/${rid}`)
+}
+
+// 发送角色消息（SSE 流式响应）
+export const sendRoleplayMessageStream = (rid, content) => {
+    const token = localStorage.getItem('token')
+    const body = { content }
+
+    let aborted = false
+    const controller = new AbortController()
+
+    const isAbortError = (error) => error?.name === 'AbortError'
+
+    const eventSource = {
+        onmessage: null,
+        onerror: null,
+        close: (abortFetch = true) => {
+            aborted = true
+            if (abortFetch) {
+                controller.abort()
+            }
+        }
+    }
+
+    fetch(`/agent/roleplay/message/send/${rid}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        if (!response.body) {
+            throw new Error('SSE response body is empty')
+        }
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        const processEvents = () => {
+            const eventDelimiter = '\n\n'
+            let eventIndex = buffer.indexOf(eventDelimiter)
+
+            while (eventIndex !== -1) {
+                const eventData = buffer.slice(0, eventIndex)
+                buffer = buffer.slice(eventIndex + eventDelimiter.length)
+
+                const lines = eventData.split('\n')
+                let jsonStr = ''
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        jsonStr += line.slice(6)
+                    }
+                }
+
+                if (jsonStr && eventSource.onmessage) {
+                    try {
+                        const data = JSON.parse(jsonStr)
+                        eventSource.onmessage({data})
+                    } catch (e) {
+                        // 忽略解析错误
+                    }
+                }
+
+                eventIndex = buffer.indexOf(eventDelimiter)
+            }
+        }
+
+        const read = () => {
+            if (aborted) return
+
+            reader.read().then(({done, value}) => {
+                if (done || aborted) {
+                    return
+                }
+
+                buffer += decoder.decode(value, {stream: true})
+                processEvents()
+                read()
+            }).catch(error => {
+                if (!aborted && !isAbortError(error) && eventSource.onerror) {
+                    eventSource.onerror(error)
+                }
+            })
+        }
+
+        read()
+    })
+    .catch(error => {
+        if (!aborted && !isAbortError(error) && eventSource.onerror) {
+            eventSource.onerror(error)
+        }
+    })
+
+    return {
+        eventSource,
+        cancel: (abortFetch = true) => {
+            eventSource.close(abortFetch)
+        }
+    }
+}
+
 // ============ 路线收藏接口 ============
 
 // 获取收藏列表
