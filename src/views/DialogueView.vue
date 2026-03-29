@@ -1034,8 +1034,25 @@ const handleSend = () => {
 }
 
 const handleCopy = async (content) => {
+    // 优先使用现代 Clipboard API，失败则降级到 execCommand
+    if (navigator.clipboard && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(content)
+            ElMessage.success('已复制到剪贴板')
+            return
+        } catch {
+            // fallthrough to fallback
+        }
+    }
+    // 降级方案：临时 textarea + execCommand
     try {
-        await navigator.clipboard.writeText(content)
+        const textarea = document.createElement('textarea')
+        textarea.value = content
+        textarea.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
         ElMessage.success('已复制到剪贴板')
     } catch {
         ElMessage.error('复制失败')
