@@ -7,7 +7,7 @@
 **城竞共生** - 电竞文旅沉浸体验项目
 
 - **技术栈**: Vue 3 + Pinia + Vue Router + Element Plus + Vite
-- **后端服务**: Python Flask (见 [os_national_backend](../os_national_backend))
+- **后端服务**: Python Flask (见 [os_national_backend](https://github.com/iy88/os_national_backend))
 
 ## 快速开始
 
