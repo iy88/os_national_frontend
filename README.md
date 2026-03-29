@@ -31,23 +31,68 @@ src/
 ├── components/       # 公共组件
 ├── views/            # 页面视图
 ├── stores/           # Pinia 状态管理
+├── composables/      # Vue Composables
 ├── router/           # 路由配置
 └── data/             # 静态数据
 ```
 
+## 项目配置
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `VITE_API_BASE_URL` | `http://localhost:5000` | 后端服务地址 |
+
+开发环境通过 Vite proxy 解决跨域，生产环境走同源。
+
+## 整体架构
+
+### 状态管理
+
+- **userStore**（Pinia）：用户登录状态、用户信息、收藏路线、登录弹窗控制
+- **conversationStore**（Pinia）：会话列表、当前消息、流状态追踪
+
+### SSE 流式输出
+
+使用 `fetch + ReadableStream` 实现 SSE（标准 `EventSource` 不支持 POST 和自定义 headers）。核心封装在 `src/api/index.js` 的 `sendChatMessageStream` 和 `sendRoleplayMessageStream`。
+
+### 路由守卫
+
+受保护路径：`/profile`、`/route-plan`、`/dialogue`
+
+- 有 token → 验证 profile → 成功放行，失败登出并弹登录框重定向
+- 无 token → 弹登录框 + 重定向至 `/travel`
+
+### 登录弹窗
+
+`showLoginModal` 统一由 `userStore` 管理，各组件通过 `userStore.showLoginModal = true` 触发显示。
+
+## 路由配置
+
+| 路径 | 名称 | 说明 |
+|------|------|------|
+| `/` | - | 重定向至 /travel |
+| `/travel` | travel | 旅行首页（城市地图 + AI 助手） |
+| `/dialogue` | dialogue | 沉浸式角色对话页 |
+| `/route-plan` | route-plan | 电竞文旅助手（会话管理） |
+| `/profile` | profile | 用户中心（含子路由） |
+| `/profile/basic` | basic-info | 基本信息设置 |
+| `/profile/favorites` | favorite-routes | 收藏路线管理 |
+
 ## 主要功能
 
-- **旅行探索**: 城市地图浏览、路线规划与收藏
-- **AI 对话**: 与角色进行沉浸式对话互动（支持 Markdown 渲染）
-- **电竞文旅助手**: 基于 Agent AI 的旅行规划助手，支持 SSE 流式输出
-- **用户中心**: 个人信息管理、收藏路线管理
+- **旅行探索**: 城市地图浏览（SVG 交互地图，支持平移/缩放）、路线规划与收藏
+- **AI 对话**: 与角色进行沉浸式对话互动（Markdown 渲染，SSE 流式响应）
+- **电竞文旅助手**: 基于 Agent AI 的旅行规划助手，支持会话管理、 SSE 流式输出
+- **用户中心**: 个人信息管理、头像上传、收藏路线管理
 
 ## 详细文档
 
 完整项目文档见 [docs/summary.md](docs/summary.md)，包含：
 
-- 设计架构与状态管理
-- 路由配置与登录流程
-- API 集成说明
+- 各页面架构与功能特性
+- API 接口说明
+- 状态管理详解
+- 登录流程
+- 关键设计模式（SSE 流竞争防护、复制降级等）
 - 设计规范（配色、字体、主题）
 - 重要架构决策

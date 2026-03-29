@@ -8,130 +8,205 @@
 **项目描述**: 电竞文旅沉浸体验项目
 **技术栈**: Vue 3 + Pinia + Vue Router + Element Plus + Vite
 
-## 核心功能
+---
 
-- **旅行探索**: 城市地图浏览、路线规划与收藏
-- **AI 对话**: 与角色进行沉浸式对话互动
-- **电竞文旅助手**: 基于 Agent AI 的旅行规划助手，支持 SSE 流式输出
-- **用户中心**: 个人信息管理、收藏路线管理
-- **故事体验**: 沉浸式故事展示与角色互动
+## 页面架构
 
-### ChatBox 聊天气泡
+### 1. TravelView（旅行首页）
 
-- 支持 Markdown 格式自动解析渲染
-- 状态指示器：thinking（黄色脉冲）、streaming（绿色发光）
-- 发送/输入框在处理请求时自动禁用
+**路由**: `/travel`
 
-### 电竞文旅助手 (TravelView)
+**布局**:
+- 城市地图（全屏） + 右侧聊天气泡面板（桌面 28vw / 移动端底部抽屉 70%）
+- Quick Planners 筛选栏（可折叠）：城市、天数、人数、关系类型
 
-- **Quick Planners**: 目标城市、旅行天数、出行人数、关系类型、本命英雄筛选
-- 可折叠/展开的筛选面板（底部箭头图标控制）
-- 基于 Agent AI 的 SSE 流式对话响应
+**核心组件**:
+- `CityMap`：SVG 交互地图，支持拖拽平移、滚轮缩放、触屏捏合缩放
+- `ChatBox`：聊天气泡面板，消息列表 + 输入框
 
-### 电竞文旅助手 (RoutePlanView)
-
-- **会话边栏**: 按时间分组（今日/昨日/更早）展示历史会话
-- **内联标题编辑**: hover 时显示编辑按钮，点击可编辑标题，按 Enter 或点击确认保存，失焦取消
-- **SSE 流式对话**: 实时流式输出，支持思考状态指示
-- **URL 路由同步**: 会话状态通过 URL query 参数同步，支持跳转和刷新恢复
-
-### 收藏路线 (FavoriteRoutes)
-
-- **路由详情弹窗**: 点击路线项打开只读弹窗，展示 Markdown 渲染内容
-- **编辑模式**: 点击编辑按钮进入编辑模式，支持修改标题和内容
-- **确认删除**: 删除前显示确认对话框
-- **移动端适配**: 弹窗宽度自适应，按钮样式优化
-
-## 项目结构
-
-```
-src/
-├── App.vue                    # 主组件，含全局样式和暗色主题配置
-├── main.js                    # 应用入口
-├── api/index.js               # API 请求模块
-├── composables/               # Vue Composables
-│   └── useStreamTimers.js     # 流式输出定时器管理
-├── router/index.js            # 路由配置（含 /profile 路由守卫）
-├── stores/
-│   ├── user.js                # Pinia 用户状态管理
-│   └── conversation.js         # Pinia 会话状态管理
-├── data/                      # 静态数据
-│   ├── cities.json            # 城市数据
-│   ├── characters.js          # 角色数据
-│   └── geo_city.json          # 地理数据
-├── views/
-│   ├── TravelView.vue         # 旅行页（首页）
-│   ├── DialogueView.vue        # AI 对话页
-│   ├── RoutePlanView.vue      # 电竞文旅助手（会话页面）
-│   ├── UserProfile.vue        # 用户中心（含子路由）
-│   └── profile/
-│       ├── BasicInfo.vue      # 基本信息设置
-│       └── FavoriteRoutes.vue  # 收藏路线
-└── components/
-    ├── Header.vue             # 页头导航
-    ├── LoginModal.vue         # 登录/注册弹窗
-    ├── ChatBox.vue            # 聊天组件
-    ├── ConversationSidebar.vue # 会话边栏
-    ├── RouteChatBox.vue       # 路线规划聊天组件
-    ├── StoryModal.vue         # 故事弹窗
-    ├── CharacterCard.vue       # 角色卡片
-    ├── CityMap.vue            # 城市地图
-    └── PhotoGallery.vue        # 照片画廊
-```
-
-## 路由配置
-
-| 路径 | 名称 | 说明 |
-|------|------|------|
-| `/` | - | 重定向至 /travel |
-| `/travel` | travel | 旅行首页 |
-| `/dialogue` | dialogue | AI 对话页 |
-| `/route-plan` | route-plan | 电竞文旅助手（会话页面） |
-| `/profile` | profile | 用户中心（含子路由） |
-| `/profile/basic` | basic-info | 基本信息 |
-| `/profile/favorites` | favorite-routes | 收藏路线 |
-
-**路由守卫**: 访问 `/profile` 路径时，若未登录则弹出登录框并重定向至 `/travel`。
-
-## 设计架构
-
-### 状态管理
-
+**消息结构**:
 ```javascript
-// stores/user.js
-{
-  isLoggedIn: boolean,          // 登录状态
-  userInfo: object | null,      // 用户信息 { uid, username, email, gender, age, basicInfo, bio, avatar }
-  collectedRoutes: array,       // 收藏路线
-  showLoginModal: boolean,      // 登录弹窗显示状态（统一管理）
-  setUserInfo(),                // 设置用户信息（从 API 响应）
-  fetchUserProfile(),          // 获取用户完整信息
-  updateUserProfile(),         // 更新用户信息
-  logout(),                     // 登出
-  removeCollectedRoute()        // 移除收藏
-}
-
-// stores/conversation.js
-{
-  sessions: array,              // 会话列表
-  currentSessionId: number,    // 当前会话 ID
-  currentMessages: array,      // 当前会话消息
-  groupedSessions: computed,   // 按时间分组的会话
-  fetchSessions(),            // 获取会话列表
-  fetchSessionDetail(),       // 获取会话详情
-  createNewSession(),         // 创建新会话
-  updateSessionTitle()         // 更新会话标题
-}
+{ type: 'user' | 'character', content: string, mid: number, completed: boolean }
 ```
 
-### API 集成
+**核心功能**:
+- 城市选择 → 弹窗展示电竞人物/英雄/美食/任务/路线
+- `sendTravelMessage(text)` — 构建提示词模板 → SSE 流式响应
+- `ensureLoginBeforeSend()` — 发送前检查登录状态，未登录弹登录框
+- 消息操作：复制（`execCommand` 降级）、收藏（`favoriteRoute`）、跳转详情
+- `streamToken` 机制防止 SSE 多流竞争
+
+**API**:
+- `POST /agent/travel-route-plan/message` — SSE 流式发送消息
+- `POST /route/favorite` — 收藏路线
+
+---
+
+### 2. DialogueView（沉浸式角色对话）
+
+**路由**: `/dialogue`
+
+**布局**:
+- 左侧角色边栏（三大分类：游戏英雄/电竞选手/电竞达人）+ 右侧聊天区
+- 移动端隐藏侧边栏，显示切换角色按钮
+
+**消息结构**:
+```javascript
+{ type: 'user' | 'character', content: string, mid: number, completed: boolean }
+```
+
+**核心功能**:
+- 角色选择 → 加载历史消息 → 展示欢迎语
+- URL 路由同步 `?type=game_hero&rid=123` — 刷新/跳转恢复角色状态
+- SSE 流式对话（`sendRoleplayMessageStream` 支持三种模式）：
+  - 正常发送: `{ content }`
+  - 恢复流: `{ mid }`
+  - 重新生成: `{ regenerateMid }`
+- 断流恢复：`resumeIncompleteStream` — 从 `incompleteMid` 恢复
+- `selectCharacter` 时预加载三个分类角色列表
+- 欢迎语伪消息：首条用户消息发出后自动移除
+- 消息气泡下方 action buttons（复制/重新生成），hover/active 可见
+
+**API**:
+- `GET /agent/roleplay/list/:type` — 获取角色列表（按分类）
+- `GET /agent/roleplay/detail/:rid` — 获取角色详情（bio/phrases）
+- `GET /agent/roleplay/message/list/:rid` — 获取历史消息
+- `POST /agent/roleplay/message/send/:rid` — SSE 流式发送消息
+
+**SSE 事件类型**: `start` / `catchup` / `content` / `error` / `done`
+
+---
+
+### 3. RoutePlanView（电竞文旅助手）
+
+**路由**: `/route-plan`
+
+**布局**:
+- 左侧 `ConversationSidebar` 会话边栏（296px）+ 右侧 `RouteChatBox` 聊天区
+- 移动端（<=900px）侧边栏可折叠
+
+**核心功能**:
+- `syncSessionWithRoute` — 进入/后退/前进均触发会话同步
+- 新建/选择/编辑会话标题（内联编辑 Enter 确认）
+- SSE 流式对话（思考状态黄色脉冲、流式绿色发光）
+- 消息操作：复制（`execCommand` 降级）、收藏、重新生成
+- 流恢复：页面刷新后自动从 `hasIncompleteMessage`/`incompleteMid` 恢复
+- `applyTopbarTitleFromDone` — SSE done 事件后更新顶栏标题
+- 移动端侧边栏 hamburger 按钮触发
+
+**API**:
+- `GET /agent/travel-route-plan/chat/list` — 获取会话列表
+- `GET /agent/travel-route-plan/chat/detail/:sid` — 获取会话详情
+- `PUT /agent/travel-route-plan/chat/title/edit/:sid` — 编辑会话标题
+- `POST /agent/travel-route-plan/message` — SSE 流式发送消息
+
+---
+
+### 4. UserProfile（用户中心）
+
+**路由**: `/profile`（含子路由）
+
+**布局**: 左侧固定导航 + 右侧内容区，未登录显示登录提示
+
+**子路由**:
+- `/profile/basic` — `BasicInfo.vue`：头像上传（drag-drop）、个人信息编辑
+- `/profile/favorites` — `FavoriteRoutes.vue`：收藏路线列表、详情弹窗（Markdown 渲染）、编辑/删除
+
+**核心功能**:
+- 头像上传：`el-upload` + `uploadAvatar` API，2MB 限制，预览
+- 收藏路线弹窗：只读/编辑模式，乐观更新
+- 登出：清除 token + 重置 store + 跳转 `/travel`
+
+---
+
+## 全局状态管理
+
+### userStore（src/stores/user.js）
+
+| 状态/计算 | 类型 | 说明 |
+|-----------|------|------|
+| `isLoggedIn` | ref boolean | 登录状态 |
+| `userInfo` | ref object | 用户信息 { uid, username, email, gender, age, basicInfo, bio, avatarToken } |
+| `collectedRoutes` | ref array | 收藏路线 |
+| `showLoginModal` | ref boolean | 登录弹窗显示状态 |
+| `avatarUrl` | computed | 计算头像 URL |
+
+| 方法 | 说明 |
+|------|------|
+| `getToken()` / `setToken()` / `removeToken()` | localStorage token 操作 |
+| `setUserInfo(info)` | 从 API 响应设置用户信息 |
+| `fetchUserProfile()` | 获取用户完整信息 |
+| `updateUserProfile(data)` | 更新用户信息 |
+| `login(result)` | 统一登录：保存 token + 设置用户信息 |
+| `logout()` | 登出：清除 token、重置状态 |
+| `fetchCollectedRoutes()` | 获取收藏路线列表 |
+| `removeCollectedRoute(rid)` | 删除收藏路线 |
+
+### conversationStore（src/stores/conversation.js）
+
+| 状态/计算 | 类型 | 说明 |
+|-----------|------|------|
+| `sessions` | ref array | 会话列表 |
+| `currentSessionId` | ref number | 当前会话 ID |
+| `currentMessages` | ref array | 当前会话消息 |
+| `hasIncompleteMessage` | ref boolean | 是否有未完成消息 |
+| `incompleteMid` | ref number | 未完成消息的 mid |
+| `groupedSessions` | computed | 按时间分组 { today, yesterday, earlier } |
+
+| 方法 | 说明 |
+|------|------|
+| `fetchSessions()` | 获取会话列表 |
+| `fetchSessionDetail(sid)` | 获取会话详情 |
+| `selectSession(sid)` | 选择会话 |
+| `createNewSession()` | 创建新会话 |
+| `updateSessionTitle(sid, title)` | 更新会话标题 |
+| `addStreamingMessage(mid)` | 添加流式占位消息 |
+| `appendToMessage(index, content)` | 追加流式内容 |
+| `finalizeMessage(title)` | 完成消息，更新标题 |
+
+### useStreamTimers（src/composables/useStreamTimers.js）
+
+| 状态 | 类型 | 说明 |
+|------|------|------|
+| `streamingCancelRef` | ref | SSE 取消函数 |
+| `streamIntervalRef` | ref | 流式动画定时器 |
+| `streamTimeoutRef` | ref | 流式超时定时器 |
+| `thinkingTimeoutRef` | ref | 思考状态定时器 |
+
+| 方法 | 说明 |
+|------|------|
+| `clearStreamTimers()` | 清除所有定时器 |
+| `cancelStreaming(abortFetch)` | 取消 SSE，`abortFetch` 控制是否中止 fetch |
+
+---
+
+## 全局组件
+
+| 组件 | 文件 | 用途 |
+|------|------|------|
+| `Header` | components/Header.vue | 导航栏 Logo + Tab + 用户头像下拉 |
+| `LoginModal` | components/LoginModal.vue | 登录/注册弹窗 |
+| `ChatBox` | components/ChatBox.vue | 通用聊天气泡（TravelView 用） |
+| `RouteChatBox` | components/RouteChatBox.vue | 路线规划聊天气泡（含重新生成） |
+| `ConversationSidebar` | components/ConversationSidebar.vue | 会话边栏（分组/内联编辑/不完整标记） |
+| `CityMap` | components/CityMap.vue | SVG 交互地图（平移/缩放/触屏） |
+| `StoryModal` | components/StoryModal.vue | 角色故事弹窗 |
+| `PhotoGallery` | components/PhotoGallery.vue | 角色照片画廊 |
+| `CharacterCard` | components/CharacterCard.vue | 角色卡片（选择器用） |
+
+---
+
+## API 集成
+
+### 环境配置
 
 - **基础 URL**: 空字符串（相对路径），开发环境走 Vite proxy
-- **Proxy Target**: `VITE_API_BASE_URL` 环境变量（默认 `http://localhost:8080`）
+- **Proxy Target**: `VITE_API_BASE_URL` 环境变量（默认 `http://localhost:5000`）
 - **Token 存储**: localStorage，key 为 `token`
-- **请求拦截器**: 自动在请求头添加 `Authorization: Bearer <token>`
+- **请求拦截器**: 自动添加 `Authorization: Bearer <token>`
+- **ElMessage 时长**: 全局收敛为 1000ms，调用方显式传入 duration 则保持原配置
 
-#### 核心接口
+### 认证接口
 
 | 方法 | URL | 说明 |
 |------|-----|------|
@@ -140,8 +215,9 @@ src/
 | POST | /user/login | 用户登录 |
 | GET | /user/profile | 获取用户信息 |
 | PUT | /user/profile | 更新用户信息（增量更新） |
+| POST | /file/avatar/upload | 上传头像 |
 
-#### Agent AI 接口
+### Agent AI 接口（电竞文旅助手）
 
 | 方法 | URL | 说明 |
 |------|-----|------|
@@ -150,7 +226,16 @@ src/
 | PUT | /agent/travel-route-plan/chat/title/edit/:sid | 编辑会话标题 |
 | POST | /agent/travel-route-plan/message | 发送消息（SSE 流式） |
 
-#### 路线收藏接口
+### Agent AI 接口（角色对话）
+
+| 方法 | URL | 说明 |
+|------|-----|------|
+| GET | /agent/roleplay/list/:type | 获取角色列表 |
+| GET | /agent/roleplay/detail/:rid | 获取角色详情 |
+| GET | /agent/roleplay/message/list/:rid | 获取历史消息 |
+| POST | /agent/roleplay/message/send/:rid | 发送消息（SSE 流式） |
+
+### 路线收藏接口
 
 | 方法 | URL | 说明 |
 |------|-----|------|
@@ -160,16 +245,40 @@ src/
 | PUT | /route/edit/:rid | 编辑收藏路线 |
 | DELETE | /route/delete/:rid | 删除收藏 |
 
-### 登录流程
+---
 
-1. 路由守卫检测到访问 `/profile` 且未登录
+## 路由配置
+
+| 路径 | 名称 | 说明 |
+|------|------|------|
+| `/` | - | 重定向至 /travel |
+| `/travel` | travel | 旅行首页 |
+| `/dialogue` | dialogue | 沉浸式角色对话页 |
+| `/route-plan` | route-plan | 电竞文旅助手（会话页面） |
+| `/profile` | profile | 用户中心（含子路由） |
+| `/profile/basic` | basic-info | 基本信息 |
+| `/profile/favorites` | favorite-routes | 收藏路线 |
+
+### 路由守卫
+
+**受保护路径**: `/profile`、`/route-plan`、`/dialogue`
+
+**逻辑**:
+1. 有 token → 验证 profile → 成功放行，失败登出并弹窗重定向
+2. 无 token → 弹登录框 + 重定向至 `/travel`
+
+---
+
+## 登录流程
+
+1. 路由守卫检测到访问受保护路径且未登录
 2. 设置 `userStore.showLoginModal = true` 弹出登录框
 3. 重定向至 `/travel`
-4. 用户登录成功后，`isLoggedIn` 置为 `true`
+4. 用户登录成功后，`userStore.login(result)` 统一处理
 
-### 注册表单
+---
 
-注册表单字段（注册时不填写基本信息，可在后续 profile 中补充）:
+## 注册表单
 
 | 字段 | 校验规则 |
 |------|----------|
@@ -179,10 +288,39 @@ src/
 | 密码 | 必填，6-128字符 |
 | 确认密码 | 必填，需与密码一致 |
 
-### 组件通信
+---
 
-- 登录弹窗状态 `showLoginModal` 由 Pinia userStore 统一管理
-- 各组件通过 `userStore.showLoginModal` 控制登录框显示
+## 关键设计模式
+
+### SSE 流竞争防护
+
+```javascript
+const streamToken = Date.now()
+activeStreamToken.value = streamToken
+
+eventSource.onmessage = (e) => {
+    if (streamToken !== activeStreamToken.value) return // 忽略过期事件
+    // 处理事件...
+}
+```
+
+### 状态追踪四变量
+
+`streamStarted`（收到 start）、`streamFinished`（收到 done）、`hasAssistantOutput`（有内容输出）、`hasEnteredStreaming`（已切换到 streaming）
+
+### 复制降级
+
+优先 `navigator.clipboard.writeText()`（需 HTTPS），失败则用 `document.execCommand('copy')` + 临时 `textarea`
+
+### 移动端视口
+
+`visualViewport` API 解决 `100dvh` 问题，动态设置 CSS 变量
+
+### 会话 URL 同步
+
+`router.replace({ query: { sid } })` + watch 触发加载，支持浏览器后退/前进
+
+---
 
 ## 设计规范
 
@@ -197,20 +335,31 @@ src/
 | 文字次色 | `rgba(255, 255, 255, 0.5)` |
 
 ### 字体
-- `'Microsoft YaHei', 'Segoe UI', sans-serif`
+
+`'Microsoft YaHei', 'Segoe UI', sans-serif`
 
 ### 暗色主题
-- Element Plus 组件已配置为深色主题
-- 全局滚动条样式已定义（宽度 6px，金色 thumb）
+
+Element Plus 组件已配置为深色主题，全局滚动条样式已定义（宽度 6px，金色 thumb）
+
+---
 
 ## 重要架构决策
 
 1. **登录弹窗状态 `showLoginModal` 统一由 Pinia userStore 管理**
-2. **路由守卫保护 `/profile` 路径，未登录重定向至 `/travel` 并弹出登录框**
+2. **路由守卫保护 `/profile`、`/route-plan`、`/dialogue` 路径，未登录重定向至 `/travel` 并弹出登录框**
 3. **所有 Element Plus 组件使用暗色主题覆盖样式**
+4. **SSE 使用 fetch + ReadableStream 实现**（标准 EventSource 不支持 POST 和自定义 headers）
+5. **复制功能优先 Clipboard API，失败降级 execCommand**
+
+---
 
 ## 最近更新
 
+- 2026-03-29: 对话页添加消息操作按钮（复制/重新生成），移动端复用 hover/active 逻辑
+- 2026-03-29: 全局收敛 ElMessage 时长为 1000ms，TravelView 添加登录前置检查
+- 2026-03-29: 添加 /route-plan 和 /dialogue 路由登录保护
+- 2026-03-29: DialogueView 支持 URL 路由同步、角色断流恢复、重新生成模式
 - 2026-03-29: 添加收藏路线查看/编辑弹窗，内联标题编辑
 - 2026-03-29: 新增 RoutePlanView 电竞文旅助手页面，会话边栏和 URL 路由同步
 - 2026-03-28: 添加聊天气泡 Markdown 渲染支持
