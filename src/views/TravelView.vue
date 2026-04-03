@@ -585,7 +585,6 @@ ${text}
     right: 0;
     width: 28vw;
     min-width: 320px;
-    max-width: 480px;
     height: 100%;
     background: #0f1a2a;
     border-left: 1px solid rgba(240, 179, 68, 0.15);
