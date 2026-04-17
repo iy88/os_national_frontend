@@ -137,6 +137,11 @@ const showHint = ref(true)
 const containerRef = ref(null)
 let containerResizeObserver = null
 
+// Resize 优化：忽略微小抖动；宽度-only 变化走快速路径，避免重算 fitView
+let lastContainerWidth = 0
+let lastContainerHeight = 0
+const RESIZE_THRESHOLD_PX = 4
+
 // 城市标记数据（从 cities.json 导入）
 const cityMarkersData = Object.entries(citiesData).reduce((acc, [key, city]) => {
     if (city.center) {
@@ -486,6 +491,16 @@ const handleCityTouch = (cityKey) => {
     emit('select-city', cityKey)
 }
 
+/**
+ * 判断尺寸变化是否超过阈值，避免微小抖动触发重计算
+ */
+const shouldUpdateForResize = (w, h) => {
+    if (lastContainerWidth <= 0 || lastContainerHeight <= 0) return true
+    const dw = Math.abs(w - lastContainerWidth)
+    const dh = Math.abs(h - lastContainerHeight)
+    return dw >= RESIZE_THRESHOLD_PX || dh >= RESIZE_THRESHOLD_PX
+}
+
 // 根据容器尺寸计算“大陆基准视图”（未考虑当前缩放/中心）
 const computeMainlandFitView = (containerWidth, containerHeight) => {
     if (containerWidth <= 0 || containerHeight <= 0) return null
@@ -520,40 +535,24 @@ const computeMainlandFitView = (containerWidth, containerHeight) => {
 }
 
 const applyViewByContainerSize = (containerWidth, containerHeight, reset = false) => {
-    const fitView = computeMainlandFitView(containerWidth, containerHeight)
-    if (!fitView) return
-
-    const prevInitView = initialMainlandView.value
-    const hasPrevInit = prevInitView && prevInitView.w > 0 && prevInitView.h > 0
-
-    // 更新基准视图，使缩放边界与当前容器一致
-    initialMainlandView.value = fitView
-
-    if (reset || !hasPrevInit || vbW.value <= 0 || vbH.value <= 0) {
-        vbX.value = fitView.x
-        vbY.value = fitView.y
-        vbW.value = fitView.w
-        vbH.value = fitView.h
+    // 非重置场景下，若尺寸变化微小则跳过
+    if (!reset && !shouldUpdateForResize(containerWidth, containerHeight)) {
         return
     }
 
-    // 保持相对缩放比例与相对中心位置，保证不同尺寸下行为一致。
-    const prevCenterX = vbX.value + vbW.value / 2
-    const prevCenterY = vbY.value + vbH.value / 2
-    const centerRatioX = (prevCenterX - prevInitView.x) / prevInitView.w
-    const centerRatioY = (prevCenterY - prevInitView.y) / prevInitView.h
-    const zoomRatio = vbW.value / prevInitView.w
+    lastContainerWidth = containerWidth
+    lastContainerHeight = containerHeight
 
-    const targetCenterX = fitView.x + centerRatioX * fitView.w
-    const targetCenterY = fitView.y + centerRatioY * fitView.h
-    const aspect = fitView.h / fitView.w
-    const nextW = clampViewWidth(fitView.w * zoomRatio)
-    const nextH = nextW * aspect
+    // 每次 resize 都重新计算 fitView，保证与 reset 按钮行为一致
+    const fitView = computeMainlandFitView(containerWidth, containerHeight)
+    if (!fitView) return
 
-    vbW.value = nextW
-    vbH.value = nextH
-    vbX.value = targetCenterX - nextW / 2
-    vbY.value = targetCenterY - nextH / 2
+    initialMainlandView.value = fitView
+
+    vbX.value = fitView.x
+    vbY.value = fitView.y
+    vbW.value = fitView.w
+    vbH.value = fitView.h
 }
 
 // 初始化视图，使大陆区域居中并适应容器
@@ -573,13 +572,14 @@ onMounted(() => {
             containerResizeObserver = new ResizeObserver((entries) => {
                 const entry = entries?.[0]
                 if (!entry) return
-                applyViewByContainerSize(entry.contentRect.width, entry.contentRect.height)
+                const w = entry.contentRect.width
+                const h = entry.contentRect.height
+                if (w <= 0 || h <= 0) return
+                applyViewByContainerSize(w, h)
             })
             containerResizeObserver.observe(container)
         }
     })
-
-    window.addEventListener('resize', initializeMainlandView)
 
     // 3秒后隐藏提示
     setTimeout(() => {
@@ -594,7 +594,6 @@ onUnmounted(() => {
         containerResizeObserver.disconnect()
         containerResizeObserver = null
     }
-    window.removeEventListener('resize', initializeMainlandView)
 })
 </script>
 

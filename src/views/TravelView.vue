@@ -270,15 +270,6 @@ const updateLayoutMode = () => {
     isDesktopLayout.value = getIsDesktopLayout()
 }
 
-const triggerMapReflow = () => {
-    if (typeof window === 'undefined') return
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            window.dispatchEvent(new Event('resize'))
-        })
-    })
-}
-
 // 消息操作处理
 const handleCopyMessage = async (content) => {
     if (navigator.clipboard && window.isSecureContext) {
@@ -346,10 +337,6 @@ onUnmounted(() => {
     window.removeEventListener('resize', updateLayoutMode)
     window.removeEventListener('resize', updateDialogWidth)
     cancelStreaming()
-})
-
-watch(isDesktopLayout, () => {
-    triggerMapReflow()
 })
 
 const travelMessages = ref([])
@@ -485,10 +472,6 @@ ${text}
     --assistant-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.travel-view.mobile-layout .map-section {
-    transition: none;
-}
-
 /* 地图区域 */
 .map-section {
     position: absolute;
@@ -497,9 +480,14 @@ ${text}
     flex: 1;
     min-height: 0;
     min-width: 0;
-    margin-right: 0;
-    transition: margin-right var(--assistant-transition-duration-desktop) var(--assistant-transition-easing);
-    will-change: margin-right;
+    clip-path: inset(0 0 0 0);
+    transition: clip-path var(--assistant-transition-duration-desktop) var(--assistant-transition-easing);
+    will-change: clip-path;
+}
+
+.map-section.chat-open {
+    /* 与 .chat-sidebar 的 width/min-width 保持一致 */
+    clip-path: inset(0 max(28vw, 320px) 0 0);
 }
 
 .map-host {
@@ -525,9 +513,7 @@ ${text}
     min-height: 0;
 }
 
-.map-section.chat-open {
-    margin-right: 28vw;
-}
+
 
 /* 聊天切换按钮 */
 .chat-toggle-btn {
