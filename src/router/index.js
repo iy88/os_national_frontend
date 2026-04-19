@@ -5,8 +5,11 @@ import RoutePlanView from '../views/RoutePlanView.vue'
 import UserProfile from '../views/UserProfile.vue'
 import BasicInfo from '../views/profile/BasicInfo.vue'
 import FavoriteRoutes from '../views/profile/FavoriteRoutes.vue'
+import AdminLogin from '../views/admin/AdminLogin.vue'
+import Roles from '../views/admin/data/Roles.vue'
 import {useUserStore} from '../stores/user'
-import {getProfile} from '../api'
+import {useAdminStore} from '../stores/admin'
+import {getProfile, adminGetProfile} from '../api'
 
 const routes = [
     {
@@ -45,6 +48,28 @@ const routes = [
                 component: FavoriteRoutes
             }
         ]
+    },
+
+    // 管理后台路由
+    {
+        path: '/manage',
+        redirect: '/manage/index'
+    },
+    {
+        path: '/manage/index',
+        name: 'admin-index',
+        component: () => import('../views/admin/ManageIndex.vue'),
+        meta: { requiresAuth: true, authType: 'admin' }
+    },
+    {
+        path: '/manage/login',
+        name: 'admin-login',
+        component: AdminLogin
+    },
+    {
+        path: '/manage/data/roles',
+        name: 'admin-roles',
+        component: Roles
     }
 ]
 
@@ -53,56 +78,78 @@ const router = createRouter({
     routes
 })
 
-let isAutoLoggingIn = false
+// 路由守卫映射配置
+const AUTH_CONFIGS = {
+    user: {
+        tokenKey: 'token',
+        loginPage: null,
+        redirectPaths: ['/profile', '/route-plan', '/dialogue'],
+        loginPath: '/travel',
+        verifyApi: getProfile,
+        store: () => useUserStore(),
+        isLoggedIn: (store) => store.isLoggedIn,
+        setUserInfo: (store, info) => store.setUserInfo(info),
+        logout: (store) => store.logout(),
+        showLoginModal: (store, val) => { store.showLoginModal = val }
+    },
+    admin: {
+        tokenKey: 'adminToken',
+        loginPage: '/manage/login',
+        redirectPaths: ['/manage'],
+        loginPath: '/manage/login',
+        verifyApi: adminGetProfile,
+        store: () => useAdminStore(),
+        isLoggedIn: (store) => store.isLoggedIn,
+        setUserInfo: (store, info) => store.setAdminInfo(info),
+        logout: (store) => store.logout(),
+        showLoginModal: () => {}
+    }
+}
 
 router.beforeEach(async (to, from) => {
-    const userStore = useUserStore()
+    const authType = to.path.startsWith('/manage') ? 'admin' : 'user'
+    const config = AUTH_CONFIGS[authType]
+    const store = config.store()
 
-    // 如果正在自动登录验证中，直接放行
-    if (isAutoLoggingIn) {
+    // 登录页直接放行
+    if (config.loginPage && to.path === config.loginPage) {
         return true
     }
 
-    // 如果已登录，直接放行
-    if (userStore.isLoggedIn) {
+    // 已登录，直接放行
+    if (store.isLoggedIn) {
         return true
     }
 
-    // 检查 localStorage 是否有 token
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem(config.tokenKey)
     if (token) {
-        isAutoLoggingIn = true
         try {
-            // 尝试获取 profile 验证 token
-            const result = await getProfile()
-            if (result.success && result.userInfo) {
-                userStore.setUserInfo(result.userInfo)
+            const result = await config.verifyApi()
+            if (result.success) {
+                if (authType === 'user' && result.userInfo) {
+                    config.setUserInfo(store, result.userInfo)
+                } else if (authType === 'admin' && result.adminInfo) {
+                    config.setUserInfo(store, result.adminInfo)
+                }
                 return true
             } else {
-                userStore.logout()
-                return redirectToLogin(to)
+                config.logout(store)
+                return config.loginPath
             }
         } catch (error) {
-            // token 无效，使用 store 登出（会清除 token）
-            userStore.logout()
-            return redirectToLogin(to)
-        } finally {
-            isAutoLoggingIn = false
+            config.logout(store)
+            return config.loginPath
         }
     } else {
-        // 无 token
-        return redirectToLogin(to)
-    }
-
-    // 统一跳转和弹窗处理
-    function redirectToLogin(to) {
-        const protectedPaths = ['/profile', '/route-plan', '/dialogue']
-        if (protectedPaths.some(p => to.path.startsWith(p))) {
-            userStore.showLoginModal = true
-            return '/travel'
-        } else {
-            return true
+        // 无 token，判断是否需要拦截
+        if (config.redirectPaths.some(p => to.path.startsWith(p))) {
+            if (authType === 'user') {
+                config.showLoginModal(store, true)
+                return config.loginPath
+            }
+            return config.loginPath
         }
+        return true
     }
 })
 

@@ -1,20 +1,186 @@
 <template>
-    <div class="app-container">
-        <Header @open-login="userStore.showLoginModal = true"/>
-        <main class="main-content">
-            <router-view/>
-        </main>
-        <LoginModal v-model="userStore.showLoginModal"/>
+    <div :class="['app-container', { 'is-admin': isManageRoute }]">
+        <template v-if="!isManageRoute">
+            <Header @open-login="userStore.showLoginModal = true"/>
+            <main class="main-content">
+                <router-view/>
+            </main>
+            <LoginModal v-model="userStore.showLoginModal"/>
+        </template>
+        <template v-else>
+            <AdminHeader :sidebar-open="sidebarOpen" @toggle-sidebar="toggleSidebar"/>
+            <!-- 桌面端侧边栏遮罩 -->
+            <div
+                v-if="sidebarOpen"
+                class="admin-sidebar-overlay"
+                @click="toggleSidebar"
+            ></div>
+            <div class="admin-layout">
+                <!-- 桌面端左侧导航 -->
+                <nav :class="['admin-sidebar', { open: sidebarOpen }]">
+                    <button
+                        :class="['sidebar-item', { active: activeManageTab === 'index' }]"
+                        @click="$router.push('/manage/index')"
+                    >
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        <span>首页</span>
+                    </button>
+                    <button
+                        :class="['sidebar-item', { active: activeManageTab === 'roles' }]"
+                        @click="$router.push('/manage/data/roles')"
+                    >
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span>角色管理</span>
+                    </button>
+                </nav>
+                <div class="admin-content">
+                    <router-view/>
+                </div>
+            </div>
+        </template>
     </div>
 </template>
 
 <script setup>
+import {ref, watch} from 'vue'
+import {useRoute} from 'vue-router'
 import Header from './components/Header.vue'
 import LoginModal from './components/LoginModal.vue'
+import AdminHeader from './components/admin/AdminHeader.vue'
 import {useUserStore} from './stores/user'
 
+const route = useRoute()
 const userStore = useUserStore()
+
+// 避免首屏闪烁：setup 时直接读取浏览器地址栏路径，绕过异步路由守卫导致的 route.path 延迟更新
+const initialPath = typeof window !== 'undefined' ? window.location.pathname : route.path
+const isManageRoute = ref(initialPath.startsWith('/manage'))
+const activeManageTab = ref(
+    initialPath.startsWith('/manage/data/roles') ? 'roles' : 'index'
+)
+
+// 路由变化时更新
+watch(() => route.path, (path) => {
+    isManageRoute.value = path.startsWith('/manage')
+    if (path.startsWith('/manage/data/roles')) {
+        activeManageTab.value = 'roles'
+    } else {
+        activeManageTab.value = 'index'
+    }
+})
+
+const sidebarOpen = ref(false)
+const toggleSidebar = () => {
+    sidebarOpen.value = !sidebarOpen.value
+}
 </script>
+
+<style scoped>
+.admin-content {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.admin-layout {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+.admin-sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 200px;
+    height: calc(100vh - 56px);
+    background: #0a0a0f;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 50;
+}
+
+.admin-sidebar.open {
+    transform: translateX(0);
+}
+
+.admin-sidebar-overlay {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 49;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar-item svg {
+    width: 20px;
+    height: 20px;
+    color: rgba(34, 197, 94, 0.7);
+    flex-shrink: 0;
+}
+
+.sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-item.active {
+    background: rgba(34, 197, 94, 0.12);
+    color: #4ade80;
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+.sidebar-item.active svg {
+    color: #4ade80;
+}
+
+@media (max-width: 768px) {
+    .admin-sidebar {
+        display: none;
+    }
+}
+</style>
 
 <!--suppress CssUnusedSymbol -->
 <style>
@@ -379,5 +545,145 @@ body.el-popup-parent--hidden {
 
 .el-dialog__body {
     padding: 20px;
+}
+
+/* 后台页面背景 - 覆盖用户页面的 body 背景 */
+body:has(.app-container.is-admin) {
+    background: #09090b !important;
+    background-image: none !important;
+}
+
+/* 后台页面 Select / Pagination 下拉框 - 覆盖用户端的金色主题 */
+body:has(.app-container.is-admin) .el-select-dropdown__popper {
+    background: rgba(15, 15, 20, 0.98) !important;
+    border: 1px solid rgba(34, 197, 94, 0.2) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+body:has(.app-container.is-admin) .el-select-dropdown__popper .el-popper__arrow::before {
+    background: rgba(15, 15, 20, 0.98) !important;
+    border-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+body:has(.app-container.is-admin) .el-select-dropdown {
+    background: rgba(15, 15, 20, 0.98) !important;
+    border: 1px solid rgba(34, 197, 94, 0.2) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+body:has(.app-container.is-admin) .el-select-dropdown__item {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+body:has(.app-container.is-admin) .el-select-dropdown__item:hover,
+body:has(.app-container.is-admin) .el-select-dropdown__item.hover,
+body:has(.app-container.is-admin) .el-select-dropdown__item.is-hovered {
+    background: rgba(34, 197, 94, 0.12) !important;
+    color: #fff !important;
+}
+
+body:has(.app-container.is-admin) .el-select-dropdown__item.selected,
+body:has(.app-container.is-admin) .el-select-dropdown__item.is-selected,
+body:has(.app-container.is-admin) .el-select-dropdown__item--selected {
+    background: rgba(34, 197, 94, 0.2) !important;
+    color: #4ade80 !important;
+}
+
+body:has(.app-container.is-admin) .el-select__wrapper:hover {
+    border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+body:has(.app-container.is-admin) .el-select__wrapper.is-focused,
+body:has(.app-container.is-admin) .el-select__wrapper.is-focus {
+    border-color: #4ade80 !important;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15) !important;
+}
+
+/* 后台页面 Dialog - 覆盖用户端的金色主题 */
+body:has(.app-container.is-admin) .el-dialog {
+    background: linear-gradient(145deg, #1a1a1f 0%, #0d0d10 100%) !important;
+    border: 1px solid rgba(34, 197, 94, 0.25) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+body:has(.app-container.is-admin) .el-dialog__header {
+    border-bottom: 1px solid rgba(34, 197, 94, 0.15) !important;
+    padding: 16px 20px !important;
+}
+
+body:has(.app-container.is-admin) .el-dialog__title {
+    color: #4ade80 !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+}
+
+body:has(.app-container.is-admin) .el-dialog__headerbtn .el-dialog__close {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+body:has(.app-container.is-admin) .el-dialog__headerbtn:hover .el-dialog__close {
+    color: #4ade80 !important;
+}
+
+body:has(.app-container.is-admin) .el-dialog__body {
+    padding: 20px !important;
+}
+
+body:has(.app-container.is-admin) .el-dialog__footer {
+    border-top: 1px solid rgba(34, 197, 94, 0.15) !important;
+}
+
+/* 后台页面 MessageBox - 覆盖用户端的金色主题 */
+body:has(.app-container.is-admin) .el-message-box {
+    background: linear-gradient(145deg, #1a1a1f 0%, #0d0d10 100%) !important;
+    border: 1px solid rgba(34, 197, 94, 0.25) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+body:has(.app-container.is-admin) .el-message-box__title {
+    color: #4ade80 !important;
+}
+
+body:has(.app-container.is-admin) .el-message-box__content {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+body:has(.app-container.is-admin) .el-message-box__btns .el-button--primary {
+    --el-button-bg-color: #22c55e;
+    --el-button-border-color: #22c55e;
+    --el-button-hover-bg-color: #4ade80;
+    --el-button-hover-border-color: #4ade80;
+}
+
+/* 后台页面按钮 - 覆盖用户端的金色主题 */
+body:has(.app-container.is-admin) .el-button--primary {
+    --el-button-bg-color: #22c55e;
+    --el-button-border-color: #22c55e;
+    --el-button-hover-bg-color: #4ade80;
+    --el-button-hover-border-color: #4ade80;
+    --el-button-text-color: #000;
+}
+
+body:has(.app-container.is-admin) .el-button:not(.el-button--primary):not(.el-button--danger):not(.el-button--link) {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+body:has(.app-container.is-admin) .el-button:not(.el-button--primary):not(.el-button--danger):not(.el-button--link):hover {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+}
+
+body:has(.app-container.is-admin) .el-button--link {
+    color: #4ade80;
+}
+
+body:has(.app-container.is-admin) .el-button--link:hover {
+    color: #22c55e;
 }
 </style>

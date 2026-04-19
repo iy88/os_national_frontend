@@ -61,6 +61,26 @@ export const login = (data) => {
     return apiClient.post('/user/login', payload)
 }
 
+// 管理后台登录
+export const adminLogin = (data) => {
+    const payload = {
+        password: data.password
+    }
+    if (data.username?.includes('@')) {
+        payload.email = data.username
+    } else if (data.username) {
+        payload.username = data.username
+    } else if (data.email) {
+        payload.email = data.email
+    }
+    return apiClient.post('/admin/login', payload)
+}
+
+// 获取管理员信息
+export const adminGetProfile = () => {
+    return apiClient.get('/admin/profile')
+}
+
 // 健康检查
 export const healthCheck = () => {
     return apiClient.get('/health')
@@ -255,8 +275,13 @@ export const sendChatMessage = sendChatMessageStream
 // ============ Roleplay 角色扮演接口 ============
 
 // 获取角色列表
-export const getRoleplayCharacterList = (type) => {
-    return apiClient.get(`/agent/roleplay/list/${type}`)
+export const getRoleplayCharacterList = (type, options = {}) => {
+    const params = new URLSearchParams()
+    if (options.page) params.append('page', options.page)
+    if (options.page_size) params.append('page_size', options.page_size)
+    if (options.search) params.append('search', options.search)
+    const query = params.toString() ? `?${params}` : ''
+    return apiClient.get(`/agent/roleplay/list/${type}${query}`)
 }
 
 // 获取角色详情
@@ -410,6 +435,113 @@ export const deleteFavoriteRoute = (rid) => {
 // 编辑收藏路线
 export const editFavoriteRoute = (rid, data) => {
     return apiClient.put(`/route/edit/${rid}`, data)
+}
+
+// ============ Admin Roleplay 管理员角色接口 ============
+
+const adminApiClient = axios.create({
+    baseURL: '',
+    timeout: 10000,
+    headers: {
+        'Content-Type': 'application/json'
+    }
+})
+
+adminApiClient.interceptors.request.use(
+    (config) => {
+        const adminToken = localStorage.getItem('adminToken')
+        if (adminToken) {
+            config.headers.Authorization = `Bearer ${adminToken}`
+        }
+        // FormData会自动设置正确的Content-Type，不需要手动设置
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type']
+        }
+        return config
+    },
+    (error) => Promise.reject(error)
+)
+
+adminApiClient.interceptors.response.use(
+    (response) => response.data,
+    (error) => {
+        const message = error.response?.data?.message || error.message || '请求失败'
+        return Promise.reject(new Error(message))
+    }
+)
+
+// 管理员上传客户端
+const adminUploadClient = axios.create({
+    baseURL: '',
+    timeout: 30000
+})
+
+adminUploadClient.interceptors.request.use(
+    (config) => {
+        const adminToken = localStorage.getItem('adminToken')
+        if (adminToken) {
+            config.headers.Authorization = `Bearer ${adminToken}`
+        }
+        return config
+    },
+    (error) => Promise.reject(error)
+)
+
+adminUploadClient.interceptors.response.use(
+    (response) => response.data,
+    (error) => {
+        const message = error.response?.data?.message || error.message || '上传失败'
+        return Promise.reject(new Error(message))
+    }
+)
+
+// 获取角色详情（管理员）
+export const adminGetRoleplayDetail = (rid) => {
+    return adminApiClient.get(`/admin/roleplay/${rid}/detail`)
+}
+
+// 创建角色
+export const adminCreateRoleplay = (data) => {
+    return adminApiClient.post('/admin/roleplay/create', data)
+}
+
+// 更新角色
+export const adminUpdateRoleplay = (rid, data) => {
+    return adminApiClient.put(`/admin/roleplay/${rid}/update`, data)
+}
+
+// 删除角色
+export const adminDeleteRoleplay = (rid) => {
+    return adminApiClient.delete(`/admin/roleplay/${rid}/delete`)
+}
+
+// 上传角色头像
+export const adminUploadRoleplayAvatar = (rid, file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return adminUploadClient.post(`/admin/roleplay/${rid}/avatar/upload`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+}
+
+// 上传角色图片
+export const adminUploadRoleplayImages = (rid, files) => {
+    const formData = new FormData()
+    files.forEach(file => {
+        formData.append('files', file)
+    })
+    return adminUploadClient.post(`/admin/roleplay/${rid}/images/upload`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+}
+
+// 删除角色图片
+export const adminDeleteRoleplayImage = (rid, fid) => {
+    return adminUploadClient.delete(`/admin/roleplay/${rid}/images/${fid}/delete`)
 }
 
 export default apiClient

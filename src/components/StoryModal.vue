@@ -8,14 +8,16 @@
         width="600px"
         @update:model-value="(val) => emit('update:modelValue', val)"
     >
-        <div class="story-content">
-            <p>{{ story }}</p>
-        </div>
+        <div class="story-content" v-html="renderedStory"></div>
     </el-dialog>
 </template>
 
 <script setup>
-defineProps({
+import {computed} from 'vue'
+import {marked} from 'marked'
+import DOMPurify from 'dompurify'
+
+const props = defineProps({
     modelValue: {
         type: Boolean,
         default: false
@@ -31,19 +33,69 @@ defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+
+marked.setOptions({
+    gfm: true,
+    breaks: true
+})
+
+const renderedStory = computed(() => {
+    if (!props.story) return ''
+    const html = marked.parse(props.story)
+    return DOMPurify.sanitize(typeof html === 'string' ? html : '')
+})
 </script>
 
 <style scoped>
 .story-content {
     color: rgba(255, 255, 255, 0.9);
-    line-height: 1.9;
+    line-height: 1.8;
     font-size: 1rem;
     padding: 10px 0;
 }
 
-.story-content p {
-    margin: 0;
-    text-indent: 2em;
+.story-content :deep(p) {
+    margin: 0 0 12px;
+}
+
+.story-content :deep(p:last-child) {
+    margin-bottom: 0;
+}
+
+.story-content :deep(ul),
+.story-content :deep(ol) {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.story-content :deep(li) {
+    margin: 4px 0;
+}
+
+.story-content :deep(blockquote) {
+    margin: 12px 0;
+    padding: 8px 16px;
+    border-left: 3px solid rgba(240, 179, 68, 0.45);
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+}
+
+.story-content :deep(strong) {
+    color: #f0b344;
+    font-weight: 600;
+}
+
+.story-content :deep(code) {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.story-content :deep(a) {
+    color: #89c3ff;
+    text-decoration: underline;
 }
 </style>
 

@@ -38,6 +38,10 @@ export default defineConfig({
             '/agent/': {
                 target: apiTarget,
                 changeOrigin: true
+            },
+            '/admin/': {
+                target: apiTarget,
+                changeOrigin: true
             }
         }
     },

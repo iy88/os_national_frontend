@@ -27,7 +27,24 @@
 
 <script setup>
 import {computed} from 'vue'
-import {categoryInfo} from '../data/characters'
+
+const categoryInfo = {
+    hero: {
+        name: '游戏英雄',
+        icon: '🗡️',
+        color: '#f0b344'
+    },
+    player: {
+        name: '电竞选手',
+        icon: '🏆',
+        color: '#e63946'
+    },
+    celebrity: {
+        name: '电竞明星',
+        icon: '🎮',
+        color: '#2a9d8f'
+    }
+}
 
 const props = defineProps({
     character: {

@@ -181,7 +181,7 @@
                         {{ info.name }}
                     </div>
                 </div>
-                <div class="panel-body">
+                <div class="panel-body" @scroll="handlePanelScroll">
                     <div v-if="selectorLoading" class="selector-loading">角色加载中...</div>
                     <div v-else-if="selectorError" class="selector-empty">{{ selectorError }}</div>
                     <div v-else-if="!selectorCharacters.length" class="selector-empty">暂无角色</div>
@@ -223,7 +223,23 @@ import {marked} from 'marked'
 import DOMPurify from 'dompurify'
 import StoryModal from '../components/StoryModal.vue'
 import PhotoGallery from '../components/PhotoGallery.vue'
-import {categoryInfo} from '../data/characters'
+const categoryInfo = {
+    hero: {
+        name: '游戏英雄',
+        icon: '🗡️',
+        color: '#f0b344'
+    },
+    player: {
+        name: '电竞选手',
+        icon: '🏆',
+        color: '#e63946'
+    },
+    celebrity: {
+        name: '电竞明星',
+        icon: '🎮',
+        color: '#2a9d8f'
+    }
+}
 import {useStreamTimers} from '../composables/useStreamTimers'
 import {
     getRoleplayCharacterDetail,
@@ -318,10 +334,11 @@ const mapRoleplayCharacter = (item, categoryKey) => {
         categoryKey,
         roleplayType: roleplayTypeMap[categoryKey],
         name,
-        avatar: createPlaceholderSvg(name, color),
+        avatar: item?.avatar_token
+            ? `/file/image/fetch?token=${item.avatar_token}`
+            : createPlaceholderSvg(name, color),
         story: buildMockStory(name, categoryKey),
         photos: buildMockPhotos(name, color),
-        avatarId: item?.avatarId ?? null,
         createdAt: item?.createdAt || null,
         detailLoaded: false
     }
@@ -367,6 +384,13 @@ const categoryRequestToken = reactive({
     player: 0,
     celebrity: 0
 })
+// 每类角色的分页状态
+const paginationState = reactive({
+    hero: { page: 1, total: 0, hasMore: true },
+    player: { page: 1, total: 0, hasMore: true },
+    celebrity: { page: 1, total: 0, hasMore: true }
+})
+
 const activeCharacterRequestToken = ref(0)
 const activeStreamToken = ref(0)
 let sidebarScrollbarHideTimer = null
@@ -497,17 +521,19 @@ const updateCharacterInCategory = (character, updates) => {
     }
 }
 
-const loadCategoryCharacters = async (categoryKey) => {
+const loadCategoryCharacters = async (categoryKey, page = 1, { silent = false } = {}) => {
     const roleplayType = roleplayTypeMap[categoryKey]
     if (!roleplayType) return
 
     const requestToken = Date.now()
     categoryRequestToken[categoryKey] = requestToken
-    categoryLoading[categoryKey] = true
+    if (!silent) {
+        categoryLoading[categoryKey] = true
+    }
     categoryError[categoryKey] = ''
 
     try {
-        const result = await getRoleplayCharacterList(roleplayType)
+        const result = await getRoleplayCharacterList(roleplayType, { page, page_size: 20 })
         if (categoryRequestToken[categoryKey] !== requestToken) return
         if (!result?.success) {
             throw new Error(result?.message || '角色列表加载失败')
@@ -517,46 +543,73 @@ const loadCategoryCharacters = async (categoryKey) => {
             ? result.characters.map(item => mapRoleplayCharacter(item, categoryKey))
             : []
 
+        // 第一页或重置，替换列表；后续页追加
+        if (page === 1) {
+            charactersByCategory[categoryKey] = characterList
+        } else {
+            charactersByCategory[categoryKey] = [
+                ...(charactersByCategory[categoryKey] || []),
+                ...characterList
+            ]
+        }
+
+        // 更新分页状态
+        const total = result.total || 0
+        const pagination = paginationState[categoryKey]
+        pagination.total = total
+        pagination.hasMore = page * 20 < total
+        pagination.page = page
+
+        // 合并已选角色
         if (activeCharacter.value?.categoryKey === categoryKey) {
             const matched = characterList.find(item => Number(item.rid) === Number(activeCharacter.value.rid))
             if (matched) {
-                const merged = {
-                    ...matched,
-                    ...activeCharacter.value
+                const merged = { ...matched, ...activeCharacter.value }
+                const matchedIndex = charactersByCategory[categoryKey].findIndex(
+                    item => Number(item.rid) === Number(merged.rid)
+                )
+                if (matchedIndex >= 0) {
+                    charactersByCategory[categoryKey].splice(matchedIndex, 1, merged)
                 }
-                const matchedIndex = characterList.findIndex(item => Number(item.rid) === Number(merged.rid))
-                characterList.splice(matchedIndex, 1, merged)
                 activeCharacter.value = merged
                 selectedCharacter.value = merged
-            } else {
-                activeCharacter.value = null
-                selectedCharacter.value = null
-                messages.value = []
-                inputText.value = ''
-                streamStatus.value = 'idle'
-                hasIncompleteMessage.value = false
-                incompleteMid.value = null
             }
         }
 
-        charactersByCategory[categoryKey] = characterList
+        // 预取下一页（只在非静默加载时触发，避免无限递归）
+        if (pagination.hasMore && !silent) {
+            preloadNextPage(categoryKey, page + 1)
+        }
     } catch (error) {
         if (categoryRequestToken[categoryKey] !== requestToken) return
         const message = error?.message || '角色列表加载失败'
-        charactersByCategory[categoryKey] = []
+        if (page === 1 && !silent) {
+            charactersByCategory[categoryKey] = []
+        }
         categoryError[categoryKey] = message
-        showCategoryErrorToast(categoryKey, message)
+        if (!silent) {
+            showCategoryErrorToast(categoryKey, message)
+        }
     } finally {
-        if (categoryRequestToken[categoryKey] === requestToken) {
+        if (categoryRequestToken[categoryKey] === requestToken && !silent) {
             categoryLoading[categoryKey] = false
         }
     }
 }
 
+const preloadNextPage = (categoryKey, page) => {
+    const pagination = paginationState[categoryKey]
+    if (!pagination || !pagination.hasMore) return
+    // 延迟一帧执行，避免阻塞当前渲染和重复请求
+    setTimeout(() => {
+        if (categoryLoading[categoryKey]) return
+        loadCategoryCharacters(categoryKey, page, { silent: true })
+    }, 50)
+}
+
 const openCharSelector = () => {
     selectorCategory.value = activeSidebarTab.value
     showCharSelector.value = true
-    loadCategoryCharacters(selectorCategory.value)
 }
 
 const clearSidebarScrollbarHideTimer = () => {
@@ -590,8 +643,56 @@ const handleSidebarMouseMove = () => {
     showSidebarScrollbar(1200)
 }
 
-const handleSidebarScroll = () => {
+const loadMoreSidebarCharacters = () => {
+    if (loadMoreTimer) return
+    const category = activeSidebarTab.value
+    const pagination = paginationState[category]
+    if (!pagination || !pagination.hasMore || categoryLoading[category]) return
+
+    loadMoreTimer = setTimeout(() => {
+        loadMoreTimer = null
+        loadCategoryCharacters(category, pagination.page + 1)
+    }, 200)
+}
+
+const handleSidebarScroll = (e) => {
     showSidebarScrollbar(1200)
+
+    // 预取逻辑：滚动过 70% 即触发加载，而非等到底部
+    const el = e.target
+    const { scrollTop, scrollHeight, clientHeight } = el
+    const scrollRatio = scrollHeight > 0 ? (scrollTop + clientHeight) / scrollHeight : 0
+    const shouldPrefetch = scrollRatio > 0.7
+
+    if (shouldPrefetch) {
+        loadMoreSidebarCharacters()
+    }
+}
+
+const handlePanelScroll = (e) => {
+    if (!showCharSelector.value) return
+    const el = e.target
+    const { scrollTop, scrollHeight, clientHeight } = el
+    // 预取逻辑：滚动过 70% 即触发加载，而非等到底部
+    const scrollRatio = scrollHeight > 0 ? (scrollTop + clientHeight) / scrollHeight : 0
+    const shouldPrefetch = scrollRatio > 0.7
+
+    if (shouldPrefetch) {
+        loadMoreSelectorCharacters()
+    }
+}
+
+let loadMoreTimer = null
+const loadMoreSelectorCharacters = () => {
+    if (loadMoreTimer) return
+    const category = selectorCategory.value
+    const pagination = paginationState[category]
+    if (!pagination || !pagination.hasMore || categoryLoading[category]) return
+
+    loadMoreTimer = setTimeout(() => {
+        loadMoreTimer = null
+        loadCategoryCharacters(category, pagination.page + 1)
+    }, 200)
 }
 
 const handleSidebarPointerDown = () => {
@@ -656,7 +757,12 @@ const loadCharacterDetail = async (character, requestToken) => {
             desc: bio || character.desc,
             story: buildMockStory(character.name, character.categoryKey, {bio, phrases}),
             detailLoaded: true,
-            detailAvatarId: detail.detailAvatarId ?? null,
+            photos: Array.isArray(detail.images_token)
+                ? detail.images_token.map(token => `/file/image/fetch?token=${token}`)
+                : character.photos,
+            avatar: detail.avatar_token
+                ? `/file/image/fetch?token=${detail.avatar_token}`
+                : character.avatar,
             phrases
         }
 
@@ -1206,16 +1312,21 @@ const handleClickOutside = (e) => {
 watch(
     () => activeSidebarTab.value,
     (newCategory) => {
-        loadCategoryCharacters(newCategory)
-    },
-    {immediate: true}
+        // 避免重复请求：若该分类已有数据则不再重新加载（保留滚动增量结果）
+        if (!charactersByCategory[newCategory]?.length) {
+            loadCategoryCharacters(newCategory)
+        }
+    }
 )
 
 watch(
     () => selectorCategory.value,
     (newCategory) => {
         if (!showCharSelector.value) return
-        loadCategoryCharacters(newCategory)
+        // 重置分页状态
+        paginationState[newCategory].page = 1
+        paginationState[newCategory].hasMore = true
+        loadCategoryCharacters(newCategory, 1)
     }
 )
 
@@ -1223,7 +1334,10 @@ watch(
     () => showCharSelector.value,
     (visible) => {
         if (!visible) return
-        loadCategoryCharacters(selectorCategory.value)
+        // 只加载第1页
+        paginationState[selectorCategory.value].page = 1
+        paginationState[selectorCategory.value].hasMore = true
+        loadCategoryCharacters(selectorCategory.value, 1)
     }
 )
 
