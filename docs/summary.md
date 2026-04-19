@@ -17,19 +17,31 @@
 **路由**: `/travel`
 
 **布局**:
+
 - 城市地图（全屏） + 右侧聊天气泡面板（桌面 28vw / 移动端底部抽屉 70%）
 - Quick Planners 筛选栏（可折叠）：城市、天数、人数、关系类型
 
 **核心组件**:
+
 - `CityMap`：SVG 交互地图，支持拖拽平移、滚轮缩放、触屏捏合缩放
 - `ChatBox`：聊天气泡面板，消息列表 + 输入框
 
 **消息结构**:
+
 ```javascript
-{ type: 'user' | 'character', content: string, mid: number, completed: boolean }
+{
+    type: 'user' | 'character', content
+:
+    string, mid
+:
+    number, completed
+:
+    boolean
+}
 ```
 
 **核心功能**:
+
 - 城市选择 → 弹窗展示电竞人物/英雄/美食/任务/路线
 - `sendTravelMessage(text)` — 构建提示词模板 → SSE 流式响应
 - `ensureLoginBeforeSend()` — 发送前检查登录状态，未登录弹登录框
@@ -37,6 +49,7 @@
 - `streamToken` 机制防止 SSE 多流竞争
 
 **API**:
+
 - `POST /agent/travel-route-plan/message` — SSE 流式发送消息
 - `POST /route/favorite` — 收藏路线
 
@@ -47,27 +60,39 @@
 **路由**: `/dialogue`
 
 **布局**:
+
 - 左侧角色边栏（三大分类：游戏英雄/电竞选手/电竞明星）+ 右侧聊天区
 - 移动端隐藏侧边栏，显示切换角色按钮
 
 **消息结构**:
+
 ```javascript
-{ type: 'user' | 'character', content: string, mid: number, completed: boolean }
+{
+    type: 'user' | 'character', content
+:
+    string, mid
+:
+    number, completed
+:
+    boolean
+}
 ```
 
 **核心功能**:
+
 - 角色选择 → 加载历史消息 → 展示欢迎语
 - URL 路由同步 `?type=game_hero&rid=123` — 刷新/跳转恢复角色状态
 - SSE 流式对话（`sendRoleplayMessageStream` 支持三种模式）：
-  - 正常发送: `{ content }`
-  - 恢复流: `{ mid }`
-  - 重新生成: `{ regenerateMid }`
+    - 正常发送: `{ content }`
+    - 恢复流: `{ mid }`
+    - 重新生成: `{ regenerateMid }`
 - 断流恢复：`resumeIncompleteStream` — 从 `incompleteMid` 恢复
 - `selectCharacter` 时预加载三个分类角色列表
 - 欢迎语伪消息：首条用户消息发出后自动移除
 - 消息气泡下方 action buttons（复制/重新生成），hover/active 可见
 
 **API**:
+
 - `GET /agent/roleplay/list/:type` — 获取角色列表（按分类）
 - `GET /agent/roleplay/detail/:rid` — 获取角色详情（bio/phrases）
 - `GET /agent/roleplay/message/list/:rid` — 获取历史消息
@@ -82,10 +107,12 @@
 **路由**: `/route-plan`
 
 **布局**:
+
 - 左侧 `ConversationSidebar` 会话边栏（296px）+ 右侧 `RouteChatBox` 聊天区
 - 移动端（<=900px）侧边栏可折叠
 
 **核心功能**:
+
 - `syncSessionWithRoute` — 进入/后退/前进均触发会话同步
 - 新建/选择/编辑会话标题（内联编辑 Enter 确认）
 - SSE 流式对话（思考状态黄色脉冲、流式绿色发光）
@@ -95,6 +122,7 @@
 - 移动端侧边栏 hamburger 按钮触发
 
 **API**:
+
 - `GET /agent/travel-route-plan/chat/list` — 获取会话列表
 - `GET /agent/travel-route-plan/chat/detail/:sid` — 获取会话详情
 - `PUT /agent/travel-route-plan/chat/title/edit/:sid` — 编辑会话标题
@@ -109,10 +137,12 @@
 **布局**: 左侧固定导航 + 右侧内容区，未登录显示登录提示
 
 **子路由**:
+
 - `/profile/basic` — `BasicInfo.vue`：头像上传（drag-drop）、个人信息编辑
 - `/profile/favorites` — `FavoriteRoutes.vue`：收藏路线列表、详情弹窗（Markdown 渲染）、编辑/删除
 
 **核心功能**:
+
 - 头像上传：`el-upload` + `uploadAvatar` API，2MB 限制，预览
 - 收藏路线弹窗：只读/编辑模式，乐观更新
 - 登出：清除 token + 重置 store + 跳转 `/travel`
@@ -126,6 +156,7 @@
 **布局**: 居中登录表单
 
 **核心功能**:
+
 - 管理员账号密码登录
 - 登录成功后跳转 `/manage`（角色管理页）
 - 已登录用户访问直接跳转
@@ -139,14 +170,15 @@
 **布局**: 顶部筛选栏 + 角色表格 + 分页 + 新增/编辑弹窗
 
 **核心功能**:
+
 - 角色列表展示（头像、名称、分类、简介、创建时间）
 - 分类筛选 + 关键词搜索
 - 新增/编辑角色弹窗：
-  - 类型选择（游戏达人/电竞选手/游戏英雄）
-  - 名称、简介编辑
-  - 常用语管理（点击编辑 Enter 保存，空内容自动删除）
-  - 头像上传（拖拽 + 点击，删除角标）
-  - 图片上传（拖拽 + 多选，最多9张，删除角标）
+    - 类型选择（游戏达人/电竞选手/游戏英雄）
+    - 名称、简介编辑
+    - 常用语管理（点击编辑 Enter 保存，空内容自动删除）
+    - 头像上传（拖拽 + 点击，删除角标）
+    - 图片上传（拖拽 + 多选，最多9张，删除角标）
 - FormData 统一提交所有字段到 update 接口
 
 ---
@@ -155,89 +187,89 @@
 
 ### userStore（src/stores/user.js）
 
-| 状态/计算 | 类型 | 说明 |
-|-----------|------|------|
-| `isLoggedIn` | ref boolean | 登录状态 |
-| `userInfo` | ref object | 用户信息 { uid, username, email, gender, age, basicInfo, bio, avatarToken } |
-| `collectedRoutes` | ref array | 收藏路线 |
-| `showLoginModal` | ref boolean | 登录弹窗显示状态 |
-| `avatarUrl` | computed | 计算头像 URL |
+| 状态/计算             | 类型          | 说明                                                                      |
+|-------------------|-------------|-------------------------------------------------------------------------|
+| `isLoggedIn`      | ref boolean | 登录状态                                                                    |
+| `userInfo`        | ref object  | 用户信息 { uid, username, email, gender, age, basicInfo, bio, avatarToken } |
+| `collectedRoutes` | ref array   | 收藏路线                                                                    |
+| `showLoginModal`  | ref boolean | 登录弹窗显示状态                                                                |
+| `avatarUrl`       | computed    | 计算头像 URL                                                                |
 
-| 方法 | 说明 |
-|------|------|
-| `getToken()` / `setToken()` / `removeToken()` | localStorage token 操作 |
-| `setUserInfo(info)` | 从 API 响应设置用户信息 |
-| `fetchUserProfile()` | 获取用户完整信息 |
-| `updateUserProfile(data)` | 更新用户信息 |
-| `login(result)` | 统一登录：保存 token + 设置用户信息 |
-| `logout()` | 登出：清除 token、重置状态 |
-| `fetchCollectedRoutes()` | 获取收藏路线列表 |
-| `removeCollectedRoute(rid)` | 删除收藏路线 |
+| 方法                                            | 说明                     |
+|-----------------------------------------------|------------------------|
+| `getToken()` / `setToken()` / `removeToken()` | localStorage token 操作  |
+| `setUserInfo(info)`                           | 从 API 响应设置用户信息         |
+| `fetchUserProfile()`                          | 获取用户完整信息               |
+| `updateUserProfile(data)`                     | 更新用户信息                 |
+| `login(result)`                               | 统一登录：保存 token + 设置用户信息 |
+| `logout()`                                    | 登出：清除 token、重置状态       |
+| `fetchCollectedRoutes()`                      | 获取收藏路线列表               |
+| `removeCollectedRoute(rid)`                   | 删除收藏路线                 |
 
 ### conversationStore（src/stores/conversation.js）
 
-| 状态/计算 | 类型 | 说明 |
-|-----------|------|------|
-| `sessions` | ref array | 会话列表 |
-| `currentSessionId` | ref number | 当前会话 ID |
-| `currentMessages` | ref array | 当前会话消息 |
-| `hasIncompleteMessage` | ref boolean | 是否有未完成消息 |
-| `incompleteMid` | ref number | 未完成消息的 mid |
-| `groupedSessions` | computed | 按时间分组 { today, yesterday, earlier } |
+| 状态/计算                  | 类型          | 说明                                  |
+|------------------------|-------------|-------------------------------------|
+| `sessions`             | ref array   | 会话列表                                |
+| `currentSessionId`     | ref number  | 当前会话 ID                             |
+| `currentMessages`      | ref array   | 当前会话消息                              |
+| `hasIncompleteMessage` | ref boolean | 是否有未完成消息                            |
+| `incompleteMid`        | ref number  | 未完成消息的 mid                          |
+| `groupedSessions`      | computed    | 按时间分组 { today, yesterday, earlier } |
 
-| 方法 | 说明 |
-|------|------|
-| `fetchSessions()` | 获取会话列表 |
-| `fetchSessionDetail(sid)` | 获取会话详情 |
-| `selectSession(sid)` | 选择会话 |
-| `createNewSession()` | 创建新会话 |
-| `updateSessionTitle(sid, title)` | 更新会话标题 |
-| `addStreamingMessage(mid)` | 添加流式占位消息 |
-| `appendToMessage(index, content)` | 追加流式内容 |
-| `finalizeMessage(title)` | 完成消息，更新标题 |
+| 方法                                | 说明        |
+|-----------------------------------|-----------|
+| `fetchSessions()`                 | 获取会话列表    |
+| `fetchSessionDetail(sid)`         | 获取会话详情    |
+| `selectSession(sid)`              | 选择会话      |
+| `createNewSession()`              | 创建新会话     |
+| `updateSessionTitle(sid, title)`  | 更新会话标题    |
+| `addStreamingMessage(mid)`        | 添加流式占位消息  |
+| `appendToMessage(index, content)` | 追加流式内容    |
+| `finalizeMessage(title)`          | 完成消息，更新标题 |
 
 ### adminStore（src/stores/admin.js）
 
-| 状态/计算 | 类型 | 说明 |
-|-----------|------|------|
+| 状态/计算        | 类型          | 说明      |
+|--------------|-------------|---------|
 | `isLoggedIn` | ref boolean | 管理员登录状态 |
-| `adminInfo` | ref object | 管理员信息 |
+| `adminInfo`  | ref object  | 管理员信息   |
 
-| 方法 | 说明 |
-|------|------|
-| `login(result)` | 登录：保存 token + 设置管理员信息 |
-| `logout()` | 登出：清除 token + 重置状态 |
-| `fetchAdminProfile()` | 获取管理员信息 |
+| 方法                    | 说明                    |
+|-----------------------|-----------------------|
+| `login(result)`       | 登录：保存 token + 设置管理员信息 |
+| `logout()`            | 登出：清除 token + 重置状态    |
+| `fetchAdminProfile()` | 获取管理员信息               |
 
 ### useStreamTimers（src/composables/useStreamTimers.js）
 
-| 状态 | 类型 | 说明 |
-|------|------|------|
+| 状态                   | 类型  | 说明       |
+|----------------------|-----|----------|
 | `streamingCancelRef` | ref | SSE 取消函数 |
-| `streamIntervalRef` | ref | 流式动画定时器 |
-| `streamTimeoutRef` | ref | 流式超时定时器 |
-| `thinkingTimeoutRef` | ref | 思考状态定时器 |
+| `streamIntervalRef`  | ref | 流式动画定时器  |
+| `streamTimeoutRef`   | ref | 流式超时定时器  |
+| `thinkingTimeoutRef` | ref | 思考状态定时器  |
 
-| 方法 | 说明 |
-|------|------|
-| `clearStreamTimers()` | 清除所有定时器 |
+| 方法                            | 说明                               |
+|-------------------------------|----------------------------------|
+| `clearStreamTimers()`         | 清除所有定时器                          |
 | `cancelStreaming(abortFetch)` | 取消 SSE，`abortFetch` 控制是否中止 fetch |
 
 ---
 
 ## 全局组件
 
-| 组件 | 文件 | 用途 |
-|------|------|------|
-| `Header` | components/Header.vue | 导航栏 Logo + Tab + 用户头像下拉 |
-| `LoginModal` | components/LoginModal.vue | 登录/注册弹窗 |
-| `ChatBox` | components/ChatBox.vue | 通用聊天气泡（TravelView 用） |
-| `RouteChatBox` | components/RouteChatBox.vue | 路线规划聊天气泡（含重新生成） |
-| `ConversationSidebar` | components/ConversationSidebar.vue | 会话边栏（分组/内联编辑/不完整标记） |
-| `CityMap` | components/CityMap.vue | SVG 交互地图（平移/缩放/触屏） |
-| `StoryModal` | components/StoryModal.vue | 角色故事弹窗 |
-| `PhotoGallery` | components/PhotoGallery.vue | 角色照片画廊 |
-| `CharacterCard` | components/CharacterCard.vue | 角色卡片（选择器用） |
+| 组件                    | 文件                                 | 用途                      |
+|-----------------------|------------------------------------|-------------------------|
+| `Header`              | components/Header.vue              | 导航栏 Logo + Tab + 用户头像下拉 |
+| `LoginModal`          | components/LoginModal.vue          | 登录/注册弹窗                 |
+| `ChatBox`             | components/ChatBox.vue             | 通用聊天气泡（TravelView 用）    |
+| `RouteChatBox`        | components/RouteChatBox.vue        | 路线规划聊天气泡（含重新生成）         |
+| `ConversationSidebar` | components/ConversationSidebar.vue | 会话边栏（分组/内联编辑/不完整标记）     |
+| `CityMap`             | components/CityMap.vue             | SVG 交互地图（平移/缩放/触屏）      |
+| `StoryModal`          | components/StoryModal.vue          | 角色故事弹窗                  |
+| `PhotoGallery`        | components/PhotoGallery.vue        | 角色照片画廊                  |
+| `CharacterCard`       | components/CharacterCard.vue       | 角色卡片（选择器用）              |
 
 ---
 
@@ -253,76 +285,78 @@
 
 ### 认证接口
 
-| 方法 | URL | 说明 |
-|------|-----|------|
-| POST | /email/verification/send | 发送邮箱验证码 |
-| POST | /user/register | 用户注册 |
-| POST | /user/login | 用户登录 |
-| GET | /user/profile | 获取用户信息 |
-| PUT | /user/profile | 更新用户信息（增量更新） |
-| POST | /file/avatar/upload | 上传头像 |
+| 方法   | URL                      | 说明           |
+|------|--------------------------|--------------|
+| POST | /email/verification/send | 发送邮箱验证码      |
+| POST | /user/register           | 用户注册         |
+| POST | /user/login              | 用户登录         |
+| GET  | /user/profile            | 获取用户信息       |
+| PUT  | /user/profile            | 更新用户信息（增量更新） |
+| POST | /file/avatar/upload      | 上传头像         |
 
 ### Agent AI 接口（电竞文旅助手）
 
-| 方法 | URL | 说明 |
-|------|-----|------|
-| GET | /agent/travel-route-plan/chat/list | 获取会话列表 |
-| GET | /agent/travel-route-plan/chat/detail/:sid | 获取会话详情 |
-| PUT | /agent/travel-route-plan/chat/title/edit/:sid | 编辑会话标题 |
-| POST | /agent/travel-route-plan/message | 发送消息（SSE 流式） |
+| 方法   | URL                                           | 说明           |
+|------|-----------------------------------------------|--------------|
+| GET  | /agent/travel-route-plan/chat/list            | 获取会话列表       |
+| GET  | /agent/travel-route-plan/chat/detail/:sid     | 获取会话详情       |
+| PUT  | /agent/travel-route-plan/chat/title/edit/:sid | 编辑会话标题       |
+| POST | /agent/travel-route-plan/message              | 发送消息（SSE 流式） |
 
 ### Agent AI 接口（角色对话）
 
-| 方法 | URL | 说明 |
-|------|-----|------|
-| GET | /agent/roleplay/list/:type | 获取角色列表 |
-| GET | /agent/roleplay/detail/:rid | 获取角色详情 |
-| GET | /agent/roleplay/message/list/:rid | 获取历史消息 |
+| 方法   | URL                               | 说明           |
+|------|-----------------------------------|--------------|
+| GET  | /agent/roleplay/list/:type        | 获取角色列表       |
+| GET  | /agent/roleplay/detail/:rid       | 获取角色详情       |
+| GET  | /agent/roleplay/message/list/:rid | 获取历史消息       |
 | POST | /agent/roleplay/message/send/:rid | 发送消息（SSE 流式） |
 
 ### 路线收藏接口
 
-| 方法 | URL | 说明 |
-|------|-----|------|
-| GET | /route/list | 获取收藏列表 |
-| GET | /route/detail/:rid | 获取收藏详情 |
-| POST | /route/favorite | 收藏路线 |
-| PUT | /route/edit/:rid | 编辑收藏路线 |
-| DELETE | /route/delete/:rid | 删除收藏 |
+| 方法     | URL                | 说明     |
+|--------|--------------------|--------|
+| GET    | /route/list        | 获取收藏列表 |
+| GET    | /route/detail/:rid | 获取收藏详情 |
+| POST   | /route/favorite    | 收藏路线   |
+| PUT    | /route/edit/:rid   | 编辑收藏路线 |
+| DELETE | /route/delete/:rid | 删除收藏   |
 
 ### Admin Roleplay 接口（角色管理）
 
-| 方法 | URL | 说明 |
-|------|-----|------|
-| POST | /admin/roleplay/create | 创建角色（支持 multipart/form-data） |
-| GET | /admin/roleplay/:rid/detail | 获取角色详情 |
-| PUT | /admin/roleplay/:rid/update | 更新角色（支持 multipart/form-data，含头像/图片上传） |
-| DELETE | /admin/roleplay/:rid/delete | 删除角色 |
+| 方法     | URL                         | 说明                                    |
+|--------|-----------------------------|---------------------------------------|
+| POST   | /admin/roleplay/create      | 创建角色（支持 multipart/form-data）          |
+| GET    | /admin/roleplay/:rid/detail | 获取角色详情                                |
+| PUT    | /admin/roleplay/:rid/update | 更新角色（支持 multipart/form-data，含头像/图片上传） |
+| DELETE | /admin/roleplay/:rid/delete | 删除角色                                  |
 
 ---
 
 ## 路由配置
 
-| 路径 | 名称 | 说明 |
-|------|------|------|
-| `/` | - | 重定向至 /travel |
-| `/travel` | travel | 旅行首页 |
-| `/dialogue` | dialogue | 沉浸式角色对话页 |
-| `/route-plan` | route-plan | 电竞文旅助手（会话页面） |
-| `/profile` | profile | 用户中心（含子路由） |
-| `/profile/basic` | basic-info | 基本信息 |
-| `/profile/favorites` | favorite-routes | 收藏路线 |
-| `/manage` | - | 管理后台（重定向至 /manage/data/roles） |
-| `/manage/login` | admin-login | 管理员登录页 |
-| `/manage/data/roles` | admin-roles | 角色管理页 |
+| 路径                   | 名称              | 说明                            |
+|----------------------|-----------------|-------------------------------|
+| `/`                  | -               | 重定向至 /travel                  |
+| `/travel`            | travel          | 旅行首页                          |
+| `/dialogue`          | dialogue        | 沉浸式角色对话页                      |
+| `/route-plan`        | route-plan      | 电竞文旅助手（会话页面）                  |
+| `/profile`           | profile         | 用户中心（含子路由）                    |
+| `/profile/basic`     | basic-info      | 基本信息                          |
+| `/profile/favorites` | favorite-routes | 收藏路线                          |
+| `/manage`            | -               | 管理后台（重定向至 /manage/data/roles） |
+| `/manage/login`      | admin-login     | 管理员登录页                        |
+| `/manage/data/roles` | admin-roles     | 角色管理页                         |
 
 ### 路由守卫
 
 **用户端受保护路径**: `/profile`、`/route-plan`、`/dialogue`
+
 - 有 token → 验证 profile → 成功放行，失败登出并弹窗重定向
 - 无 token → 弹登录框 + 重定向至 `/travel`
 
 **管理后台受保护路径**: `/manage` 及子路径
+
 - 有 token → 验证 admin profile → 成功放行，失败登出并跳转登录页
 - 无 token → 跳转 `/manage/login`
 - 404 兜底: `/manage/*` → `/manage`，其他 → `/travel`
@@ -340,13 +374,13 @@
 
 ## 注册表单
 
-| 字段 | 校验规则 |
-|------|----------|
-| 用户名 | 可选，3-80字符（有值时校验） |
-| 邮箱 | 必填，有效邮箱格式 |
-| 验证码 | 必填，6位数字 |
-| 密码 | 必填，6-128字符 |
-| 确认密码 | 必填，需与密码一致 |
+| 字段   | 校验规则             |
+|------|------------------|
+| 用户名  | 可选，3-80字符（有值时校验） |
+| 邮箱   | 必填，有效邮箱格式        |
+| 验证码  | 必填，6位数字          |
+| 密码   | 必填，6-128字符       |
+| 确认密码 | 必填，需与密码一致        |
 
 ---
 
@@ -366,7 +400,8 @@ eventSource.onmessage = (e) => {
 
 ### 状态追踪四变量
 
-`streamStarted`（收到 start）、`streamFinished`（收到 done）、`hasAssistantOutput`（有内容输出）、`hasEnteredStreaming`（已切换到 streaming）
+`streamStarted`（收到 start）、`streamFinished`（收到 done）、`hasAssistantOutput`（有内容输出）、`hasEnteredStreaming`（已切换到
+streaming）
 
 ### 复制降级
 
@@ -386,13 +421,13 @@ eventSource.onmessage = (e) => {
 
 ### 配色方案
 
-| 用途 | 色值 |
-|------|------|
-| 主色 | `#f0b344` (金色/橙色) |
-| 强调色 | `#e63946` (红色) |
+| 用途   | 色值                              |
+|------|---------------------------------|
+| 主色   | `#f0b344` (金色/橙色)               |
+| 强调色  | `#e63946` (红色)                  |
 | 背景深色 | `#0d1b2a`, `#141e37`, `#1e2f55` |
-| 文字主色 | `rgba(255, 255, 255, 0.9)` |
-| 文字次色 | `rgba(255, 255, 255, 0.5)` |
+| 文字主色 | `rgba(255, 255, 255, 0.9)`      |
+| 文字次色 | `rgba(255, 255, 255, 0.5)`      |
 
 ### 字体
 

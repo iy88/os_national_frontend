@@ -12,32 +12,32 @@ const MESSAGE_TYPES = ['success', 'warning', 'info', 'error']
 
 // 统一收敛消息提示时长；若调用方显式传入 duration，则保持原配置。
 MESSAGE_TYPES.forEach((type) => {
-	const original = ElMessage[type]
-	if (typeof original !== 'function') return
+    const original = ElMessage[type]
+    if (typeof original !== 'function') return
 
-	ElMessage[type] = (options, appContext) => {
-		if (typeof options === 'string') {
-			return original(
-				{
-					message: options,
-					duration: GLOBAL_MESSAGE_DURATION
-				},
-				appContext
-			)
-		}
+    ElMessage[type] = (options, appContext) => {
+        if (typeof options === 'string') {
+            return original(
+                {
+                    message: options,
+                    duration: GLOBAL_MESSAGE_DURATION
+                },
+                appContext
+            )
+        }
 
-		if (options && typeof options === 'object' && options.duration === undefined) {
-			return original(
-				{
-					...options,
-					duration: GLOBAL_MESSAGE_DURATION
-				},
-				appContext
-			)
-		}
+        if (options && typeof options === 'object' && options.duration === undefined) {
+            return original(
+                {
+                    ...options,
+                    duration: GLOBAL_MESSAGE_DURATION
+                },
+                appContext
+            )
+        }
 
-		return original(options, appContext)
-	}
+        return original(options, appContext)
+    }
 })
 
 const app = createApp(App)

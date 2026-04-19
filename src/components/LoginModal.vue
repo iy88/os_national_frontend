@@ -6,42 +6,51 @@
         append-to-body
         class="login-modal"
         width="450px"
-        @update:model-value="(val) => emit('update:modelValue', val)"
         @closed="onDialogClosed"
+        @update:model-value="(val) => emit('update:modelValue', val)"
     >
         <div class="login-container">
             <!-- 登录表单 -->
             <el-form v-if="isLogin" :model="loginForm" label-position="top">
                 <el-form-item label="用户名/邮箱">
-                    <el-input v-model="loginForm.username" placeholder="请输入用户名或邮箱" autocomplete="off" @keydown.enter.prevent="focusPassword"/>
+                    <el-input v-model="loginForm.username" autocomplete="off" placeholder="请输入用户名或邮箱"
+                              @keydown.enter.prevent="focusPassword"/>
                 </el-form-item>
                 <el-form-item label="密码">
-                    <el-input ref="passwordInputRef" v-model="loginForm.password" placeholder="请输入密码" type="password" autocomplete="off" @keydown.enter.prevent="handleSubmit"/>
+                    <el-input ref="passwordInputRef" v-model="loginForm.password" autocomplete="off"
+                              placeholder="请输入密码" type="password" @keydown.enter.prevent="handleSubmit"/>
                 </el-form-item>
             </el-form>
 
             <!-- 注册表单 -->
             <el-form v-else ref="registerFormRef" :model="registerForm" :rules="registerRules" label-position="top">
                 <el-form-item label="用户名" prop="username">
-                    <el-input v-model="registerForm.username" placeholder="请输入用户名" autocomplete="off" @keydown.enter.prevent="focusEmail"/>
+                    <el-input v-model="registerForm.username" autocomplete="off" placeholder="请输入用户名"
+                              @keydown.enter.prevent="focusEmail"/>
                 </el-form-item>
                 <el-form-item label="邮箱" prop="email">
-                    <el-input ref="emailInputRef" v-model="registerForm.email" placeholder="请输入邮箱" autocomplete="off" @keydown.enter.prevent="focusVerifyCode"/>
+                    <el-input ref="emailInputRef" v-model="registerForm.email" autocomplete="off"
+                              placeholder="请输入邮箱" @keydown.enter.prevent="focusVerifyCode"/>
                 </el-form-item>
                 <el-form-item label="验证码" prop="verifyCode">
                     <div class="verification-row">
-                        <el-input ref="verifyCodeInputRef" v-model="registerForm.verifyCode" class="verify-code-input"
-                                  placeholder="请输入验证码" autocomplete="off" @keydown.enter.prevent="focusPasswordReg"/>
-                        <el-button :disabled="verifyCodeSent || isSendingCode" class="send-code-btn" @click="sendVerifyCode">
+                        <el-input ref="verifyCodeInputRef" v-model="registerForm.verifyCode" autocomplete="off"
+                                  class="verify-code-input" placeholder="请输入验证码"
+                                  @keydown.enter.prevent="focusPasswordReg"/>
+                        <el-button :disabled="verifyCodeSent || isSendingCode" class="send-code-btn"
+                                   @click="sendVerifyCode">
                             {{ isSendingCode ? '发送中...' : (verifyCodeSent ? `${countdown}s后重发` : '发送验证码') }}
                         </el-button>
                     </div>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
-                    <el-input ref="passwordRegInputRef" v-model="registerForm.password" placeholder="请输入密码" type="password" show-password autocomplete="off" @keydown.enter.prevent="focusConfirmPassword"/>
+                    <el-input ref="passwordRegInputRef" v-model="registerForm.password" autocomplete="off"
+                              placeholder="请输入密码" show-password type="password"
+                              @keydown.enter.prevent="focusConfirmPassword"/>
                 </el-form-item>
                 <el-form-item label="确认密码" prop="confirmPassword">
-                    <el-input v-model="registerForm.confirmPassword" placeholder="请再次输入密码" type="password" show-password autocomplete="off" @keydown.enter.prevent="handleSubmit"/>
+                    <el-input v-model="registerForm.confirmPassword" autocomplete="off" placeholder="请再次输入密码"
+                              show-password type="password" @keydown.enter.prevent="handleSubmit"/>
                 </el-form-item>
             </el-form>
 
@@ -59,10 +68,10 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue'
+import {ref} from 'vue'
 import {useUserStore} from '../stores/user'
 import {ElMessage} from 'element-plus'
-import {sendVerificationCode, register as apiRegister, login as apiLogin} from '../api'
+import {login as apiLogin, register as apiRegister, sendVerificationCode} from '../api'
 
 defineProps({
     modelValue: {

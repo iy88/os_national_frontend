@@ -6,8 +6,8 @@
             @mouseenter="handleMouseEnter"
             @mouseleave="handleMouseLeave"
             @mousemove="handleMouseMove"
-            @scroll="handleMessagesScroll"
             @pointerdown="handlePointerDown"
+            @scroll="handleMessagesScroll"
         >
             <slot></slot>
             <div
@@ -36,14 +36,14 @@
                             @click="emit('copy', msg.content)"
                         >
                             <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
                                 fill="none"
+                                height="14"
                                 stroke="currentColor"
                                 stroke-width="2"
+                                viewBox="0 0 24 24"
+                                width="14"
                             >
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <rect height="13" rx="2" ry="2" width="13" x="9" y="9"/>
                                 <path
                                     d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
                                 />
@@ -55,12 +55,12 @@
                             @click="emit('favorite', msg.mid)"
                         >
                             <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
                                 fill="none"
+                                height="14"
                                 stroke="currentColor"
                                 stroke-width="2"
+                                viewBox="0 0 24 24"
+                                width="14"
                             >
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                             </svg>
@@ -71,12 +71,12 @@
                             @click="emit('regenerate', msg.mid)"
                         >
                             <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
                                 fill="none"
+                                height="14"
                                 stroke="currentColor"
                                 stroke-width="2"
+                                viewBox="0 0 24 24"
+                                width="14"
                             >
                                 <polyline points="23 4 23 10 17 10"/>
                                 <polyline points="1 20 1 14 7 14"/>
@@ -97,11 +97,11 @@
       <textarea
           ref="inputTextarea"
           v-model="inputText"
-          :placeholder="placeholder"
           :disabled="disabled"
+          :placeholder="placeholder"
           rows="1"
-          @keydown="handleKeydown"
           @input="autoResize"
+          @keydown="handleKeydown"
       ></textarea>
             <button
                 :disabled="isSendDisabled || !inputText.trim()"
@@ -109,14 +109,14 @@
                 @click="handleSend"
             >
                 <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
                     fill="none"
+                    height="16"
                     stroke="currentColor"
                     stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="16"
                 >
-                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <line x1="22" x2="11" y1="2" y2="13"/>
                     <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                 </svg>
             </button>

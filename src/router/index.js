@@ -9,7 +9,7 @@ import AdminLogin from '../views/admin/AdminLogin.vue'
 import Roles from '../views/admin/data/Roles.vue'
 import {useUserStore} from '../stores/user'
 import {useAdminStore} from '../stores/admin'
-import {getProfile, adminGetProfile} from '../api'
+import {adminGetProfile, getProfile} from '../api'
 
 const routes = [
     {
@@ -59,7 +59,7 @@ const routes = [
         path: '/manage/index',
         name: 'admin-index',
         component: () => import('../views/admin/ManageIndex.vue'),
-        meta: { requiresAuth: true, authType: 'admin' }
+        meta: {requiresAuth: true, authType: 'admin'}
     },
     {
         path: '/manage/login',
@@ -107,7 +107,9 @@ const AUTH_CONFIGS = {
         isLoggedIn: (store) => store.isLoggedIn,
         setUserInfo: (store, info) => store.setUserInfo(info),
         logout: (store) => store.logout(),
-        showLoginModal: (store, val) => { store.showLoginModal = val }
+        showLoginModal: (store, val) => {
+            store.showLoginModal = val
+        }
     },
     admin: {
         tokenKey: 'adminToken',
@@ -119,7 +121,8 @@ const AUTH_CONFIGS = {
         isLoggedIn: (store) => store.isLoggedIn,
         setUserInfo: (store, info) => store.setAdminInfo(info),
         logout: (store) => store.logout(),
-        showLoginModal: () => {}
+        showLoginModal: () => {
+        }
     }
 }
 

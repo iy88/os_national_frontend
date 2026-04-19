@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
-import {ref, computed} from 'vue'
-import {getProfile, updateProfile, getFavoriteRoutes, deleteFavoriteRoute} from '../api'
+import {computed, ref} from 'vue'
+import {deleteFavoriteRoute, getFavoriteRoutes, getProfile, updateProfile} from '../api'
 
 export const useUserStore = defineStore('user', () => {
     const isLoggedIn = ref(false)

@@ -624,10 +624,9 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     position: relative;
-    background:
-        radial-gradient(circle at 30% 40%, rgba(240, 179, 68, 0.1) 0%, transparent 42%),
-        radial-gradient(circle at 70% 60%, rgba(74, 158, 255, 0.08) 0%, transparent 36%),
-        linear-gradient(180deg, #141e37 0%, #0f1a2a 100%);
+    background: radial-gradient(circle at 30% 40%, rgba(240, 179, 68, 0.1) 0%, transparent 42%),
+    radial-gradient(circle at 70% 60%, rgba(74, 158, 255, 0.08) 0%, transparent 36%),
+    linear-gradient(180deg, #141e37 0%, #0f1a2a 100%);
     cursor: grab;
     user-select: none;
 }
@@ -636,9 +635,8 @@ onUnmounted(() => {
     content: '';
     position: absolute;
     inset: 0;
-    background-image:
-        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
     background-size: 50px 50px;
     pointer-events: none;
 }

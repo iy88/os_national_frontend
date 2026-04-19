@@ -6,8 +6,8 @@
             @mouseenter="handleMouseEnter"
             @mouseleave="handleMouseLeave"
             @mousemove="handleMouseMove"
-            @scroll="handleMessagesScroll"
             @pointerdown="handlePointerDown"
+            @scroll="handleMessagesScroll"
         >
             <slot></slot>
             <div
@@ -28,18 +28,21 @@
                         :class="['message-actions', { latest: isLatestCharacter(index) }]"
                     >
                         <button class="action-btn" title="复制" @click="emit('copy', msg.content)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                                 width="14">
+                                <rect height="13" rx="2" ry="2" width="13" x="9" y="9"/>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                             </svg>
                         </button>
                         <button class="action-btn" title="收藏" @click="emit('favorite', msg.mid)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                                 width="14">
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                             </svg>
                         </button>
                         <button class="action-btn" title="跳转" @click="emit('navigate', msg.content)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                                 width="14">
                                 <path d="M5 12h14M12 5l7 7-7 7"/>
                             </svg>
                         </button>
@@ -57,8 +60,8 @@
             <textarea
                 ref="inputTextarea"
                 v-model="inputText"
-                :placeholder="placeholder"
                 :disabled="disabled"
+                :placeholder="placeholder"
                 rows="1"
                 @keydown="handleKeydown"
             ></textarea>

@@ -11,9 +11,9 @@
         <div v-if="photos.length > 0" class="gallery-container">
             <div
                 class="gallery-main"
-                @touchstart="handleTouchStart"
-                @touchmove="handleTouchMove"
                 @touchend="handleTouchEnd"
+                @touchmove="handleTouchMove"
+                @touchstart="handleTouchStart"
             >
                 <button :disabled="currentIndex === 0" class="nav-btn prev" @click="prev">
                     <span>&lt;</span>
@@ -21,8 +21,8 @@
                 <div class="photo-display">
                     <div
                         ref="photoTrackRef"
-                        class="photo-track"
                         :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+                        class="photo-track"
                     >
                         <img
                             v-for="(photo, index) in photos"

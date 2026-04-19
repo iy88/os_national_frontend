@@ -146,7 +146,7 @@ export const getChatSession = (sid) => {
 
 // 编辑会话标题
 export const editChatSessionTitle = (sid, title) => {
-    return apiClient.put(`/agent/travel-route-plan/chat/title/edit/${sid}`, { title })
+    return apiClient.put(`/agent/travel-route-plan/chat/title/edit/${sid}`, {title})
 }
 
 // 使用 fetch 实现 SSE（带 POST 和自定义 headers）
@@ -158,12 +158,12 @@ export const sendChatMessageStream = (content, sid = null, mid = null, regenerat
     let body
     if (regenerateMid !== null) {
         // 重新生成模式：只传 sid 和 regenerateMid，不传 content
-        body = { sid, regenerateMid }
+        body = {sid, regenerateMid}
     } else if (mid !== null) {
         // 恢复模式：只传 sid 和 mid，不传 content
-        body = { sid, mid }
+        body = {sid, mid}
     } else {
-        body = sid ? { content, sid } : { content }
+        body = sid ? {content, sid} : {content}
     }
 
     let aborted = false
@@ -191,75 +191,75 @@ export const sendChatMessageStream = (content, sid = null, mid = null, regenerat
         body: JSON.stringify(body),
         signal: controller.signal
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        if (!response.body) {
-            throw new Error('SSE response body is empty')
-        }
-
-        const reader = response.body.getReader()
-        const decoder = new TextDecoder()
-        let buffer = ''
-
-        const processEvents = () => {
-            // SSE 事件以两个换行符 \n\n 分隔
-            const eventDelimiter = '\n\n'
-            let eventIndex = buffer.indexOf(eventDelimiter)
-
-            while (eventIndex !== -1) {
-                const eventData = buffer.slice(0, eventIndex)
-                buffer = buffer.slice(eventIndex + eventDelimiter.length)
-
-                // 解析事件行（可能有多个 data: 行，需要合并）
-                const lines = eventData.split('\n')
-                let jsonStr = ''
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        jsonStr += line.slice(6)
-                    }
-                }
-
-                if (jsonStr && eventSource.onmessage) {
-                    try {
-                        const data = JSON.parse(jsonStr)
-                        eventSource.onmessage({ data })
-                    } catch (e) {
-                        // 忽略解析错误
-                    }
-                }
-
-                eventIndex = buffer.indexOf(eventDelimiter)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
             }
-        }
 
-        const read = () => {
-            if (aborted) return
+            if (!response.body) {
+                throw new Error('SSE response body is empty')
+            }
 
-            reader.read().then(({ done, value }) => {
-                if (done || aborted) {
-                    return
+            const reader = response.body.getReader()
+            const decoder = new TextDecoder()
+            let buffer = ''
+
+            const processEvents = () => {
+                // SSE 事件以两个换行符 \n\n 分隔
+                const eventDelimiter = '\n\n'
+                let eventIndex = buffer.indexOf(eventDelimiter)
+
+                while (eventIndex !== -1) {
+                    const eventData = buffer.slice(0, eventIndex)
+                    buffer = buffer.slice(eventIndex + eventDelimiter.length)
+
+                    // 解析事件行（可能有多个 data: 行，需要合并）
+                    const lines = eventData.split('\n')
+                    let jsonStr = ''
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            jsonStr += line.slice(6)
+                        }
+                    }
+
+                    if (jsonStr && eventSource.onmessage) {
+                        try {
+                            const data = JSON.parse(jsonStr)
+                            eventSource.onmessage({data})
+                        } catch (e) {
+                            // 忽略解析错误
+                        }
+                    }
+
+                    eventIndex = buffer.indexOf(eventDelimiter)
                 }
+            }
 
-                buffer += decoder.decode(value, { stream: true })
-                processEvents()
-                read()
-            }).catch(error => {
-                if (!aborted && !isAbortError(error) && eventSource.onerror) {
-                    eventSource.onerror(error)
-                }
-            })
-        }
+            const read = () => {
+                if (aborted) return
 
-        read()
-    })
-    .catch(error => {
-        if (!aborted && !isAbortError(error) && eventSource.onerror) {
-            eventSource.onerror(error)
-        }
-    })
+                reader.read().then(({done, value}) => {
+                    if (done || aborted) {
+                        return
+                    }
+
+                    buffer += decoder.decode(value, {stream: true})
+                    processEvents()
+                    read()
+                }).catch(error => {
+                    if (!aborted && !isAbortError(error) && eventSource.onerror) {
+                        eventSource.onerror(error)
+                    }
+                })
+            }
+
+            read()
+        })
+        .catch(error => {
+            if (!aborted && !isAbortError(error) && eventSource.onerror) {
+                eventSource.onerror(error)
+            }
+        })
 
     return {
         eventSource,
@@ -334,73 +334,73 @@ export const sendRoleplayMessageStream = (rid, content = null, mid = null, regen
         body: JSON.stringify(body),
         signal: controller.signal
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        if (!response.body) {
-            throw new Error('SSE response body is empty')
-        }
-
-        const reader = response.body.getReader()
-        const decoder = new TextDecoder()
-        let buffer = ''
-
-        const processEvents = () => {
-            const eventDelimiter = '\n\n'
-            let eventIndex = buffer.indexOf(eventDelimiter)
-
-            while (eventIndex !== -1) {
-                const eventData = buffer.slice(0, eventIndex)
-                buffer = buffer.slice(eventIndex + eventDelimiter.length)
-
-                const lines = eventData.split('\n')
-                let jsonStr = ''
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        jsonStr += line.slice(6)
-                    }
-                }
-
-                if (jsonStr && eventSource.onmessage) {
-                    try {
-                        const data = JSON.parse(jsonStr)
-                        eventSource.onmessage({data})
-                    } catch (e) {
-                        // 忽略解析错误
-                    }
-                }
-
-                eventIndex = buffer.indexOf(eventDelimiter)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
             }
-        }
 
-        const read = () => {
-            if (aborted) return
+            if (!response.body) {
+                throw new Error('SSE response body is empty')
+            }
 
-            reader.read().then(({done, value}) => {
-                if (done || aborted) {
-                    return
+            const reader = response.body.getReader()
+            const decoder = new TextDecoder()
+            let buffer = ''
+
+            const processEvents = () => {
+                const eventDelimiter = '\n\n'
+                let eventIndex = buffer.indexOf(eventDelimiter)
+
+                while (eventIndex !== -1) {
+                    const eventData = buffer.slice(0, eventIndex)
+                    buffer = buffer.slice(eventIndex + eventDelimiter.length)
+
+                    const lines = eventData.split('\n')
+                    let jsonStr = ''
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            jsonStr += line.slice(6)
+                        }
+                    }
+
+                    if (jsonStr && eventSource.onmessage) {
+                        try {
+                            const data = JSON.parse(jsonStr)
+                            eventSource.onmessage({data})
+                        } catch (e) {
+                            // 忽略解析错误
+                        }
+                    }
+
+                    eventIndex = buffer.indexOf(eventDelimiter)
                 }
+            }
 
-                buffer += decoder.decode(value, {stream: true})
-                processEvents()
-                read()
-            }).catch(error => {
-                if (!aborted && !isAbortError(error) && eventSource.onerror) {
-                    eventSource.onerror(error)
-                }
-            })
-        }
+            const read = () => {
+                if (aborted) return
 
-        read()
-    })
-    .catch(error => {
-        if (!aborted && !isAbortError(error) && eventSource.onerror) {
-            eventSource.onerror(error)
-        }
-    })
+                reader.read().then(({done, value}) => {
+                    if (done || aborted) {
+                        return
+                    }
+
+                    buffer += decoder.decode(value, {stream: true})
+                    processEvents()
+                    read()
+                }).catch(error => {
+                    if (!aborted && !isAbortError(error) && eventSource.onerror) {
+                        eventSource.onerror(error)
+                    }
+                })
+            }
+
+            read()
+        })
+        .catch(error => {
+            if (!aborted && !isAbortError(error) && eventSource.onerror) {
+                eventSource.onerror(error)
+            }
+        })
 
     return {
         eventSource,
@@ -424,7 +424,7 @@ export const getFavoriteRouteDetail = (rid) => {
 
 // 收藏路线
 export const favoriteRoute = (mid) => {
-    return apiClient.post('/route/favorite', { mid })
+    return apiClient.post('/route/favorite', {mid})
 }
 
 // 删除收藏
@@ -542,6 +542,11 @@ export const adminUploadRoleplayImages = (rid, files) => {
 // 删除角色图片
 export const adminDeleteRoleplayImage = (rid, fid) => {
     return adminUploadClient.delete(`/admin/roleplay/${rid}/images/${fid}/delete`)
+}
+
+// Dashboard 统计
+export const adminDashboard = () => {
+    return adminApiClient.get('/admin/dashboard')
 }
 
 export default apiClient

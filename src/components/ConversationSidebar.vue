@@ -7,15 +7,15 @@
             </div>
             <button class="new-chat-btn" @click="emit('new-chat')">
                 <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
                     fill="none"
+                    height="16"
                     stroke="currentColor"
                     stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="16"
                 >
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <line x1="12" x2="12" y1="5" y2="19"/>
+                    <line x1="5" x2="19" y1="12" y2="12"/>
                 </svg>
                 新建
             </button>
@@ -26,8 +26,8 @@
             @mouseenter="handleMouseEnter"
             @mouseleave="handleMouseLeave"
             @mousemove="handleMouseMove"
-            @scroll.passive="handleScroll"
             @pointerdown="handlePointerDown"
+            @scroll.passive="handleScroll"
         >
             <div v-if="sessions.today.length" class="session-group">
                 <div class="group-title">今日</div>
@@ -66,8 +66,8 @@
                     <button
                         v-if="editingSid !== session.sid"
                         class="edit-title-btn"
-                        @click.stop="handleEditTitle(session)"
                         title="编辑标题"
+                        @click.stop="handleEditTitle(session)"
                     >
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -77,8 +77,8 @@
                     <button
                         v-else
                         class="edit-title-btn confirm"
-                        @click.stop="handleTitleConfirm(session)"
                         title="确认"
+                        @click.stop="handleTitleConfirm(session)"
                     >
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <polyline points="20 6 9 17 4 12"/>
@@ -124,8 +124,8 @@
                     <button
                         v-if="editingSid !== session.sid"
                         class="edit-title-btn"
-                        @click.stop="handleEditTitle(session)"
                         title="编辑标题"
+                        @click.stop="handleEditTitle(session)"
                     >
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -135,8 +135,8 @@
                     <button
                         v-else
                         class="edit-title-btn confirm"
-                        @click.stop="handleTitleConfirm(session)"
                         title="确认"
+                        @click.stop="handleTitleConfirm(session)"
                     >
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <polyline points="20 6 9 17 4 12"/>
@@ -182,8 +182,8 @@
                     <button
                         v-if="editingSid !== session.sid"
                         class="edit-title-btn"
-                        @click.stop="handleEditTitle(session)"
                         title="编辑标题"
+                        @click.stop="handleEditTitle(session)"
                     >
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -193,8 +193,8 @@
                     <button
                         v-else
                         class="edit-title-btn confirm"
-                        @click.stop="handleTitleConfirm(session)"
                         title="确认"
+                        @click.stop="handleTitleConfirm(session)"
                     >
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <polyline points="20 6 9 17 4 12"/>
@@ -211,13 +211,13 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
-import { editChatSessionTitle } from "../api";
+import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
+import {editChatSessionTitle} from "../api";
 
 const props = defineProps({
     sessions: {
         type: Object,
-        default: () => ({ today: [], yesterday: [], earlier: [] }),
+        default: () => ({today: [], yesterday: [], earlier: []}),
     },
     currentSid: {
         type: [Number, String],
@@ -296,7 +296,7 @@ const handleTitleConfirm = async (session) => {
 
     try {
         await editChatSessionTitle(session.sid, newTitle);
-        emit("title-update", { sid: session.sid, title: newTitle });
+        emit("title-update", {sid: session.sid, title: newTitle});
     } catch (error) {
         console.error("更新标题失败:", error);
     }

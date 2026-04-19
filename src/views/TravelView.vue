@@ -2,8 +2,8 @@
     <div :class="['travel-view', { 'mobile-layout': !isDesktopLayout }]">
         <!-- 地图区域 -->
         <section
-            class="map-section"
             :class="{ 'chat-open': chatOpen && isDesktopLayout }"
+            class="map-section"
         >
             <div class="map-host">
                 <CityMap @select-city="showCityDetail"/>
@@ -11,11 +11,11 @@
         </section>
 
         <!-- 侧边聊天浮窗 -->
-        <aside class="chat-sidebar" :class="{ open: chatOpen, mobile: !isDesktopLayout }">
+        <aside :class="{ open: chatOpen, mobile: !isDesktopLayout }" class="chat-sidebar">
             <button
+                :aria-label="chatOpen ? '收起助手' : '展开助手'"
                 class="chat-toggle-btn"
                 type="button"
-                :aria-label="chatOpen ? '收起助手' : '展开助手'"
                 @click="chatOpen = !chatOpen"
             >
                 <span class="toggle-icon">💬</span>
@@ -32,24 +32,24 @@
                 </div>
                 <button
                     :class="['planners-toggle-btn', { active: plannersVisible }]"
-                    type="button"
                     :title="plannersVisible ? '隐藏筛选' : '显示筛选'"
+                    type="button"
                     @click="plannersVisible = !plannersVisible"
                 >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="4" y1="6" x2="20" y2="6"/>
-                        <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/>
-                        <line x1="4" y1="12" x2="20" y2="12"/>
-                        <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/>
-                        <line x1="4" y1="18" x2="20" y2="18"/>
-                        <circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/>
+                    <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
+                        <line x1="4" x2="20" y1="6" y2="6"/>
+                        <circle cx="9" cy="6" fill="currentColor" r="2" stroke="none"/>
+                        <line x1="4" x2="20" y1="12" y2="12"/>
+                        <circle cx="15" cy="12" fill="currentColor" r="2" stroke="none"/>
+                        <line x1="4" x2="20" y1="18" y2="18"/>
+                        <circle cx="11" cy="18" fill="currentColor" r="2" stroke="none"/>
                     </svg>
                 </button>
                 <button class="close-btn" type="button" @click="chatOpen = false">✕</button>
             </div>
 
             <!-- 快速规划选项 -->
-            <div class="planners-bar" :class="{ collapsed: !plannersVisible }">
+            <div :class="{ collapsed: !plannersVisible }" class="planners-bar">
                 <div class="planner-item">
                     <label>目标</label>
                     <el-select v-model="selectedCity" clearable placeholder="可选">
@@ -100,10 +100,10 @@
                 :messages="travelMessages"
                 :send-disabled="isProcessing"
                 placeholder="描述旅行需求..."
-                @send="sendTravelMessage"
                 @copy="handleCopyMessage"
                 @favorite="handleFavoriteMessage"
                 @navigate="handleNavigateToDetail"
+                @send="sendTravelMessage"
             >
                 <div v-if="travelMessages.length === 0" class="chat-welcome">
                     <div class="welcome-circle">
@@ -119,9 +119,9 @@
             ref="cityDialogRef"
             v-model="showCityModal"
             :title="currentCity?.name"
+            :width="cityDialogWidth"
             class="city-detail-modal"
             modal-class="city-detail-overlay"
-            :width="cityDialogWidth"
         >
             <div v-if="currentCity" ref="cityContentRef" class="city-content">
                 <div class="content-left">
@@ -201,13 +201,13 @@
 </template>
 
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
+import {nextTick, onMounted, onUnmounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
 import citiesData from '../data/cities.json'
 import {useStreamTimers} from '../composables/useStreamTimers'
-import {sendChatMessage, favoriteRoute} from '../api'
+import {favoriteRoute, sendChatMessage} from '../api'
 import {ElMessage} from 'element-plus'
 import {useUserStore} from '../stores/user'
 
@@ -310,7 +310,7 @@ const handleFavoriteMessage = async (mid) => {
 
 const handleNavigateToDetail = () => {
     if (currentSessionId.value) {
-        router.push({ name: 'route-plan', query: { sid: currentSessionId.value } })
+        router.push({name: 'route-plan', query: {sid: currentSessionId.value}})
     } else {
         ElMessage.warning('当前没有进行中的会话')
     }
@@ -512,7 +512,6 @@ ${text}
     height: 100%;
     min-height: 0;
 }
-
 
 
 /* 聊天切换按钮 */

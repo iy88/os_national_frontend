@@ -38,8 +38,8 @@ src/
 
 ## 项目配置
 
-| 环境变量 | 默认值 | 说明 |
-|----------|--------|------|
+| 环境变量                | 默认值                     | 说明     |
+|---------------------|-------------------------|--------|
 | `VITE_API_BASE_URL` | `http://localhost:5000` | 后端服务地址 |
 
 开发环境通过 Vite proxy 解决跨域，生产环境走同源。
@@ -54,7 +54,8 @@ src/
 
 ### SSE 流式输出
 
-使用 `fetch + ReadableStream` 实现 SSE（标准 `EventSource` 不支持 POST 和自定义 headers）。核心封装在 `src/api/index.js` 的 `sendChatMessageStream` 和 `sendRoleplayMessageStream`。
+使用 `fetch + ReadableStream` 实现 SSE（标准 `EventSource` 不支持 POST 和自定义 headers）。核心封装在 `src/api/index.js` 的
+`sendChatMessageStream` 和 `sendRoleplayMessageStream`。
 
 ### 路由守卫
 
@@ -67,18 +68,18 @@ src/
 
 ## 路由配置
 
-| 路径 | 名称 | 说明 |
-|------|------|------|
-| `/` | - | 重定向至 /travel |
-| `/travel` | travel | 旅行首页（城市地图 + AI 助手） |
-| `/dialogue` | dialogue | 沉浸式角色对话页 |
-| `/route-plan` | route-plan | 电竞文旅助手（会话管理） |
-| `/profile` | profile | 用户中心（含子路由） |
-| `/profile/basic` | basic-info | 基本信息设置 |
-| `/profile/favorites` | favorite-routes | 收藏路线管理 |
-| `/manage` | - | 管理后台（重定向至角色管理） |
-| `/manage/login` | admin-login | 管理员登录页 |
-| `/manage/data/roles` | admin-roles | 角色管理页 |
+| 路径                   | 名称              | 说明                 |
+|----------------------|-----------------|--------------------|
+| `/`                  | -               | 重定向至 /travel       |
+| `/travel`            | travel          | 旅行首页（城市地图 + AI 助手） |
+| `/dialogue`          | dialogue        | 沉浸式角色对话页           |
+| `/route-plan`        | route-plan      | 电竞文旅助手（会话管理）       |
+| `/profile`           | profile         | 用户中心（含子路由）         |
+| `/profile/basic`     | basic-info      | 基本信息设置             |
+| `/profile/favorites` | favorite-routes | 收藏路线管理             |
+| `/manage`            | -               | 管理后台（重定向至角色管理）     |
+| `/manage/login`      | admin-login     | 管理员登录页             |
+| `/manage/data/roles` | admin-roles     | 角色管理页              |
 
 ## 主要功能
 

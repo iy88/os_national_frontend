@@ -33,13 +33,15 @@
                 @mouseleave="handleDesktopMouseLeave"
             >
                 <div class="user-trigger">
-                    <button class="avatar-btn" type="button" aria-label="用户头像">
+                    <button aria-label="用户头像" class="avatar-btn" type="button">
                         <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
                         <div v-else class="avatar-placeholder">
                             {{ userInfo?.username?.charAt(0) || 'U' }}
                         </div>
                     </button>
-                    <span class="username-text" :title="userInfo?.username || ''">{{ userInfo?.username || '用户' }}</span>
+                    <span :title="userInfo?.username || ''" class="username-text">{{
+                            userInfo?.username || '用户'
+                        }}</span>
                 </div>
                 <div v-show="dropdownOpen" class="dropdown-menu">
                     <button class="dropdown-item" @click="goToProfile">

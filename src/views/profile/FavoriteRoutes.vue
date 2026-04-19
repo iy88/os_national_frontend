@@ -49,7 +49,8 @@
                         <button class="action-btn remove-btn" title="删除" @click="confirmDelete(route)">
                             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <polyline points="3 6 5 6 21 6"/>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                                 <line x1="10" x2="10" y1="11" y2="17"/>
                                 <line x1="14" x2="14" y1="11" y2="17"/>
                             </svg>
@@ -80,13 +81,13 @@
         <!-- 路线详情/编辑弹窗 -->
         <el-dialog
             v-model="modalVisible"
+            :close-on-click-modal="false"
             :title="modalMode === 'edit' ? '编辑路线' : '路线详情'"
+            align-center
+            append-to-body
             class="route-modal"
             modal-class="route-modal-overlay"
             width="90%"
-            :close-on-click-modal="false"
-            append-to-body
-            align-center
         >
             <div class="modal-content">
                 <div v-if="modalLoading" class="modal-loading">
@@ -94,18 +95,18 @@
                     加载中...
                 </div>
                 <template v-else>
-                    <div class="modal-form" v-if="modalMode === 'edit'">
+                    <div v-if="modalMode === 'edit'" class="modal-form">
                         <div class="form-item">
                             <label>标题</label>
-                            <el-input v-model="editForm.title" placeholder="请输入路线标题" />
+                            <el-input v-model="editForm.title" placeholder="请输入路线标题"/>
                         </div>
                         <div class="form-item">
                             <label>内容</label>
                             <el-input
                                 v-model="editForm.content"
-                                type="textarea"
                                 :rows="10"
                                 placeholder="请输入路线内容"
+                                type="textarea"
                             />
                         </div>
                     </div>
@@ -118,9 +119,11 @@
             </div>
             <template #footer>
                 <div class="modal-footer">
-                    <el-button v-if="modalMode === 'edit'" class="cancel-btn" @click="modalVisible = false">取消</el-button>
-                    <el-button v-if="modalMode === 'readonly'" type="primary" @click="modalVisible = false">确认</el-button>
-                    <el-button v-if="modalMode === 'edit'" type="primary" @click="saveRoute" :loading="saving">
+                    <el-button v-if="modalMode === 'edit'" class="cancel-btn" @click="modalVisible = false">取消
+                    </el-button>
+                    <el-button v-if="modalMode === 'readonly'" type="primary" @click="modalVisible = false">确认
+                    </el-button>
+                    <el-button v-if="modalMode === 'edit'" :loading="saving" type="primary" @click="saveRoute">
                         保存
                     </el-button>
                 </div>
@@ -130,18 +133,18 @@
         <!-- 删除确认弹窗 -->
         <el-dialog
             v-model="deleteDialogVisible"
-            title="确认删除"
-            width="90%"
+            align-center
+            append-to-body
             class="delete-dialog"
             modal-class="delete-modal-overlay"
-            append-to-body
-            align-center
+            title="确认删除"
+            width="90%"
         >
             <p>确定要删除路线「{{ routeToDelete?.title || '未命名路线' }}」吗？此操作无法撤销。</p>
             <template #footer>
                 <div class="modal-footer">
                     <el-button @click="deleteDialogVisible = false">取消</el-button>
-                    <el-button type="danger" @click="executeDelete" :loading="deleting">删除</el-button>
+                    <el-button :loading="deleting" type="danger" @click="executeDelete">删除</el-button>
                 </div>
             </template>
         </el-dialog>
@@ -149,11 +152,11 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue'
+import {onMounted, ref} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useRouter} from 'vue-router'
 import {useUserStore} from '../../stores/user'
-import {getFavoriteRouteDetail, editFavoriteRoute} from '../../api'
+import {editFavoriteRoute, getFavoriteRouteDetail} from '../../api'
 import {ElMessage} from 'element-plus'
 import {marked} from 'marked'
 import DOMPurify from 'dompurify'
@@ -163,14 +166,14 @@ const userStore = useUserStore()
 
 const {collectedRoutes} = storeToRefs(userStore)
 
-marked.setOptions({ gfm: true, breaks: true })
+marked.setOptions({gfm: true, breaks: true})
 
 // 弹窗状态
 const modalVisible = ref(false)
 const modalMode = ref('readonly') // 'readonly' | 'edit'
 const modalLoading = ref(false)
 const currentRoute = ref(null)
-const editForm = ref({ title: '', content: '' })
+const editForm = ref({title: '', content: ''})
 const saving = ref(false)
 
 // 删除弹窗状态
@@ -610,7 +613,9 @@ const goToTravel = () => {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .modal-form {

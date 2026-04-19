@@ -2,7 +2,7 @@
     <header class="admin-header">
         <!-- 移动端导航按钮 -->
         <div class="mobile-nav-btn">
-            <button class="hamburger-btn" :disabled="!isLoggedIn" @click="toggleSidebar">
+            <button :disabled="!isLoggedIn" class="hamburger-btn" @click="toggleSidebar">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="3" x2="21" y1="6" y2="6"/>
                     <line x1="3" x2="21" y1="12" y2="12"/>
@@ -13,8 +13,9 @@
 
         <div class="header-left">
             <!-- 汉堡菜单按钮（无背景） -->
-            <button class="menu-btn" :disabled="!isLoggedIn" @click="toggleSidebar">
-                <svg class="menu-icon" :class="{ open: sidebarOpen }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <button :disabled="!isLoggedIn" class="menu-btn" @click="toggleSidebar">
+                <svg :class="{ open: sidebarOpen }" class="menu-icon" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24">
                     <line class="line line-1" x1="3" x2="21" y1="6" y2="6"/>
                     <line class="line line-2" x1="3" x2="21" y1="12" y2="12"/>
                     <line class="line line-3" x1="3" x2="21" y1="18" y2="18"/>
@@ -28,19 +29,21 @@
         <div class="header-right">
             <div
                 v-if="isLoggedIn"
-                class="user-dropdown"
                 :class="{ mobile: isMobile }"
+                class="user-dropdown"
                 @mouseenter="handleDesktopMouseEnter"
                 @mouseleave="handleDesktopMouseLeave"
             >
                 <div class="user-trigger" @click.stop="toggleMobileDropdown">
-                    <button class="avatar-btn" type="button" aria-label="管理员头像">
+                    <button aria-label="管理员头像" class="avatar-btn" type="button">
                         <img v-if="avatarUrl" :alt="adminInfo?.username" :src="avatarUrl"/>
                         <div v-else class="avatar-placeholder">
                             {{ adminInfo?.username?.charAt(0) || 'A' }}
                         </div>
                     </button>
-                    <span class="username-text" :title="adminInfo?.username || ''">{{ adminInfo?.username || 'Admin' }}</span>
+                    <span :title="adminInfo?.username || ''" class="username-text">{{
+                            adminInfo?.username || 'Admin'
+                        }}</span>
                 </div>
                 <div v-show="dropdownOpen" class="dropdown-menu">
                     <button class="dropdown-item logout" @click="handleLogout">
@@ -79,10 +82,10 @@
                     @click="goToIndex"
                 >
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="7" height="7"/>
-                        <rect x="14" y="3" width="7" height="7"/>
-                        <rect x="14" y="14" width="7" height="7"/>
-                        <rect x="3" y="14" width="7" height="7"/>
+                        <rect height="7" width="7" x="3" y="3"/>
+                        <rect height="7" width="7" x="14" y="3"/>
+                        <rect height="7" width="7" x="14" y="14"/>
+                        <rect height="7" width="7" x="3" y="14"/>
                     </svg>
                     首页
                 </button>
@@ -102,7 +105,7 @@
 </template>
 
 <script setup>
-import {computed, ref, onMounted, onUnmounted} from 'vue'
+import {computed, onMounted, onUnmounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useAdminStore} from '../../stores/admin'
 
@@ -551,8 +554,12 @@ onUnmounted(() => {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* 移动端侧边栏 */

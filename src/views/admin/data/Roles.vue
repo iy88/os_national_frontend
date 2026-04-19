@@ -15,12 +15,12 @@
 
             <el-input
                 v-model="searchKeyword"
+                class="search-input"
+                clearable
                 placeholder="搜索名称或描述..."
                 prefix-icon="Search"
-                clearable
-                class="search-input"
             />
-            <el-button type="primary" class="add-btn" @click="openCreateModal">新增</el-button>
+            <el-button class="add-btn" type="primary" @click="openCreateModal">新增</el-button>
         </div>
 
         <div class="table-container">
@@ -28,33 +28,33 @@
                 <div class="table-inner">
                     <el-table
                         ref="tableRef"
-                        :data="paginatedCharacters"
                         v-loading="showTableLoading"
-                        element-loading-background="rgba(9, 9, 11, 0.35)"
-                        stripe
+                        :data="paginatedCharacters"
                         class="roles-table"
+                        element-loading-background="rgba(9, 9, 11, 0.35)"
                         height="100%"
+                        stripe
                     >
-                        <el-table-column label="头像" width="80" align="center">
+                        <el-table-column align="center" label="头像" width="80">
                             <template #default="{ row }">
-                                <img v-if="row.avatar" :src="row.avatar" class="avatar" />
+                                <img v-if="row.avatar" :src="row.avatar" class="avatar"/>
                                 <div v-else class="avatar-placeholder">{{ row.name?.charAt(0) || '?' }}</div>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="name" label="名称" width="100">
+                        <el-table-column label="名称" prop="name" width="100">
                             <template #default="{ row }">
                                 <span v-html="row._highlight?.name || row.name"></span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="type" label="分类" width="120" align="center">
+                        <el-table-column align="center" label="分类" prop="type" width="120">
                             <template #default="{ row }">
                                 <span
-                                    class="type-tag"
                                     :style="{
                                         color: categoryMap[row.type]?.color,
                                         borderColor: categoryMap[row.type]?.color + '40',
                                         backgroundColor: categoryMap[row.type]?.color + '15'
                                     }"
+                                    class="type-tag"
                                 >
                                     {{ categoryMap[row.type]?.label || row.type }}
                                 </span>
@@ -65,33 +65,36 @@
                                 <span v-html="row._highlight?.bio || row.bio || '-'"></span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="createdAt" label="创建时间" width="160" align="center">
+                        <el-table-column align="center" label="创建时间" prop="createdAt" width="160">
                             <template #default="{ row }">
                                 <span class="time-text">{{ formatTime(row.createdAt) }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="操作" width="200" align="center">
+                        <el-table-column align="center" label="操作" width="200">
                             <template #default="{ row }">
                                 <div class="action-buttons">
                                     <el-button
-                                        size="small"
                                         class="edit-btn"
+                                        size="small"
                                         @click="openEditModal(row)"
                                     >
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                                        <svg fill="none" height="14" stroke="currentColor" stroke-width="2"
+                                             style="margin-right: 4px;" viewBox="0 0 24 24" width="14">
                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                         </svg>
                                         编辑
                                     </el-button>
                                     <el-button
-                                        size="small"
                                         class="delete-btn"
+                                        size="small"
                                         @click="handleDelete(row)"
                                     >
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                                        <svg fill="none" height="14" stroke="currentColor" stroke-width="2"
+                                             style="margin-right: 4px;" viewBox="0 0 24 24" width="14">
                                             <polyline points="3 6 5 6 21 6"/>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            <path
+                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                                         </svg>
                                         删除
                                     </el-button>
@@ -106,30 +109,30 @@
                 <el-pagination
                     v-model:current-page="currentPage"
                     v-model:page-size="pageSize"
+                    :layout="paginationLayout"
                     :page-sizes="[10, 20, 50]"
                     :total="total"
-                    :layout="paginationLayout"
                     background
                 />
             </div>
         </div>
 
         <!-- 新增/编辑 Modal -->
-        <el-dialog v-model="modalVisible" :title="modalTitle" width="640px" destroy-on-close>
-            <el-form :model="formData" label-width="80px" class="role-form">
+        <el-dialog v-model="modalVisible" :title="modalTitle" destroy-on-close width="640px">
+            <el-form :model="formData" class="role-form" label-width="80px">
                 <!-- 类型 -->
                 <el-form-item label="类型">
                     <div class="type-selector">
                         <span
                             v-for="(info, key) in categoryMap"
                             :key="key"
-                            class="type-tag"
                             :class="{ active: formData.type === key }"
                             :style="formData.type === key ? {
                                 color: info.color,
                                 borderColor: info.color + '40',
                                 backgroundColor: info.color + '15'
                             } : {}"
+                            class="type-tag"
                             @click="formData.type = key"
                         >
                             {{ info.label }}
@@ -139,12 +142,12 @@
 
                 <!-- 名称 -->
                 <el-form-item label="名称" required>
-                    <el-input v-model="formData.name" placeholder="请输入角色名称" />
+                    <el-input v-model="formData.name" placeholder="请输入角色名称"/>
                 </el-form-item>
 
                 <!-- 简介 -->
                 <el-form-item label="简介">
-                    <el-input v-model="formData.bio" type="textarea" :rows="3" placeholder="请输入角色简介" />
+                    <el-input v-model="formData.bio" :rows="3" placeholder="请输入角色简介" type="textarea"/>
                 </el-form-item>
 
                 <!-- 常用语 -->
@@ -157,11 +160,11 @@
                         >
                             <input
                                 v-if="editingPhraseIdx === idx"
+                                :ref="(el) => setPhraseRef(idx, el)"
                                 v-model="formData.phrases[idx]"
                                 class="phrase-input"
                                 @blur="onPhraseBlur(idx)"
                                 @keydown.enter="onPhraseEnter(idx)"
-                                :ref="(el) => setPhraseRef(idx, el)"
                             />
                             <span
                                 v-else
@@ -181,20 +184,22 @@
                     <div class="avatar-upload-wrapper">
                         <!-- 已上传的头像 -->
                         <div v-if="avatarPreview" class="avatar-item">
-                            <img :src="avatarPreview" class="avatar-preview" />
+                            <img :src="avatarPreview" class="avatar-preview"/>
                             <span class="delete-badge" @click="removeAvatar">×</span>
                         </div>
                         <!-- 上传区域 -->
                         <el-upload
                             v-else
-                            class="avatar-uploader"
-                            :show-file-list="false"
                             :auto-upload="false"
                             :on-change="handleAvatarChange"
+                            :show-file-list="false"
+                            class="avatar-uploader"
                             drag
                         >
                             <div class="avatar-upload-content">
-                                <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
+                                <el-icon class="avatar-uploader-icon">
+                                    <Plus/>
+                                </el-icon>
                                 <span class="avatar-upload-text">拖拽或点击上传</span>
                             </div>
                         </el-upload>
@@ -210,7 +215,7 @@
                             :key="img"
                             class="image-item"
                         >
-                            <img :src="`/file/image/fetch?token=${img}`" />
+                            <img :src="`/file/image/fetch?token=${img}`"/>
                             <span class="delete-badge" @click="deleteExistingImage(img)">×</span>
                         </div>
                         <!-- 新上传图片预览 -->
@@ -219,21 +224,23 @@
                             :key="preview"
                             class="image-item"
                         >
-                            <img :src="preview" />
+                            <img :src="preview"/>
                             <span class="delete-badge" @click="removeNewImage(idx)">×</span>
                         </div>
                         <!-- 上传按钮 -->
                         <el-upload
                             v-if="imagePreviews.length + existingImages.length < 9"
-                            class="image-uploader"
-                            :show-file-list="false"
                             :auto-upload="false"
                             :on-change="handleImageChange"
+                            :show-file-list="false"
+                            class="image-uploader"
                             drag
                             multiple
                         >
                             <div class="image-upload-content">
-                                <el-icon class="image-uploader-icon"><Plus /></el-icon>
+                                <el-icon class="image-uploader-icon">
+                                    <Plus/>
+                                </el-icon>
                                 <span class="image-upload-text">拖拽或点击上传</span>
                             </div>
                         </el-upload>
@@ -243,15 +250,21 @@
 
             <template #footer>
                 <el-button @click="modalVisible = false">取消</el-button>
-                <el-button type="primary" :loading="submitting" @click="submitForm">确定</el-button>
+                <el-button :loading="submitting" type="primary" @click="submitForm">确定</el-button>
             </template>
         </el-dialog>
     </div>
 </template>
 
 <script setup>
-import {ref, computed, watch, onMounted, onUnmounted, nextTick} from 'vue'
-import {getRoleplayCharacterList, adminGetRoleplayDetail, adminCreateRoleplay, adminUpdateRoleplay, adminUploadRoleplayAvatar, adminUploadRoleplayImages, adminDeleteRoleplayImage, adminDeleteRoleplay} from '../../../api'
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
+import {
+    adminCreateRoleplay,
+    adminDeleteRoleplay,
+    adminGetRoleplayDetail,
+    adminUpdateRoleplay,
+    getRoleplayCharacterList
+} from '../../../api'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {Plus} from '@element-plus/icons-vue'
 

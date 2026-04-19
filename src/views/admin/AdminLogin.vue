@@ -1,6 +1,6 @@
 <template>
     <div class="admin-login">
-        <form @submit.prevent="handleSubmit" class="login-card">
+        <form class="login-card" @submit.prevent="handleSubmit">
             <div class="header">
                 <div class="label-tag">安全入口</div>
                 <h2>欢迎回来</h2>
@@ -11,9 +11,9 @@
                 <label>用户名</label>
                 <input
                     v-model="form.username"
-                    type="text"
-                    placeholder="请输入用户名"
                     autocomplete="username"
+                    placeholder="请输入用户名"
+                    type="text"
                 />
             </div>
 
@@ -21,15 +21,15 @@
                 <label>密码</label>
                 <input
                     v-model="form.password"
-                    type="password"
-                    placeholder="请输入密码"
                     autocomplete="current-password"
+                    placeholder="请输入密码"
+                    type="password"
                 />
             </div>
 
             <div v-if="error" class="error">{{ error }}</div>
 
-            <button type="submit" class="submit-btn" :disabled="loading">
+            <button :disabled="loading" class="submit-btn" type="submit">
                 {{ loading ? '登录中...' : '登录' }}
             </button>
         </form>
@@ -124,7 +124,7 @@ const handleSubmit = async () => {
     border-radius: 12px;
     backdrop-filter: blur(20px);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
 .header {

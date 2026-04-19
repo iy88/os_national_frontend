@@ -93,26 +93,26 @@
         <!-- 上传弹窗 -->
         <el-dialog
             v-model="showUploadModal"
-            title="上传头像"
-            width="480px"
             :close-on-click-modal="false"
             align-center
             class="upload-modal"
+            title="上传头像"
+            width="480px"
         >
             <!-- 桌面端拖拽上传 -->
             <div v-if="!isMobile" class="upload-layout">
                 <el-upload
                     ref="uploadRef"
-                    drag
                     :auto-upload="false"
                     :limit="1"
-                    :show-file-list="false"
-                    accept=".jpg,.jpeg,.png,.webp"
                     :on-change="handleFileChange"
                     :on-remove="handleFileRemove"
+                    :show-file-list="false"
+                    accept=".jpg,.jpeg,.png,.webp"
                     class="avatar-upload"
-                    @dragover="handleDragOver"
+                    drag
                     @dragleave="handleDragLeave"
+                    @dragover="handleDragOver"
                 >
                     <!-- 无文件时显示默认内容 -->
                     <div v-if="!pendingFile" class="upload-content">
@@ -125,7 +125,7 @@
                         <p class="upload-hint">支持 jpg、png、webp，最大 2MB</p>
                     </div>
                     <!-- 有文件时显示预览背景 -->
-                    <div v-else class="upload-preview" :style="{ backgroundImage: `url(${previewUrl})` }">
+                    <div v-else :style="{ backgroundImage: `url(${previewUrl})` }" class="upload-preview">
                         <div class="preview-overlay">
                             <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -149,9 +149,9 @@
                 <p class="upload-hint">支持 jpg、png、webp，最大 2MB</p>
                 <input
                     ref="mobileFileInput"
-                    type="file"
                     accept=".jpg,.jpeg,.png,.webp"
                     style="display: none"
+                    type="file"
                     @change="handleMobileFileSelect"
                 />
             </div>
@@ -166,7 +166,9 @@
                 </div>
                 <div class="modal-actions">
                     <el-button class="cancel-btn-lg" @click="cancelUpload">取消</el-button>
-                    <el-button type="primary" class="upload-btn-lg" :disabled="!pendingFile" @click="confirmUpload">上传</el-button>
+                    <el-button :disabled="!pendingFile" class="upload-btn-lg" type="primary" @click="confirmUpload">
+                        上传
+                    </el-button>
                 </div>
             </div>
         </el-dialog>

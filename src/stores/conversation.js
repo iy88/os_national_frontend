@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
-import {ref, computed} from 'vue'
-import {getChatSessions, getChatSession} from '../api'
+import {computed, ref} from 'vue'
+import {getChatSession, getChatSessions} from '../api'
 
 export const useConversationStore = defineStore('conversation', () => {
     // State

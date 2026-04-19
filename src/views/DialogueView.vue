@@ -1,5 +1,5 @@
 <template>
-    <div class="dialogue-view" :style="dialogueViewportStyle">
+    <div :style="dialogueViewportStyle" class="dialogue-view">
         <!-- 全屏对话区 -->
         <main class="fullscreen-conversation">
             <!-- PC端左侧边栏 -->
@@ -16,8 +16,9 @@
                             {{ info.name }}
                         </div>
                     </div>
-                    <button class="sidebar-add-btn" @click="openCharSelector" aria-label="选择角色">
-                        <svg class="sidebar-add-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <button aria-label="选择角色" class="sidebar-add-btn" @click="openCharSelector">
+                        <svg class="sidebar-add-icon" fill="none" stroke="currentColor" stroke-width="1.8"
+                             viewBox="0 0 24 24">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                             <circle cx="9" cy="7" r="4"/>
                             <line x1="19" x2="19" y1="8" y2="14"/>
@@ -32,8 +33,8 @@
                     @mouseenter="handleSidebarMouseEnter"
                     @mouseleave="handleSidebarMouseLeave"
                     @mousemove="handleSidebarMouseMove"
-                    @scroll.passive="handleSidebarScroll"
                     @pointerdown="handleSidebarPointerDown"
+                    @scroll.passive="handleSidebarScroll"
                 >
                     <div v-if="currentSidebarLoading" class="sidebar-loading">角色加载中...</div>
                     <div v-else-if="currentSidebarError" class="sidebar-empty">{{ currentSidebarError }}</div>
@@ -45,7 +46,7 @@
                         @click="selectCharacter(char)"
                     >
                         <div class="sidebar-char-avatar">
-                            <img v-if="char.avatar" :src="char.avatar" :alt="char.name"/>
+                            <img v-if="char.avatar" :alt="char.name" :src="char.avatar"/>
                             <div v-else class="avatar-placeholder">{{ char.name.charAt(0) }}</div>
                         </div>
                         <div class="sidebar-char-info">
@@ -70,8 +71,12 @@
                         <div v-else class="avatar-placeholder">{{ activeCharacter.name.charAt(0) }}</div>
                         <!-- 头像下拉菜单 -->
                         <div v-if="showAvatarDropdown" class="avatar-dropdown" @click.stop>
-                            <button class="dropdown-btn" @click="openStory(activeCharacter); showAvatarDropdown = false">📖 故事</button>
-                            <button class="dropdown-btn" @click="openPhotos(activeCharacter); showAvatarDropdown = false">📷 照片</button>
+                            <button class="dropdown-btn"
+                                    @click="openStory(activeCharacter); showAvatarDropdown = false">📖 故事
+                            </button>
+                            <button class="dropdown-btn"
+                                    @click="openPhotos(activeCharacter); showAvatarDropdown = false">📷 照片
+                            </button>
                         </div>
                     </div>
                     <div class="info-text">
@@ -102,7 +107,7 @@
                             :key="index"
                             :class="['msg-row', msg.type]"
                         >
-                            <div class="msg-avatar" :class="msg.type === 'user' ? '' : 'ai'">
+                            <div :class="msg.type === 'user' ? '' : 'ai'" class="msg-avatar">
                                 {{ msg.type === 'user' ? '我' : activeCharacter.name.charAt(0) }}
                             </div>
                             <div class="msg-column">
@@ -114,13 +119,15 @@
                                     :class="['msg-actions', { latest: isLatestCharacter(index) }]"
                                 >
                                     <button class="action-btn" title="复制" @click="handleCopy(msg.content)">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                        <svg fill="none" height="14" stroke="currentColor" stroke-width="2"
+                                             viewBox="0 0 24 24" width="14">
+                                            <rect height="13" rx="2" ry="2" width="13" x="9" y="9"/>
                                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                                         </svg>
                                     </button>
                                     <button class="action-btn" title="重新生成" @click="handleRegenerate(msg.mid)">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <svg fill="none" height="14" stroke="currentColor" stroke-width="2"
+                                             viewBox="0 0 24 24" width="14">
                                             <path d="M21 2v6h-6"/>
                                             <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
                                             <path d="M3 22v-6h6"/>
@@ -147,14 +154,14 @@
                             <input
                                 ref="inputRef"
                                 v-model="inputText"
-                                :placeholder="`与 ${activeCharacter.name} 对话...`"
                                 :disabled="streamStatus !== 'idle' || isHistoryLoading"
+                                :placeholder="`与 ${activeCharacter.name} 对话...`"
                                 @keydown.enter.prevent="handleSend"
                             />
                         </div>
                         <button
-                            class="send-btn"
                             :disabled="streamStatus !== 'idle' || isHistoryLoading || !inputText.trim()"
+                            class="send-btn"
                             @click="handleSend"
                         >
                             <span class="send-arrow">↑</span>
@@ -223,6 +230,14 @@ import {marked} from 'marked'
 import DOMPurify from 'dompurify'
 import StoryModal from '../components/StoryModal.vue'
 import PhotoGallery from '../components/PhotoGallery.vue'
+import {useStreamTimers} from '../composables/useStreamTimers'
+import {
+    getRoleplayCharacterDetail,
+    getRoleplayCharacterList,
+    getRoleplayMessageList,
+    sendRoleplayMessageStream
+} from '../api'
+
 const categoryInfo = {
     hero: {
         name: '游戏英雄',
@@ -240,13 +255,6 @@ const categoryInfo = {
         color: '#2a9d8f'
     }
 }
-import {useStreamTimers} from '../composables/useStreamTimers'
-import {
-    getRoleplayCharacterDetail,
-    getRoleplayCharacterList,
-    getRoleplayMessageList,
-    sendRoleplayMessageStream
-} from '../api'
 
 const route = useRoute()
 const router = useRouter()
@@ -386,9 +394,9 @@ const categoryRequestToken = reactive({
 })
 // 每类角色的分页状态
 const paginationState = reactive({
-    hero: { page: 1, total: 0, hasMore: true },
-    player: { page: 1, total: 0, hasMore: true },
-    celebrity: { page: 1, total: 0, hasMore: true }
+    hero: {page: 1, total: 0, hasMore: true},
+    player: {page: 1, total: 0, hasMore: true},
+    celebrity: {page: 1, total: 0, hasMore: true}
 })
 
 const activeCharacterRequestToken = ref(0)
@@ -427,7 +435,7 @@ const syncCharacterWithRoute = async (query) => {
     const params = parseParamsFromQuery(query)
     if (!params) return
 
-    const { type, categoryKey, rid } = params
+    const {type, categoryKey, rid} = params
 
     // 确保列表已加载
     if (!charactersByCategory[categoryKey]?.length) {
@@ -448,7 +456,7 @@ const syncCharacterWithRoute = async (query) => {
     if (char) {
         await selectCharacter(char)
         // 更新 URL 参数
-        router.replace({ query: { type, rid } })
+        router.replace({query: {type, rid}})
     }
 }
 
@@ -521,7 +529,7 @@ const updateCharacterInCategory = (character, updates) => {
     }
 }
 
-const loadCategoryCharacters = async (categoryKey, page = 1, { silent = false } = {}) => {
+const loadCategoryCharacters = async (categoryKey, page = 1, {silent = false} = {}) => {
     const roleplayType = roleplayTypeMap[categoryKey]
     if (!roleplayType) return
 
@@ -533,7 +541,7 @@ const loadCategoryCharacters = async (categoryKey, page = 1, { silent = false } 
     categoryError[categoryKey] = ''
 
     try {
-        const result = await getRoleplayCharacterList(roleplayType, { page, page_size: 20 })
+        const result = await getRoleplayCharacterList(roleplayType, {page, page_size: 20})
         if (categoryRequestToken[categoryKey] !== requestToken) return
         if (!result?.success) {
             throw new Error(result?.message || '角色列表加载失败')
@@ -564,7 +572,7 @@ const loadCategoryCharacters = async (categoryKey, page = 1, { silent = false } 
         if (activeCharacter.value?.categoryKey === categoryKey) {
             const matched = characterList.find(item => Number(item.rid) === Number(activeCharacter.value.rid))
             if (matched) {
-                const merged = { ...matched, ...activeCharacter.value }
+                const merged = {...matched, ...activeCharacter.value}
                 const matchedIndex = charactersByCategory[categoryKey].findIndex(
                     item => Number(item.rid) === Number(merged.rid)
                 )
@@ -603,7 +611,7 @@ const preloadNextPage = (categoryKey, page) => {
     // 延迟一帧执行，避免阻塞当前渲染和重复请求
     setTimeout(() => {
         if (categoryLoading[categoryKey]) return
-        loadCategoryCharacters(categoryKey, page, { silent: true })
+        loadCategoryCharacters(categoryKey, page, {silent: true})
     }, 50)
 }
 
@@ -660,7 +668,7 @@ const handleSidebarScroll = (e) => {
 
     // 预取逻辑：滚动过 70% 即触发加载，而非等到底部
     const el = e.target
-    const { scrollTop, scrollHeight, clientHeight } = el
+    const {scrollTop, scrollHeight, clientHeight} = el
     const scrollRatio = scrollHeight > 0 ? (scrollTop + clientHeight) / scrollHeight : 0
     const shouldPrefetch = scrollRatio > 0.7
 
@@ -672,7 +680,7 @@ const handleSidebarScroll = (e) => {
 const handlePanelScroll = (e) => {
     if (!showCharSelector.value) return
     const el = e.target
-    const { scrollTop, scrollHeight, clientHeight } = el
+    const {scrollTop, scrollHeight, clientHeight} = el
     // 预取逻辑：滚动过 70% 即触发加载，而非等到底部
     const scrollRatio = scrollHeight > 0 ? (scrollTop + clientHeight) / scrollHeight : 0
     const shouldPrefetch = scrollRatio > 0.7
@@ -984,7 +992,7 @@ const selectCharacter = async (character) => {
 
     // 更新路由参数
     const type = roleplayTypeMap[character.categoryKey]
-    router.replace({ query: { type, rid: character.rid } })
+    router.replace({query: {type, rid: character.rid}})
 
     await Promise.all([
         loadCharacterMessages(activeCharacter.value, requestToken),
