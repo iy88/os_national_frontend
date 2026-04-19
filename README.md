@@ -50,6 +50,7 @@ src/
 
 - **userStore**（Pinia）：用户登录状态、用户信息、收藏路线、登录弹窗控制
 - **conversationStore**（Pinia）：会话列表、当前消息、流状态追踪
+- **adminStore**（Pinia）：管理员登录状态、管理员信息
 
 ### SSE 流式输出
 
@@ -57,10 +58,8 @@ src/
 
 ### 路由守卫
 
-受保护路径：`/profile`、`/route-plan`、`/dialogue`
-
-- 有 token → 验证 profile → 成功放行，失败登出并弹登录框重定向
-- 无 token → 弹登录框 + 重定向至 `/travel`
+- **用户端**: `/profile`、`/route-plan`、`/dialogue` 受保护，无 token 弹登录框 + 重定向至 `/travel`
+- **管理后台**: `/manage` 路径受保护，无 token 重定向至 `/manage/login`，有 token 直接放行
 
 ### 登录弹窗
 
@@ -77,6 +76,9 @@ src/
 | `/profile` | profile | 用户中心（含子路由） |
 | `/profile/basic` | basic-info | 基本信息设置 |
 | `/profile/favorites` | favorite-routes | 收藏路线管理 |
+| `/manage` | - | 管理后台（重定向至角色管理） |
+| `/manage/login` | admin-login | 管理员登录页 |
+| `/manage/data/roles` | admin-roles | 角色管理页 |
 
 ## 主要功能
 
@@ -84,6 +86,7 @@ src/
 - **AI 对话**: 与角色进行沉浸式对话互动（Markdown 渲染，SSE 流式响应）
 - **电竞文旅助手**: 基于 Agent AI 的旅行规划助手，支持会话管理、 SSE 流式输出
 - **用户中心**: 个人信息管理、头像上传、收藏路线管理
+- **管理后台**: 管理员角色管理（增删改查、头像/图片上传）
 
 ## 详细文档
 

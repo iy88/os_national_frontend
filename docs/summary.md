@@ -47,7 +47,7 @@
 **路由**: `/dialogue`
 
 **布局**:
-- 左侧角色边栏（三大分类：游戏英雄/电竞选手/电竞达人）+ 右侧聊天区
+- 左侧角色边栏（三大分类：游戏英雄/电竞选手/电竞明星）+ 右侧聊天区
 - 移动端隐藏侧边栏，显示切换角色按钮
 
 **消息结构**:
@@ -119,6 +119,38 @@
 
 ---
 
+### 5. AdminLogin（管理后台登录）
+
+**路由**: `/manage/login`
+
+**布局**: 居中登录表单
+
+**核心功能**:
+- 管理员账号密码登录
+- 登录成功后跳转 `/manage`（角色管理页）
+- 已登录用户访问直接跳转
+
+---
+
+### 6. Roles（角色管理）
+
+**路由**: `/manage/data/roles`
+
+**布局**: 顶部筛选栏 + 角色表格 + 分页 + 新增/编辑弹窗
+
+**核心功能**:
+- 角色列表展示（头像、名称、分类、简介、创建时间）
+- 分类筛选 + 关键词搜索
+- 新增/编辑角色弹窗：
+  - 类型选择（游戏达人/电竞选手/游戏英雄）
+  - 名称、简介编辑
+  - 常用语管理（点击编辑 Enter 保存，空内容自动删除）
+  - 头像上传（拖拽 + 点击，删除角标）
+  - 图片上传（拖拽 + 多选，最多9张，删除角标）
+- FormData 统一提交所有字段到 update 接口
+
+---
+
 ## 全局状态管理
 
 ### userStore（src/stores/user.js）
@@ -163,6 +195,19 @@
 | `addStreamingMessage(mid)` | 添加流式占位消息 |
 | `appendToMessage(index, content)` | 追加流式内容 |
 | `finalizeMessage(title)` | 完成消息，更新标题 |
+
+### adminStore（src/stores/admin.js）
+
+| 状态/计算 | 类型 | 说明 |
+|-----------|------|------|
+| `isLoggedIn` | ref boolean | 管理员登录状态 |
+| `adminInfo` | ref object | 管理员信息 |
+
+| 方法 | 说明 |
+|------|------|
+| `login(result)` | 登录：保存 token + 设置管理员信息 |
+| `logout()` | 登出：清除 token + 重置状态 |
+| `fetchAdminProfile()` | 获取管理员信息 |
 
 ### useStreamTimers（src/composables/useStreamTimers.js）
 
@@ -245,6 +290,15 @@
 | PUT | /route/edit/:rid | 编辑收藏路线 |
 | DELETE | /route/delete/:rid | 删除收藏 |
 
+### Admin Roleplay 接口（角色管理）
+
+| 方法 | URL | 说明 |
+|------|-----|------|
+| POST | /admin/roleplay/create | 创建角色（支持 multipart/form-data） |
+| GET | /admin/roleplay/:rid/detail | 获取角色详情 |
+| PUT | /admin/roleplay/:rid/update | 更新角色（支持 multipart/form-data，含头像/图片上传） |
+| DELETE | /admin/roleplay/:rid/delete | 删除角色 |
+
 ---
 
 ## 路由配置
@@ -258,14 +312,20 @@
 | `/profile` | profile | 用户中心（含子路由） |
 | `/profile/basic` | basic-info | 基本信息 |
 | `/profile/favorites` | favorite-routes | 收藏路线 |
+| `/manage` | - | 管理后台（重定向至 /manage/data/roles） |
+| `/manage/login` | admin-login | 管理员登录页 |
+| `/manage/data/roles` | admin-roles | 角色管理页 |
 
 ### 路由守卫
 
-**受保护路径**: `/profile`、`/route-plan`、`/dialogue`
+**用户端受保护路径**: `/profile`、`/route-plan`、`/dialogue`
+- 有 token → 验证 profile → 成功放行，失败登出并弹窗重定向
+- 无 token → 弹登录框 + 重定向至 `/travel`
 
-**逻辑**:
-1. 有 token → 验证 profile → 成功放行，失败登出并弹窗重定向
-2. 无 token → 弹登录框 + 重定向至 `/travel`
+**管理后台受保护路径**: `/manage` 及子路径
+- 有 token → 验证 admin profile → 成功放行，失败登出并跳转登录页
+- 无 token → 跳转 `/manage/login`
+- 404 兜底: `/manage/*` → `/manage`，其他 → `/travel`
 
 ---
 
@@ -351,11 +411,16 @@ Element Plus 组件已配置为深色主题，全局滚动条样式已定义（�
 3. **所有 Element Plus 组件使用暗色主题覆盖样式**
 4. **SSE 使用 fetch + ReadableStream 实现**（标准 EventSource 不支持 POST 和自定义 headers）
 5. **复制功能优先 Clipboard API，失败降级 execCommand**
+6. **管理后台使用独立 store 和 token（adminToken），与用户端分离**
 
 ---
 
 ## 最近更新
 
+- 2026-04-19: 新增管理后台（AdminLogin、ManageIndex、Roles 角色管理页面）
+- 2026-04-19: 角色管理支持新增/编辑弹窗，常用语动态编辑，头像/图片拖拽上传
+- 2026-04-19: 添加 404 兜底路由，优化管理后台默认跳转
+- 2026-04-19: "电竞达人"更名为"电竞明星"
 - 2026-03-29: 对话页添加消息操作按钮（复制/重新生成），移动端复用 hover/active 逻辑
 - 2026-03-29: 全局收敛 ElMessage 时长为 1000ms，TravelView 添加登录前置检查
 - 2026-03-29: 添加 /route-plan 和 /dialogue 路由登录保护
