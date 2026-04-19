@@ -53,7 +53,7 @@ const routes = [
     // 管理后台路由
     {
         path: '/manage',
-        redirect: '/manage/index'
+        redirect: '/manage/data/roles'
     },
     {
         path: '/manage/index',
@@ -64,12 +64,29 @@ const routes = [
     {
         path: '/manage/login',
         name: 'admin-login',
-        component: AdminLogin
+        component: AdminLogin,
+        beforeEnter: (to, from) => {
+            // 已登录则跳转到管理后台首页
+            if (localStorage.getItem('adminToken')) {
+                return '/manage'
+            }
+            return true
+        }
     },
     {
         path: '/manage/data/roles',
         name: 'admin-roles',
         component: Roles
+    },
+    // 404 兜底路由（必须放在最后）
+    {
+        path: '/:pathMatch(.*)*',
+        redirect: (to) => {
+            if (to.path.startsWith('/manage')) {
+                return '/manage'
+            }
+            return '/travel'
+        }
     }
 ]
 
