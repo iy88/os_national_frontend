@@ -60,7 +60,7 @@
                                 </span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="简介" min-width="200">
+                        <el-table-column label="简介" min-width="120">
                             <template #default="{ row }">
                                 <span v-html="row._highlight?.bio || row.bio || '-'"></span>
                             </template>
@@ -70,19 +70,32 @@
                                 <span class="time-text">{{ formatTime(row.createdAt) }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="操作" width="100" align="center">
+                        <el-table-column label="操作" width="200" align="center">
                             <template #default="{ row }">
-                                <el-button
-                                    size="small"
-                                    class="edit-btn"
-                                    @click="openEditModal(row)"
-                                >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                    </svg>
-                                    编辑
-                                </el-button>
+                                <div class="action-buttons">
+                                    <el-button
+                                        size="small"
+                                        class="edit-btn"
+                                        @click="openEditModal(row)"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                        编辑
+                                    </el-button>
+                                    <el-button
+                                        size="small"
+                                        class="delete-btn"
+                                        @click="handleDelete(row)"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                        删除
+                                    </el-button>
+                                </div>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -238,8 +251,8 @@
 
 <script setup>
 import {ref, computed, watch, onMounted, onUnmounted, nextTick} from 'vue'
-import {getRoleplayCharacterList, adminGetRoleplayDetail, adminCreateRoleplay, adminUpdateRoleplay, adminUploadRoleplayAvatar, adminUploadRoleplayImages, adminDeleteRoleplayImage} from '../../../api'
-import {ElMessage} from 'element-plus'
+import {getRoleplayCharacterList, adminGetRoleplayDetail, adminCreateRoleplay, adminUpdateRoleplay, adminUploadRoleplayAvatar, adminUploadRoleplayImages, adminDeleteRoleplayImage, adminDeleteRoleplay} from '../../../api'
+import {ElMessage, ElMessageBox} from 'element-plus'
 import {Plus} from '@element-plus/icons-vue'
 
 const categoryMap = {
@@ -416,6 +429,28 @@ const removeNewImage = (idx) => {
 const deleteExistingImage = (fid) => {
     deletedImageTokens.value.push(fid)
     existingImages.value = existingImages.value.filter(i => i !== fid)
+}
+
+const handleDelete = async (row) => {
+    try {
+        await ElMessageBox.confirm(
+            `确定要删除角色「${row.name}」吗？删除后无法恢复。`,
+            '删除确认',
+            {
+                confirmButtonText: '删除',
+                cancelButtonText: '取消',
+                type: 'warning',
+                confirmButtonClass: 'el-button--danger'
+            }
+        )
+        await adminDeleteRoleplay(row.rid)
+        ElMessage.success('删除成功')
+        fetchCharacters()
+    } catch (error) {
+        if (error !== 'cancel') {
+            ElMessage.error('删除失败: ' + (error.message || error))
+        }
+    }
 }
 
 const submitForm = async () => {
@@ -880,11 +915,17 @@ h1 {
     line-height: 1.4;
 }
 
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
 .edit-btn {
     padding: 4px 10px;
-    background: rgba(34, 197, 94, 0.12);
-    border: 1px solid rgba(34, 197, 94, 0.25);
-    color: #4ade80;
+    background: rgba(240, 179, 68, 0.12) !important;
+    border: 1px solid rgba(240, 179, 68, 0.25) !important;
+    color: #f0b344 !important;
     font-size: 0.8rem;
     border-radius: 4px;
     cursor: pointer;
@@ -894,8 +935,26 @@ h1 {
 }
 
 .edit-btn:hover {
-    background: rgba(34, 197, 94, 0.22);
-    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(240, 179, 68, 0.22) !important;
+    border-color: rgba(240, 179, 68, 0.4) !important;
+}
+
+.delete-btn {
+    padding: 4px 10px;
+    background: rgba(230, 57, 70, 0.12) !important;
+    border: 1px solid rgba(230, 57, 70, 0.25) !important;
+    color: #e63946 !important;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.delete-btn:hover {
+    background: rgba(230, 57, 70, 0.22) !important;
+    border-color: rgba(230, 57, 70, 0.4) !important;
 }
 
 :deep(mark) {
