@@ -53,7 +53,7 @@ const routes = [
     // 管理后台路由
     {
         path: '/manage',
-        redirect: '/manage/data/roles'
+        redirect: '/manage/index'
     },
     {
         path: '/manage/index',
