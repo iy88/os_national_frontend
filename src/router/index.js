@@ -8,7 +8,7 @@ import FavoriteRoutes from '../views/profile/FavoriteRoutes.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
 import Roles from '../views/admin/data/Roles.vue'
 import {useUserStore} from '../stores/user'
-import {adminGetProfile, getProfile, authEvents} from '../api'
+import {adminGetProfile, authEvents, getProfile} from '../api'
 
 const routes = [
     {
