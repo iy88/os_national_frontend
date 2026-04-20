@@ -39,11 +39,11 @@
 <script setup>
 import {reactive, ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {useAdminStore} from '../../stores/admin'
+import {useUserStore} from '../../stores/user'
 import {adminLogin} from '../../api'
 
 const router = useRouter()
-const adminStore = useAdminStore()
+const userStore = useUserStore()
 const form = reactive({username: '', password: ''})
 const loading = ref(false)
 const error = ref('')
@@ -63,7 +63,7 @@ const handleSubmit = async () => {
     try {
         const result = await adminLogin({username: form.username, password: form.password})
         if (result.success) {
-            adminStore.login(result)
+            userStore.login(result)
             router.replace('/manage/index')
         } else {
             error.value = result.message || '登录失败'

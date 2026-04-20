@@ -36,13 +36,13 @@
             >
                 <div class="user-trigger" @click.stop="toggleMobileDropdown">
                     <button aria-label="管理员头像" class="avatar-btn" type="button">
-                        <img v-if="avatarUrl" :alt="adminInfo?.username" :src="avatarUrl"/>
+                        <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
                         <div v-else class="avatar-placeholder">
-                            {{ adminInfo?.username?.charAt(0) || 'A' }}
+                            {{ userInfo?.username?.charAt(0) || 'A' }}
                         </div>
                     </button>
-                    <span :title="adminInfo?.username || ''" class="username-text">{{
-                            adminInfo?.username || 'Admin'
+                    <span :title="userInfo?.username || ''" class="username-text">{{
+                            userInfo?.username || 'Admin'
                         }}</span>
                 </div>
                 <div v-show="dropdownOpen" class="dropdown-menu">
@@ -107,11 +107,11 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {useAdminStore} from '../../stores/admin'
+import {useUserStore} from '../../stores/user'
 
 const route = useRoute()
 const router = useRouter()
-const adminStore = useAdminStore()
+const userStore = useUserStore()
 
 const props = defineProps({
     sidebarOpen: {
@@ -126,9 +126,9 @@ const mobileSidebarOpen = ref(false)
 const dropdownOpen = ref(false)
 let hideTimer = null
 
-const isLoggedIn = computed(() => adminStore.isLoggedIn)
-const adminInfo = computed(() => adminStore.adminInfo)
-const avatarUrl = computed(() => adminStore.avatarUrl)
+const isLoggedIn = computed(() => userStore.isLoggedIn)
+const userInfo = computed(() => userStore.userInfo)
+const avatarUrl = computed(() => userStore.avatarUrl)
 
 const activeTab = computed(() => {
     if (route.path.startsWith('/manage/data/roles')) return 'roles'
@@ -194,7 +194,7 @@ const closeMobileSidebar = () => {
 const handleLogout = () => {
     clearHideTimer()
     dropdownOpen.value = false
-    adminStore.logout()
+    userStore.logout()
     router.push('/manage/login')
 }
 

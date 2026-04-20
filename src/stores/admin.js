@@ -4,11 +4,11 @@ import {adminGetProfile} from '../api'
 
 export const useAdminStore = defineStore('admin', () => {
     const isLoggedIn = ref(false)
-    const adminInfo = ref(null)
+    const userInfo = ref(null)
 
     const avatarUrl = computed(() => {
-        if (adminInfo.value?.avatarToken) {
-            return `/file/avatar/fetch?token=${adminInfo.value.avatarToken}`
+        if (userInfo.value?.avatarToken) {
+            return `/file/avatar/fetch?token=${userInfo.value.avatarToken}`
         }
         return null
     })
@@ -17,42 +17,37 @@ export const useAdminStore = defineStore('admin', () => {
     const setToken = (token) => localStorage.setItem('token', token)
     const removeToken = () => localStorage.removeItem('token')
 
-    const setAdminInfo = (info) => {
-        adminInfo.value = {
-            uid: info.uid,
-            username: info.username,
-            email: info.email,
-            avatarToken: info.avatarToken || ''
-        }
+    const setUserInfo = (info) => {
+        userInfo.value = info
         isLoggedIn.value = true
     }
 
     const fetchAdminProfile = async () => {
         const result = await adminGetProfile()
-        if (result.success && result.adminInfo) {
-            setAdminInfo(result.adminInfo)
+        if (result.success && result.userInfo) {
+            setUserInfo(result.userInfo)
         }
     }
 
     const login = (result) => {
         setToken(result.token)
-        setAdminInfo(result.adminInfo)
+        setUserInfo(result.userInfo)
     }
 
     const logout = () => {
         removeToken()
         isLoggedIn.value = false
-        adminInfo.value = null
+        userInfo.value = null
     }
 
     return {
         isLoggedIn,
-        adminInfo,
+        userInfo,
         avatarUrl,
         getToken,
         login,
         logout,
-        setAdminInfo,
+        setUserInfo,
         fetchAdminProfile
     }
 })

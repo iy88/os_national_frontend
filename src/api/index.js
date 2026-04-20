@@ -38,14 +38,13 @@ apiClient.interceptors.request.use(
     (error) => Promise.reject(error)
 )
 
-// 响应拦截器：统一处理错误，401 触发 authEvents
+// 响应拦截器：统一处理错误，401/403 触发 authEvents（token 失效）
 apiClient.interceptors.response.use(
     (response) => response.data,
     (error) => {
         const status = error.response?.status
-        if (status === 401) {
-            authEvents.emit(401)
-            // reject 被 router 的 authEvents 监听器处理（跳转/登出），不在这里显示错误
+        if (status === 401 || status === 403) {
+            authEvents.emit(status)
             return Promise.reject({__handled: true, status})
         }
         const message = error.response?.data?.message || error.message || '请求失败'
@@ -143,8 +142,8 @@ uploadClient.interceptors.response.use(
     (response) => response.data,
     (error) => {
         const status = error.response?.status
-        if (status === 401) {
-            authEvents.emit(401)
+        if (status === 401 || status === 403) {
+            authEvents.emit(status)
             return Promise.reject({__handled: true, status})
         }
         const message = error.response?.data?.message || error.message || '上传失败'
@@ -284,8 +283,9 @@ export const sendChatMessageStream = (content, sid = null, mid = null, regenerat
         })
         .catch(error => {
             if (!aborted && !isAbortError(error)) {
-                if (error.response?.status === 401) {
-                    authEvents.emit(401)
+                const s = error.response?.status
+                if (s === 401 || s === 403) {
+                    authEvents.emit(s)
                     return
                 }
                 if (eventSource.onerror) eventSource.onerror(error)
@@ -429,8 +429,9 @@ export const sendRoleplayMessageStream = (rid, content = null, mid = null, regen
         })
         .catch(error => {
             if (!aborted && !isAbortError(error)) {
-                if (error.response?.status === 401) {
-                    authEvents.emit(401)
+                const s = error.response?.status
+                if (s === 401 || s === 403) {
+                    authEvents.emit(s)
                     return
                 }
                 if (eventSource.onerror) eventSource.onerror(error)
