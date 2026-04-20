@@ -199,7 +199,10 @@
                             :class="['char-card', { active: activeCharacter?.id === char.id }]"
                             @click="selectCharacter(char); showCharSelector = false"
                         >
-                            <div class="char-avatar-block">{{ char.name.charAt(0) }}</div>
+                            <div class="char-avatar-block">
+                                <img v-if="char.avatar && !avatarError[char.id]" :src="char.avatar" @error="avatarError[char.id] = true" :alt="char.name"/>
+                                <span v-else>{{ char.name.charAt(0) }}</span>
+                            </div>
                             <div class="char-name">{{ char.name }}</div>
                         </div>
                     </div>
@@ -231,6 +234,7 @@ import DOMPurify from 'dompurify'
 import StoryModal from '../components/StoryModal.vue'
 import PhotoGallery from '../components/PhotoGallery.vue'
 import {useStreamTimers} from '../composables/useStreamTimers'
+import {useImageCache} from '../composables/useImageCache'
 import {
     getRoleplayCharacterDetail,
     getRoleplayCharacterList,
@@ -401,6 +405,9 @@ const paginationState = reactive({
 
 const activeCharacterRequestToken = ref(0)
 const activeStreamToken = ref(0)
+const activePageToken = ref(0)
+const avatarError = reactive({})
+const { preloadAvatars } = useImageCache()
 let sidebarScrollbarHideTimer = null
 let viewportRafId = 0
 let streamingUnwatch = null
@@ -529,7 +536,9 @@ const updateCharacterInCategory = (character, updates) => {
     }
 }
 
-const loadCategoryCharacters = async (categoryKey, page = 1, {silent = false} = {}) => {
+const loadCategoryCharacters = async (categoryKey, page = 1, {silent = false, pageToken = null} = {}) => {
+    if (pageToken !== null && pageToken !== activePageToken.value) return
+
     const roleplayType = roleplayTypeMap[categoryKey]
     if (!roleplayType) return
 
@@ -542,6 +551,7 @@ const loadCategoryCharacters = async (categoryKey, page = 1, {silent = false} = 
 
     try {
         const result = await getRoleplayCharacterList(roleplayType, {page, page_size: 20})
+        if (pageToken !== null && pageToken !== activePageToken.value) return
         if (categoryRequestToken[categoryKey] !== requestToken) return
         if (!result?.success) {
             throw new Error(result?.message || '角色列表加载失败')
@@ -659,7 +669,8 @@ const loadMoreSidebarCharacters = () => {
 
     loadMoreTimer = setTimeout(() => {
         loadMoreTimer = null
-        loadCategoryCharacters(category, pagination.page + 1)
+        activePageToken.value = Date.now()
+        loadCategoryCharacters(category, pagination.page + 1, { pageToken: activePageToken.value })
     }, 200)
 }
 
@@ -673,6 +684,8 @@ const handleSidebarScroll = (e) => {
     const shouldPrefetch = scrollRatio > 0.7
 
     if (shouldPrefetch) {
+        const chars = charactersByCategory[activeSidebarTab.value] || []
+        preloadAvatars(chars.slice(-5).map(c => ({ id: c.id, avatarToken: c.avatar_token })))
         loadMoreSidebarCharacters()
     }
 }
@@ -686,6 +699,8 @@ const handlePanelScroll = (e) => {
     const shouldPrefetch = scrollRatio > 0.7
 
     if (shouldPrefetch) {
+        const chars = selectorCharacters.value || []
+        preloadAvatars(chars.slice(-5).map(c => ({ id: c.id, avatarToken: c.avatar_token })))
         loadMoreSelectorCharacters()
     }
 }
@@ -699,7 +714,8 @@ const loadMoreSelectorCharacters = () => {
 
     loadMoreTimer = setTimeout(() => {
         loadMoreTimer = null
-        loadCategoryCharacters(category, pagination.page + 1)
+        activePageToken.value = Date.now()
+        loadCategoryCharacters(category, pagination.page + 1, { pageToken: activePageToken.value })
     }, 200)
 }
 
@@ -2335,6 +2351,13 @@ onUnmounted(() => {
     font-weight: 700;
     font-size: 1.1rem;
     border: 2px solid #f0b344;
+    overflow: hidden;
+}
+
+.char-avatar-block img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .char-name {
