@@ -13,9 +13,9 @@ export const useAdminStore = defineStore('admin', () => {
         return null
     })
 
-    const getToken = () => localStorage.getItem('adminToken')
-    const setToken = (token) => localStorage.setItem('adminToken', token)
-    const removeToken = () => localStorage.removeItem('adminToken')
+    const getToken = () => localStorage.getItem('token')
+    const setToken = (token) => localStorage.setItem('token', token)
+    const removeToken = () => localStorage.removeItem('token')
 
     const setAdminInfo = (info) => {
         adminInfo.value = {

@@ -9,7 +9,7 @@ import AdminLogin from '../views/admin/AdminLogin.vue'
 import Roles from '../views/admin/data/Roles.vue'
 import {useUserStore} from '../stores/user'
 import {useAdminStore} from '../stores/admin'
-import {adminGetProfile, getProfile} from '../api'
+import {adminGetProfile, getProfile, authEvents} from '../api'
 
 const routes = [
     {
@@ -67,7 +67,7 @@ const routes = [
         component: AdminLogin,
         beforeEnter: (to, from) => {
             // 已登录则跳转到管理后台首页
-            if (localStorage.getItem('adminToken')) {
+            if (localStorage.getItem('token')) {
                 return '/manage'
             }
             return true
@@ -98,7 +98,6 @@ const router = createRouter({
 // 路由守卫映射配置
 const AUTH_CONFIGS = {
     user: {
-        tokenKey: 'token',
         loginPage: null,
         redirectPaths: ['/profile', '/route-plan', '/dialogue'],
         loginPath: '/travel',
@@ -112,7 +111,6 @@ const AUTH_CONFIGS = {
         }
     },
     admin: {
-        tokenKey: 'adminToken',
         loginPage: '/manage/login',
         redirectPaths: ['/manage'],
         loginPath: '/manage/login',
@@ -125,6 +123,22 @@ const AUTH_CONFIGS = {
         }
     }
 }
+
+// 监听 authEvents，统一处理 401 跳转/登出
+authEvents.on((status) => {
+    if (status !== 401) return
+    const path = router.currentRoute.value.path
+    const authType = path.startsWith('/manage') ? 'admin' : 'user'
+    const config = AUTH_CONFIGS[authType]
+    const store = config.store()
+    config.logout(store)
+    if (authType === 'user') {
+        store.showLoginModal = true
+        router.push('/travel')
+    } else {
+        router.push('/manage/login')
+    }
+})
 
 router.beforeEach(async (to, from) => {
     const authType = to.path.startsWith('/manage') ? 'admin' : 'user'
@@ -141,8 +155,9 @@ router.beforeEach(async (to, from) => {
         return true
     }
 
-    const token = localStorage.getItem(config.tokenKey)
+    const token = localStorage.getItem('token')
     if (token) {
+        // token 存在但未登录，需要验证 token 有效性
         try {
             const result = await config.verifyApi()
             if (result.success) {
@@ -152,14 +167,16 @@ router.beforeEach(async (to, from) => {
                     config.setUserInfo(store, result.adminInfo)
                 }
                 return true
-            } else {
-                config.logout(store)
-                return config.loginPath
             }
         } catch (error) {
-            config.logout(store)
-            return config.loginPath
+            // 验证失败（401 或其他），authEvents 已触发登出，这里只做路由跳转
         }
+        // 验证失败，redirectPaths 中的路径已在 authEvents 中处理
+        // 如果不在 redirectPaths 中，正常放行（允许访问公开页）
+        if (!config.redirectPaths.some(p => to.path.startsWith(p))) {
+            return true
+        }
+        return config.loginPath
     } else {
         // 无 token，判断是否需要拦截
         if (config.redirectPaths.some(p => to.path.startsWith(p))) {

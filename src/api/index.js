@@ -1,5 +1,19 @@
 import axios from 'axios'
 
+// 401 认证失败事件发射器（供 router 监听并统一处理跳转/登出）
+export const authEvents = {
+    handlers: [],
+    emit(status) {
+        this.handlers.forEach(h => h(status))
+    },
+    on(handler) {
+        this.handlers.push(handler)
+    },
+    off(handler) {
+        this.handlers = this.handlers.filter(h => h !== handler)
+    }
+}
+
 // 所有请求使用相对路径，走 Vite proxy 或生产环境同源
 const apiClient = axios.create({
     baseURL: '',
@@ -9,22 +23,31 @@ const apiClient = axios.create({
     }
 })
 
-// 请求拦截器：添加 token
+// 请求拦截器：添加 token，FormData 不设置 Content-Type（让浏览器自动处理）
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token')
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type']
+        }
         return config
     },
     (error) => Promise.reject(error)
 )
 
-// 响应拦截器：统一处理错误
+// 响应拦截器：统一处理错误，401 触发 authEvents
 apiClient.interceptors.response.use(
     (response) => response.data,
     (error) => {
+        const status = error.response?.status
+        if (status === 401) {
+            authEvents.emit(401)
+            // reject 被 router 的 authEvents 监听器处理（跳转/登出），不在这里显示错误
+            return Promise.reject({__handled: true, status})
+        }
         const message = error.response?.data?.message || error.message || '请求失败'
         return Promise.reject(new Error(message))
     }
@@ -108,6 +131,9 @@ uploadClient.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type']
+        }
         return config
     },
     (error) => Promise.reject(error)
@@ -116,6 +142,11 @@ uploadClient.interceptors.request.use(
 uploadClient.interceptors.response.use(
     (response) => response.data,
     (error) => {
+        const status = error.response?.status
+        if (status === 401) {
+            authEvents.emit(401)
+            return Promise.reject({__handled: true, status})
+        }
         const message = error.response?.data?.message || error.message || '上传失败'
         return Promise.reject(new Error(message))
     }
@@ -125,11 +156,7 @@ export const uploadAvatar = (userId, file) => {
     const formData = new FormData()
     formData.append('user_id', userId)
     formData.append('file', file)
-    return uploadClient.post('/file/avatar/upload', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    })
+    return uploadClient.post('/file/avatar/upload', formData)
 }
 
 // ============ Agent AI 对话接口 ============
@@ -256,8 +283,12 @@ export const sendChatMessageStream = (content, sid = null, mid = null, regenerat
             read()
         })
         .catch(error => {
-            if (!aborted && !isAbortError(error) && eventSource.onerror) {
-                eventSource.onerror(error)
+            if (!aborted && !isAbortError(error)) {
+                if (error.response?.status === 401) {
+                    authEvents.emit(401)
+                    return
+                }
+                if (eventSource.onerror) eventSource.onerror(error)
             }
         })
 
@@ -397,8 +428,12 @@ export const sendRoleplayMessageStream = (rid, content = null, mid = null, regen
             read()
         })
         .catch(error => {
-            if (!aborted && !isAbortError(error) && eventSource.onerror) {
-                eventSource.onerror(error)
+            if (!aborted && !isAbortError(error)) {
+                if (error.response?.status === 401) {
+                    authEvents.emit(401)
+                    return
+                }
+                if (eventSource.onerror) eventSource.onerror(error)
             }
         })
 
@@ -439,114 +474,24 @@ export const editFavoriteRoute = (rid, data) => {
 
 // ============ Admin Roleplay 管理员角色接口 ============
 
-const adminApiClient = axios.create({
-    baseURL: '',
-    timeout: 10000,
-    headers: {
-        'Content-Type': 'application/json'
-    }
-})
-
-adminApiClient.interceptors.request.use(
-    (config) => {
-        const adminToken = localStorage.getItem('adminToken')
-        if (adminToken) {
-            config.headers.Authorization = `Bearer ${adminToken}`
-        }
-        // FormData会自动设置正确的Content-Type，不需要手动设置
-        if (config.data instanceof FormData) {
-            delete config.headers['Content-Type']
-        }
-        return config
-    },
-    (error) => Promise.reject(error)
-)
-
-adminApiClient.interceptors.response.use(
-    (response) => response.data,
-    (error) => {
-        const message = error.response?.data?.message || error.message || '请求失败'
-        return Promise.reject(new Error(message))
-    }
-)
-
-// 管理员上传客户端
-const adminUploadClient = axios.create({
-    baseURL: '',
-    timeout: 30000
-})
-
-adminUploadClient.interceptors.request.use(
-    (config) => {
-        const adminToken = localStorage.getItem('adminToken')
-        if (adminToken) {
-            config.headers.Authorization = `Bearer ${adminToken}`
-        }
-        return config
-    },
-    (error) => Promise.reject(error)
-)
-
-adminUploadClient.interceptors.response.use(
-    (response) => response.data,
-    (error) => {
-        const message = error.response?.data?.message || error.message || '上传失败'
-        return Promise.reject(new Error(message))
-    }
-)
-
-// 获取角色详情（管理员）
-export const adminGetRoleplayDetail = (rid) => {
-    return adminApiClient.get(`/admin/roleplay/${rid}/detail`)
-}
-
 // 创建角色
 export const adminCreateRoleplay = (data) => {
-    return adminApiClient.post('/admin/roleplay/create', data)
+    return apiClient.post('/admin/roleplay/create', data)
 }
 
 // 更新角色
 export const adminUpdateRoleplay = (rid, data) => {
-    return adminApiClient.put(`/admin/roleplay/${rid}/update`, data)
+    return apiClient.put(`/admin/roleplay/${rid}/update`, data)
 }
 
 // 删除角色
 export const adminDeleteRoleplay = (rid) => {
-    return adminApiClient.delete(`/admin/roleplay/${rid}/delete`)
-}
-
-// 上传角色头像
-export const adminUploadRoleplayAvatar = (rid, file) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    return adminUploadClient.post(`/admin/roleplay/${rid}/avatar/upload`, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    })
-}
-
-// 上传角色图片
-export const adminUploadRoleplayImages = (rid, files) => {
-    const formData = new FormData()
-    files.forEach(file => {
-        formData.append('files', file)
-    })
-    return adminUploadClient.post(`/admin/roleplay/${rid}/images/upload`, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    })
-}
-
-// 删除角色图片
-export const adminDeleteRoleplayImage = (rid, fid) => {
-    return adminUploadClient.delete(`/admin/roleplay/${rid}/images/${fid}/delete`)
+    return apiClient.delete(`/admin/roleplay/${rid}/delete`)
 }
 
 // Dashboard 统计
 export const adminDashboard = () => {
-    return adminApiClient.get('/admin/dashboard')
+    return apiClient.get('/admin/dashboard')
 }
 
 export default apiClient

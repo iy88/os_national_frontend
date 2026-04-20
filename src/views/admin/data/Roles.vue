@@ -261,8 +261,8 @@ import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue'
 import {
     adminCreateRoleplay,
     adminDeleteRoleplay,
-    adminGetRoleplayDetail,
     adminUpdateRoleplay,
+    getRoleplayCharacterDetail,
     getRoleplayCharacterList
 } from '../../../api'
 import {ElMessage, ElMessageBox} from 'element-plus'
@@ -286,6 +286,7 @@ const tableRef = ref(null)
 const tableScrollRef = ref(null)
 const hasLoadedOnce = ref(false)
 const requestSeq = ref(0)
+const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2MB
 
 // ============ Modal 状态 ============
 const modalVisible = ref(false)
@@ -396,7 +397,7 @@ const openEditModal = async (row) => {
     editingId.value = row.rid
     resetForm()
     try {
-        const result = await adminGetRoleplayDetail(row.rid)
+        const result = await getRoleplayCharacterDetail(row.rid)
         if (result?.success && result.character) {
             const data = result.character
             formData.value = {
@@ -420,6 +421,10 @@ const openEditModal = async (row) => {
 }
 
 const handleAvatarChange = (file) => {
+    if (file.size > MAX_FILE_SIZE) {
+        ElMessage.error('头像图片大小不能超过 2MB')
+        return
+    }
     avatarFile.value = file.raw
     avatarPreview.value = URL.createObjectURL(file.raw)
 }
@@ -430,6 +435,10 @@ const removeAvatar = () => {
 }
 
 const handleImageChange = (file) => {
+    if (file.size > MAX_FILE_SIZE) {
+        ElMessage.error('图片大小不能超过 2MB')
+        return
+    }
     imageFiles.value.push(file.raw)
     imagePreviews.value.push(URL.createObjectURL(file.raw))
 }
