@@ -123,7 +123,7 @@
                             <div
                                 :style="{
                                     width: getCharacterPercent('game_expert') + '%',
-                                    background: '#f0b344'
+                                    background: 'var(--color-brand)'
                                 }"
                                 class="bar-fill"
                             ></div>
@@ -139,7 +139,7 @@
                             <div
                                 :style="{
                                     width: getCharacterPercent('esports_player') + '%',
-                                    background: '#e63946'
+                                    background: 'var(--color-brand-secondary)'
                                 }"
                                 class="bar-fill"
                             ></div>
@@ -236,7 +236,7 @@ onMounted(() => {
 .manage-index {
     height: 100%;
     padding: 32px 40px;
-    background: #09090b;
+    background: var(--color-bg-admin);
     position: relative;
     overflow-y: auto;
 }
@@ -249,7 +249,7 @@ onMounted(() => {
     right: -10%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.05) 40%, transparent 70%);
+    background: radial-gradient(circle, var(--color-admin-soft-bg) 0%, var(--color-admin-soft-bg) 40%, transparent 70%);
     filter: blur(80px);
     z-index: 0;
     pointer-events: none;
@@ -263,7 +263,7 @@ onMounted(() => {
     left: -10%;
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, var(--color-orange-soft) 0%, transparent 70%);
     filter: blur(100px);
     z-index: 0;
     pointer-events: none;
@@ -276,14 +276,14 @@ onMounted(() => {
 }
 
 h1 {
-    color: #fafafa;
+    color: var(--color-text-primary);
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 4px;
 }
 
 .subtitle {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     font-size: 0.9rem;
 }
 
@@ -298,8 +298,8 @@ h1 {
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-divider);
     border-radius: 12px;
     padding: 20px;
     display: flex;
@@ -308,8 +308,8 @@ h1 {
 }
 
 .stat-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: var(--color-bg-hover);
+    border-color: var(--color-border-input);
 }
 
 .stat-icon {
@@ -323,33 +323,33 @@ h1 {
 }
 
 .stat-users .stat-icon {
-    background: rgba(59, 130, 246, 0.15);
-    color: #3b82f6;
+    background: var(--color-info);
+    color: #fff;
 }
 
 .stat-characters .stat-icon {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
+    background: var(--color-admin);
+    color: #fff;
 }
 
 .stat-sessions .stat-icon {
-    background: rgba(168, 85, 247, 0.15);
-    color: #a855f7;
+    background: var(--color-purple);
+    color: #fff;
 }
 
 .stat-messages .stat-icon {
-    background: rgba(249, 115, 22, 0.15);
-    color: #f97316;
+    background: var(--color-orange);
+    color: #fff;
 }
 
 .stat-routes .stat-icon {
-    background: rgba(236, 72, 153, 0.15);
-    color: #ec4899;
+    background: var(--color-pink);
+    color: #fff;
 }
 
 .stat-files .stat-icon {
-    background: rgba(34, 211, 238, 0.15);
-    color: #22d3ee;
+    background: var(--color-cyan);
+    color: #fff;
 }
 
 .stat-content {
@@ -360,19 +360,19 @@ h1 {
 .stat-value {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #fafafa;
+    color: var(--color-text-primary);
     line-height: 1.2;
 }
 
 .stat-label {
     font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     margin-top: 4px;
 }
 
 .stat-sub {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     margin-top: 8px;
     display: flex;
     align-items: center;
@@ -397,14 +397,14 @@ h1 {
 }
 
 .chart-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-divider);
     border-radius: 12px;
     padding: 20px;
 }
 
 .chart-card h3 {
-    color: #fafafa;
+    color: var(--color-text-primary);
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 16px;
@@ -426,7 +426,7 @@ h1 {
 .bar-label {
     width: 80px;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -436,7 +436,7 @@ h1 {
 .bar-track {
     flex: 1;
     height: 24px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-hover);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -451,7 +451,7 @@ h1 {
     width: 30px;
     text-align: right;
     font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
     font-weight: 500;
 }
 
@@ -467,7 +467,7 @@ h1 {
     height: 32px;
     border-radius: 6px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-bg-hover);
 }
 
 .session-segment {
@@ -476,17 +476,17 @@ h1 {
     justify-content: center;
     font-size: 0.8rem;
     font-weight: 500;
-    color: #fff;
+    color: var(--color-text-primary);
     transition: width 0.5s ease;
     min-width: 40px;
 }
 
 .session-segment:first-child {
-    background: #3b82f6;
+    background: var(--color-info);
 }
 
 .session-segment.travel {
-    background: #a855f7;
+    background: var(--color-purple);
 }
 
 .session-legend {
@@ -499,7 +499,7 @@ h1 {
     align-items: center;
     gap: 8px;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
 }
 
 .legend-dot {
@@ -509,11 +509,11 @@ h1 {
 }
 
 .legend-dot.travel {
-    background: #3b82f6;
+    background: var(--color-info);
 }
 
 .legend-dot.roleplay {
-    background: #a855f7;
+    background: var(--color-purple);
 }
 
 /* 响应式 */

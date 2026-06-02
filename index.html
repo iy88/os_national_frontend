@@ -12,8 +12,25 @@
             background: #0d1b2a;
         }
     </style>
+    <script>
+        // FOUC 防护：在 Vue 挂载前同步设置 data-theme，避免深浅色闪烁
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme-mode');
+                var mode = (saved === 'light' || saved === 'dark' || saved === 'system') ? saved : 'system';
+                var resolved = mode === 'system'
+                    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : mode;
+                document.documentElement.setAttribute('data-theme', resolved);
+                document.documentElement.classList.toggle('dark', resolved === 'dark');
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
 </head>
-<body class="dark">
+<body>
 <div id="app"></div>
 <script src="/src/main.js" type="module"></script>
 </body>

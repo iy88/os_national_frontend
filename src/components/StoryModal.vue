@@ -48,7 +48,7 @@ const renderedStory = computed(() => {
 
 <style scoped>
 .story-content {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     line-height: 1.8;
     font-size: 1rem;
     padding: 10px 0;
@@ -75,26 +75,26 @@ const renderedStory = computed(() => {
 .story-content :deep(blockquote) {
     margin: 12px 0;
     padding: 8px 16px;
-    border-left: 3px solid rgba(240, 179, 68, 0.45);
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(0, 0, 0, 0.15);
+    border-left: 3px solid var(--color-brand-glow-strong);
+    color: var(--color-text-tertiary);
+    background: var(--color-shadow-xs-base);
     border-radius: 4px;
 }
 
 .story-content :deep(strong) {
-    color: #f0b344;
+    color: var(--color-brand);
     font-weight: 600;
 }
 
 .story-content :deep(code) {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--color-shadow-sm-base);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.9em;
 }
 
 .story-content :deep(a) {
-    color: #89c3ff;
+    color: var(--color-info-soft);
     text-decoration: underline;
 }
 </style>
@@ -102,32 +102,32 @@ const renderedStory = computed(() => {
 <!--suppress CssUnusedSymbol -->
 <style>
 .story-modal.el-dialog {
-    background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
-    border: 1px solid rgba(240, 179, 68, 0.25);
+    background: linear-gradient(145deg, var(--color-bg-panel) 0%, var(--color-bg-deep) 100%);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px var(--color-shadow-md-base);
     margin-top: 0 !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
 }
 
 .story-modal .el-dialog__header {
-    border-bottom: 1px solid rgba(240, 179, 68, 0.12);
+    border-bottom: 1px solid var(--color-brand-soft-bg);
     padding: 18px 20px;
 }
 
 .story-modal .el-dialog__title {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .story-modal .el-dialog__headerbtn .el-dialog__close {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
 }
 
 .story-modal .el-dialog__headerbtn:hover .el-dialog__close {
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .story-modal .el-dialog__body {

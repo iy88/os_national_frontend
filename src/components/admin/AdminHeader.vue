@@ -27,6 +27,34 @@
         </div>
 
         <div class="header-right">
+            <!-- 主题切换 -->
+            <button
+                :aria-label="theme.effective === 'dark' ? '切换到浅色模式' : '切换到深色模式'"
+                :title="theme.effective === 'dark' ? '切换到浅色模式' : '切换到深色模式'"
+                class="theme-toggle-btn"
+                type="button"
+                @click="theme.toggle()"
+            >
+                <svg
+                    v-if="theme.effective === 'dark'"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                >
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                </svg>
+                <svg
+                    v-else
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                >
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
             <div
                 v-if="isLoggedIn"
                 :class="{ mobile: isMobile }"
@@ -99,6 +127,28 @@
                     </svg>
                     角色管理
                 </button>
+                <button class="sidebar-btn theme-toggle-sidebar-btn" @click="theme.toggle()">
+                    <svg
+                        v-if="theme.effective === 'dark'"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                    </svg>
+                    <svg
+                        v-else
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <span>{{ theme.effective === 'dark' ? '浅色模式' : '深色模式' }}</span>
+                </button>
             </div>
         </div>
     </header>
@@ -108,10 +158,12 @@
 import {computed, onMounted, onUnmounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useUserStore} from '../../stores/user'
+import {useThemeStore} from '../../stores/theme'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const theme = useThemeStore()
 
 const props = defineProps({
     sidebarOpen: {
@@ -236,8 +288,8 @@ onUnmounted(() => {
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    background: rgba(10, 10, 15, 0.95);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-admin);
+    border-bottom: 1px solid var(--color-border-subtle);
     backdrop-filter: blur(12px);
     position: relative;
     z-index: 100;
@@ -258,7 +310,7 @@ onUnmounted(() => {
     border: none;
     padding: 6px;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -267,8 +319,8 @@ onUnmounted(() => {
 }
 
 .menu-btn:hover:not(:disabled) {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-hover);
 }
 
 .menu-btn:disabled {
@@ -314,11 +366,11 @@ onUnmounted(() => {
 .divider {
     width: 1px;
     height: 24px;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--color-border-strong);
 }
 
 .header-title {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     font-size: 0.95rem;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -327,6 +379,34 @@ onUnmounted(() => {
 .header-right {
     display: flex;
     align-items: center;
+    gap: 8px;
+}
+
+/* 主题切换按钮 */
+.theme-toggle-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-admin-soft-border);
+    border-radius: 8px;
+    color: var(--color-admin);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.theme-toggle-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--color-admin-soft-bg);
+    border-color: var(--color-admin);
+    box-shadow: 0 2px 8px var(--color-admin-glow);
 }
 
 /* 用户头像下拉菜单 */
@@ -348,7 +428,7 @@ onUnmounted(() => {
 }
 
 .user-trigger:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-hover);
 }
 
 .avatar-btn {
@@ -357,25 +437,25 @@ onUnmounted(() => {
     padding: 0;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid rgba(34, 197, 94, 0.5);
+    border: 2px solid var(--color-admin-soft);
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+    box-shadow: 0 2px 8px var(--color-admin-glow);
     background: transparent;
 }
 
 .avatar-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 4px 12px var(--color-admin-soft-border-hover);
 }
 
 .user-trigger:hover .avatar-btn {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 4px 12px var(--color-admin-soft-border-hover);
 }
 
 .user-trigger:hover .username-text {
-    color: #4ade80;
+    color: var(--color-admin);
 }
 
 .avatar-btn img {
@@ -387,13 +467,13 @@ onUnmounted(() => {
 .avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: rgba(34, 197, 94, 0.2);
+    background: var(--color-admin-soft-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #4ade80;
+    color: var(--color-admin);
 }
 
 .username-text {
@@ -401,7 +481,7 @@ onUnmounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     font-size: 0.9rem;
     line-height: 1;
     transition: color 0.2s;
@@ -414,11 +494,11 @@ onUnmounted(() => {
     transform: translateX(-50%);
     min-width: 100px;
     width: max-content;
-    background: rgba(15, 15, 20, 0.98);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    background: var(--color-bg-admin-mid);
+    border: 1px solid var(--color-admin-soft-border);
     border-radius: 8px;
     padding: 4px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--color-shadow-md);
     z-index: 320;
     animation: dropdownFadeIn 0.15s ease;
 }
@@ -431,9 +511,9 @@ onUnmounted(() => {
     transform: translateX(-50%) rotate(45deg);
     width: 10px;
     height: 10px;
-    background: rgba(15, 15, 20, 0.98);
-    border-left: 1px solid rgba(34, 197, 94, 0.2);
-    border-top: 1px solid rgba(34, 197, 94, 0.2);
+    background: var(--color-bg-admin-mid);
+    border-left: 1px solid var(--color-admin-soft-border);
+    border-top: 1px solid var(--color-admin-soft-border);
 }
 
 @keyframes dropdownFadeIn {
@@ -474,7 +554,7 @@ onUnmounted(() => {
     background: transparent;
     border: none;
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -483,33 +563,34 @@ onUnmounted(() => {
 .dropdown-item svg {
     width: 16px;
     height: 16px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     flex-shrink: 0;
 }
 
 .dropdown-item:hover {
-    background: rgba(34, 197, 94, 0.12);
-    color: #fff;
+    background: var(--color-admin-soft-bg);
+    color: var(--color-text-primary);
 }
 
 .dropdown-item:hover svg {
-    color: #4ade80;
+    color: var(--color-admin);
 }
 
 .dropdown-item.logout {
-    color: #f87171;
+    color: var(--color-danger);
 }
 
 .dropdown-item.logout svg {
-    color: rgba(248, 113, 113, 0.7);
+    color: var(--color-danger-soft);
 }
 
 .dropdown-item.logout:hover {
-    background: rgba(248, 113, 113, 0.12);
+    background: var(--color-admin-soft-bg);
+    color: var(--color-admin);
 }
 
 .dropdown-item.logout:hover svg {
-    color: #f87171;
+    color: var(--color-admin);
 }
 
 /* 移动端导航按钮 */
@@ -518,7 +599,7 @@ onUnmounted(() => {
     height: 40px;
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -532,8 +613,8 @@ onUnmounted(() => {
 }
 
 .hamburger-btn:hover:not(:disabled) {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-hover);
 }
 
 .hamburger-btn:disabled {
@@ -548,7 +629,7 @@ onUnmounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--color-overlay-strong);
     z-index: 200;
     animation: fadeIn 0.2s ease;
 }
@@ -569,12 +650,12 @@ onUnmounted(() => {
     left: 0;
     width: 280px;
     height: 100vh;
-    background: linear-gradient(145deg, #1a1a1f 0%, #0d0d10 100%);
-    border-right: 1px solid rgba(34, 197, 94, 0.15);
+    background: var(--gradient-panel-admin);
+    border-right: 1px solid var(--color-admin-soft-bg);
     z-index: 201;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--color-shadow-lg);
 }
 
 .sidebar.open {
@@ -586,11 +667,11 @@ onUnmounted(() => {
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid rgba(34, 197, 94, 0.15);
+    border-bottom: 1px solid var(--color-admin-soft-bg);
 }
 
 .sidebar-title {
-    color: #4ade80;
+    color: var(--color-admin);
     font-size: 1.1rem;
     font-weight: 600;
 }
@@ -598,10 +679,10 @@ onUnmounted(() => {
 .close-btn {
     width: 36px;
     height: 36px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -616,8 +697,8 @@ onUnmounted(() => {
 
 .close-btn:hover {
     background: rgba(230, 57, 70, 0.2);
-    border-color: rgba(230, 57, 70, 0.4);
-    color: #e63946;
+    border-color: var(--color-brand-secondary);
+    color: var(--color-brand-secondary);
 }
 
 .sidebar-content {
@@ -632,10 +713,10 @@ onUnmounted(() => {
     align-items: center;
     gap: 12px;
     padding: 14px 18px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
@@ -645,23 +726,29 @@ onUnmounted(() => {
 .sidebar-btn svg {
     width: 22px;
     height: 22px;
-    color: #4ade80;
+    color: var(--color-admin);
 }
 
 .sidebar-btn:hover {
-    background: rgba(34, 197, 94, 0.1);
-    border-color: rgba(34, 197, 94, 0.3);
+    background: var(--color-admin-soft-bg);
+    border-color: var(--color-admin-soft-border-hover);
     transform: translateX(4px);
 }
 
 .sidebar-btn.active {
-    background: linear-gradient(145deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
-    border-color: rgba(34, 197, 94, 0.4);
-    color: #fff;
+    background: var(--gradient-admin-soft);
+    border-color: var(--color-admin-soft-border-hover);
+    color: var(--color-text-primary);
 }
 
 .sidebar-btn.active svg {
-    color: #4ade80;
+    color: var(--color-admin);
+}
+
+.theme-toggle-sidebar-btn {
+    margin-top: 12px;
+    border-top: 1px dashed var(--color-border-subtle);
+    padding-top: 18px;
 }
 
 @media (max-width: 768px) {

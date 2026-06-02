@@ -82,7 +82,7 @@ const handleSubmit = async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #09090b;
+    background: var(--color-bg-admin);
     position: relative;
     overflow: hidden;
 }
@@ -95,7 +95,7 @@ const handleSubmit = async () => {
     right: -10%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.05) 40%, transparent 70%);
+    background: radial-gradient(circle, var(--color-admin-soft-bg) 0%, var(--color-admin-soft-bg) 40%, transparent 70%);
     filter: blur(80px);
     z-index: 0;
 }
@@ -108,7 +108,7 @@ const handleSubmit = async () => {
     left: -10%;
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, var(--color-orange-soft) 0%, transparent 70%);
     filter: blur(100px);
     z-index: 0;
 }
@@ -120,11 +120,11 @@ const handleSubmit = async () => {
     max-width: 380px;
     padding: 40px;
     background: rgba(17, 17, 17, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--color-border-divider);
     border-radius: 12px;
     backdrop-filter: blur(20px);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    box-shadow: 0 25px 50px -12px var(--color-overlay),
+    0 0 0 1px var(--color-bg-subtle) inset;
 }
 
 .header {
@@ -134,19 +134,19 @@ const handleSubmit = async () => {
 .label-tag {
     display: inline-block;
     padding: 4px 8px;
-    background: rgba(34, 197, 94, 0.15);
-    color: #4ade80;
+    background: var(--color-admin-soft-bg);
+    color: var(--color-admin);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-radius: 4px;
     margin-bottom: 12px;
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    border: 1px solid var(--color-admin-soft-bg);
 }
 
 h2 {
-    color: #fafafa;
+    color: var(--color-text-primary);
     font-size: 26px;
     font-weight: 600;
     margin-bottom: 6px;
@@ -154,7 +154,7 @@ h2 {
 }
 
 .subtitle {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     font-size: 14px;
     line-height: 1.5;
 }
@@ -165,7 +165,7 @@ h2 {
 
 .form-group label {
     display: block;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     font-size: 12px;
     font-weight: 500;
     margin-bottom: 6px;
@@ -176,8 +176,8 @@ h2 {
 .form-group input {
     width: 100%;
     padding: 10px 14px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     color: #e4e4e7;
     font-size: 15px;
@@ -186,16 +186,16 @@ h2 {
 }
 
 .form-group input:focus {
-    border-color: rgba(34, 197, 94, 0.5);
-    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1);
+    border-color: var(--color-admin-soft-bg);
+    box-shadow: 0 0 0 2px var(--color-admin-soft-bg);
 }
 
 .form-group input::placeholder {
-    color: rgba(255, 255, 255, 0.25);
+    color: var(--color-border-strong);
 }
 
 .error {
-    color: #f87171;
+    color: var(--color-danger);
     font-size: 13px;
     margin-bottom: 16px;
     text-align: center;
@@ -204,21 +204,21 @@ h2 {
 .submit-btn {
     width: 100%;
     padding: 12px;
-    background: #22c55e;
+    background: var(--color-admin-hover);
     border: none;
     border-radius: 6px;
-    color: #000;
+    color: var(--color-text-on-brand);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.25);
+    box-shadow: 0 4px 20px var(--color-admin-soft-bg);
 }
 
 .submit-btn:hover:not(:disabled) {
-    background: #4ade80;
+    background: var(--color-admin);
     transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(34, 197, 94, 0.35);
+    box-shadow: 0 6px 24px var(--color-admin-soft-bg);
 }
 
 .submit-btn:active {

@@ -695,7 +695,7 @@ onUnmounted(() => {
     min-height: 0;
     width: 100%;
     overflow: hidden;
-    background: linear-gradient(180deg, #141e37 0%, #0f1a2a 100%);
+    background: linear-gradient(180deg, var(--color-bg-deep-alt) 0%, var(--color-bg-deep) 100%);
 }
 
 .sidebar-shell {
@@ -734,22 +734,22 @@ onUnmounted(() => {
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background: rgba(20, 30, 55, 0.72);
-    border: 1px solid rgba(240, 179, 68, 0.16);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-brand-soft-bg);
     border-radius: 12px;
 }
 
 .topbar-title h2 {
     margin: 0;
     font-size: 0.98rem;
-    color: #f0b344;
+    color: var(--color-brand);
     font-weight: 600;
 }
 
 .topbar-title p {
     margin: 2px 0 0;
     font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.48);
+    color: var(--color-text-disabled);
 }
 
 .history-btn {
@@ -758,9 +758,9 @@ onUnmounted(() => {
     gap: 6px;
     padding: 8px 12px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(15, 26, 42, 0.88);
-    color: rgba(255, 255, 255, 0.86);
+    border: 1px solid var(--color-border-input);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-tertiary);
     cursor: pointer;
 }
 
@@ -794,19 +794,19 @@ onUnmounted(() => {
     width: 72px;
     height: 72px;
     border-radius: 18px;
-    background: linear-gradient(135deg, #f0b344, #e63946);
+    background: var(--gradient-brand);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     margin-bottom: 18px;
-    box-shadow: 0 8px 32px rgba(240, 179, 68, 0.25);
+    box-shadow: 0 8px 32px var(--color-brand-soft-border);
 }
 
 .welcome-title {
     margin: 0 0 10px;
     font-size: 1.32rem;
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--color-text-primary);
 }
 
 .welcome-text {
@@ -814,13 +814,13 @@ onUnmounted(() => {
     max-width: 460px;
     font-size: 0.9rem;
     line-height: 1.65;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--color-text-placeholder);
 }
 
 .sidebar-mask {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--color-overlay);
     z-index: 25;
 }
 
@@ -832,7 +832,7 @@ onUnmounted(() => {
         bottom: 0;
         transform: translateX(-100%);
         transition: transform 0.25s ease;
-        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.35);
+        box-shadow: 10px 0 30px var(--color-shadow-md-base);
     }
 
     .route-plan-view.compact .sidebar-shell.open {

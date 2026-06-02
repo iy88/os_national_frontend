@@ -141,8 +141,8 @@ const handleLogout = () => {
 .profile-sidebar {
     width: 260px;
     flex-shrink: 0;
-    background: rgba(20, 30, 55, 0.62);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 12px;
     padding: 20px;
     display: flex;
@@ -150,8 +150,8 @@ const handleLogout = () => {
     height: fit-content;
     position: sticky;
     top: 104px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: 0 4px 16px var(--color-shadow-xs-base),
+    inset 0 1px 0 var(--color-bg-subtle);
 }
 
 .sidebar-header {
@@ -159,7 +159,7 @@ const handleLogout = () => {
     align-items: center;
     gap: 14px;
     padding-bottom: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--color-border-subtle);
     margin-bottom: 20px;
 }
 
@@ -168,15 +168,15 @@ const handleLogout = () => {
     height: 52px;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid #f0b344;
+    border: 2px solid var(--color-brand);
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.25);
+    box-shadow: 0 2px 8px var(--color-brand-soft-border);
 }
 
 .user-avatar:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.35);
+    box-shadow: 0 4px 12px var(--color-brand-soft-border);
 }
 
 .user-avatar img {
@@ -188,13 +188,13 @@ const handleLogout = () => {
 .avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
+    background: linear-gradient(145deg, var(--color-brand) 0%, #e63946 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.4rem;
     font-weight: bold;
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .user-info {
@@ -204,15 +204,15 @@ const handleLogout = () => {
 }
 
 .username {
-    color: #fff;
+    color: var(--color-text-primary);
     font-size: 1rem;
     font-weight: 600;
 }
 
 .user-level {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 0.8rem;
-    background: rgba(240, 179, 68, 0.12);
+    background: var(--color-brand-soft-bg);
     padding: 2px 8px;
     border-radius: 4px;
     width: fit-content;
@@ -230,7 +230,7 @@ const handleLogout = () => {
 }
 
 .nav-section-title {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -244,7 +244,7 @@ const handleLogout = () => {
     gap: 12px;
     padding: 12px 14px;
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     text-decoration: none;
     font-size: 0.95rem;
     transition: all 0.2s ease;
@@ -252,15 +252,15 @@ const handleLogout = () => {
 }
 
 .nav-item:hover {
-    background: rgba(240, 179, 68, 0.08);
-    color: rgba(255, 255, 255, 0.9);
-    border-color: rgba(240, 179, 68, 0.15);
+    background: var(--color-brand-soft-bg);
+    color: var(--color-text-secondary);
+    border-color: var(--color-brand-soft-bg);
 }
 
 .nav-item.active {
-    background: linear-gradient(145deg, rgba(240, 179, 68, 0.15) 0%, rgba(230, 57, 70, 0.1) 100%);
-    color: #f0b344;
-    border-color: rgba(240, 179, 68, 0.3);
+    background: var(--color-brand-soft-bg);
+    color: var(--color-brand);
+    border-color: var(--color-brand-soft-border);
 }
 
 .nav-icon {
@@ -277,13 +277,13 @@ const handleLogout = () => {
 }
 
 .nav-item.active .nav-icon {
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 /* 底部 */
 .sidebar-footer {
     padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--color-border-subtle);
     margin-top: 20px;
 }
 
@@ -294,10 +294,10 @@ const handleLogout = () => {
     justify-content: center;
     gap: 10px;
     padding: 12px;
-    background: rgba(230, 57, 70, 0.1);
-    border: 1px solid rgba(230, 57, 70, 0.2);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
-    color: #e63946;
+    color: var(--color-brand-secondary);
     font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
@@ -310,8 +310,8 @@ const handleLogout = () => {
 }
 
 .logout-btn:hover {
-    background: rgba(230, 57, 70, 0.2);
-    border-color: rgba(230, 57, 70, 0.35);
+    background: var(--color-brand-secondary-soft);
+    border-color: var(--color-brand-secondary-soft);
     transform: translateY(-1px);
 }
 
@@ -327,27 +327,27 @@ const handleLogout = () => {
 }
 
 .page-title {
-    color: #fff;
+    color: var(--color-text-primary);
     font-size: 1.5rem;
     font-weight: 600;
     margin: 0 0 6px 0;
 }
 
 .page-desc {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     font-size: 0.9rem;
     margin: 0;
 }
 
 .content-card {
-    background: rgba(20, 30, 55, 0.62);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 12px;
     width: 100%;
     padding: 28px;
     min-height: 500px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: 0 4px 16px var(--color-shadow-xs-base),
+    inset 0 1px 0 var(--color-bg-subtle);
 }
 
 /* 未登录提示 */
@@ -363,29 +363,29 @@ const handleLogout = () => {
 .prompt-icon {
     width: 64px;
     height: 64px;
-    color: rgba(240, 179, 68, 0.5);
+    color: var(--color-brand-glow-strong);
     margin-bottom: 20px;
 }
 
 .login-prompt p {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     margin-bottom: 24px;
     font-size: 1rem;
 }
 
 .login-btn {
-    background: linear-gradient(145deg, #f0b344 0%, #d4962e 100%);
+    background: linear-gradient(145deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
     border: none;
     border-radius: 8px;
     padding: 12px 32px;
     font-size: 0.95rem;
     font-weight: 500;
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.3);
+    box-shadow: 0 2px 8px var(--color-brand-soft-border);
 }
 
 .login-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(240, 179, 68, 0.4);
+    box-shadow: 0 4px 14px var(--color-brand-glow-strong);
 }
 
 /* 响应式 */

@@ -389,16 +389,16 @@ onUnmounted(() => {
     overflow: hidden;
     background: linear-gradient(
         180deg,
-        rgba(20, 30, 55, 0.96),
-        rgba(15, 26, 42, 0.94)
+        var(--color-bg-elevated),
+        var(--color-bg-elevated)
     );
-    border-right: 1px solid rgba(240, 179, 68, 0.15);
+    border-right: 1px solid var(--color-brand-soft-bg);
 }
 
 .sidebar-header {
     flex-shrink: 0;
     padding: 14px 14px 12px;
-    border-bottom: 1px solid rgba(240, 179, 68, 0.12);
+    border-bottom: 1px solid var(--color-brand-soft-bg);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -408,14 +408,14 @@ onUnmounted(() => {
 .sidebar-title-wrap h3 {
     margin: 0;
     font-size: 0.92rem;
-    color: #f0b344;
+    color: var(--color-brand);
     font-weight: 600;
 }
 
 .sidebar-title-wrap p {
     margin: 2px 0 0;
     font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--color-text-disabled);
 }
 
 .new-chat-btn {
@@ -423,20 +423,20 @@ onUnmounted(() => {
     align-items: center;
     gap: 6px;
     padding: 9px 11px;
-    background: linear-gradient(145deg, #f0b344 0%, #e7a22f 100%);
+    background: linear-gradient(145deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
     border: none;
     border-radius: 10px;
-    color: #0f1a2a;
+    color: var(--color-bg-deep);
     font-size: 0.78rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.28);
+    box-shadow: 0 4px 12px var(--color-brand-soft-border);
     transition: all 0.2s ease;
 }
 
 .new-chat-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(240, 179, 68, 0.36);
+    box-shadow: 0 6px 16px var(--color-brand-soft-border);
 }
 
 .session-list {
@@ -467,15 +467,15 @@ onUnmounted(() => {
 }
 
 .session-list.scrollbar-visible {
-    scrollbar-color: rgba(240, 179, 68, 0.45) transparent;
+    scrollbar-color: var(--color-brand-glow-strong) transparent;
 }
 
 .session-list.scrollbar-visible::-webkit-scrollbar-thumb {
-    background: rgba(240, 179, 68, 0.45);
+    background: var(--color-brand-glow-strong);
 }
 
 .session-list.scrollbar-visible::-webkit-scrollbar-thumb:hover {
-    background: rgba(240, 179, 68, 0.68);
+    background: var(--color-brand-glow-strong);
 }
 
 .session-group {
@@ -484,7 +484,7 @@ onUnmounted(() => {
 
 .group-title {
     font-size: 0.69rem;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--color-text-disabled);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 8px 10px;
@@ -508,17 +508,17 @@ onUnmounted(() => {
 }
 
 .session-item:hover {
-    background: rgba(240, 179, 68, 0.08);
-    border-color: rgba(240, 179, 68, 0.14);
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand-soft-bg);
 }
 
 .session-item.active {
     background: linear-gradient(
         135deg,
-        rgba(240, 179, 68, 0.15),
-        rgba(14, 165, 233, 0.09)
+        var(--color-brand-soft-bg),
+        var(--color-info-soft)
     );
-    border-color: rgba(240, 179, 68, 0.26);
+    border-color: var(--color-brand-soft-border);
 }
 
 .session-item.active::before {
@@ -529,21 +529,21 @@ onUnmounted(() => {
     transform: translateY(-50%);
     width: 3px;
     height: 60%;
-    background: #f0b344;
+    background: var(--color-brand);
     border-radius: 0 2px 2px 0;
 }
 
 .session-icon {
     width: 28px;
     height: 28px;
-    background: rgba(20, 30, 55, 0.7);
+    background: var(--color-bg-input);
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.8rem;
     flex-shrink: 0;
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .session-icon svg {
@@ -558,7 +558,7 @@ onUnmounted(() => {
 
 .session-title {
     font-size: 0.84rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -567,20 +567,20 @@ onUnmounted(() => {
 
 .session-date {
     font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.46);
+    color: var(--color-text-disabled);
 }
 
 .incomplete-badge {
     width: 16px;
     height: 16px;
-    background: #e63946;
+    background: var(--color-brand-secondary);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.64rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--color-text-primary);
     flex-shrink: 0;
 }
 
@@ -590,7 +590,7 @@ onUnmounted(() => {
     border-radius: 6px;
     border: none;
     background: transparent;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -605,17 +605,17 @@ onUnmounted(() => {
 }
 
 .edit-title-btn:hover {
-    background: rgba(240, 179, 68, 0.15);
-    color: #f0b344;
+    background: var(--color-brand-soft-bg);
+    color: var(--color-brand);
 }
 
 .edit-title-btn.confirm {
-    color: #4ade80;
+    color: var(--color-admin);
 }
 
 .edit-title-btn.confirm:hover {
     background: rgba(74, 222, 128, 0.15);
-    color: #4ade80;
+    color: var(--color-admin);
 }
 
 .edit-title-btn svg {
@@ -630,17 +630,17 @@ onUnmounted(() => {
 .title-input {
     width: 100%;
     padding: 4px 8px;
-    border: 1px solid rgba(240, 179, 68, 0.4);
+    border: 1px solid var(--color-brand-glow-strong);
     border-radius: 4px;
-    background: rgba(15, 26, 42, 0.88);
-    color: rgba(255, 255, 255, 0.95);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-primary);
     font-size: 0.84rem;
     outline: none;
 }
 
 .title-input:focus {
-    border-color: #f0b344;
-    box-shadow: 0 0 0 2px rgba(240, 179, 68, 0.2);
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 2px var(--color-brand-soft-border);
 }
 
 .empty-state {
@@ -648,13 +648,13 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     padding: 40px 20px;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--color-text-disabled);
     font-size: 0.84rem;
 }
 
 @media (max-width: 900px) {
     .conversation-sidebar {
-        border-right: 1px solid rgba(240, 179, 68, 0.15);
+        border-right: 1px solid var(--color-brand-soft-bg);
     }
 
     .edit-title-btn {

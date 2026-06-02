@@ -681,7 +681,7 @@ watch(currentPage, () => {
 .roles-page {
     height: 100%;
     padding: 32px 40px;
-    background: #09090b;
+    background: var(--color-bg-admin);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -696,7 +696,7 @@ watch(currentPage, () => {
     right: -10%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.05) 40%, transparent 70%);
+    background: radial-gradient(circle, var(--color-admin-soft-bg) 0%, var(--color-admin-soft-bg) 40%, transparent 70%);
     filter: blur(80px);
     z-index: 0;
 }
@@ -709,7 +709,7 @@ watch(currentPage, () => {
     left: -10%;
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, var(--color-orange-soft) 0%, transparent 70%);
     filter: blur(100px);
     z-index: 0;
 }
@@ -722,14 +722,14 @@ watch(currentPage, () => {
 }
 
 h1 {
-    color: #fafafa;
+    color: var(--color-text-primary);
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 4px;
 }
 
 .subtitle {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     font-size: 0.9rem;
 }
 
@@ -753,16 +753,16 @@ h1 {
 }
 
 .category-tabs :deep(.el-radio-button__inner) {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--color-bg-hover);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
 }
 
 .category-tabs :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-    background: linear-gradient(145deg, rgba(34, 197, 94, 0.3) 0%, rgba(34, 197, 94, 0.2) 100%);
-    border-color: rgba(34, 197, 94, 0.5);
-    color: #fff;
-    box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+    background: linear-gradient(145deg, var(--color-admin-soft-bg) 0%, var(--color-admin-soft-bg) 100%);
+    border-color: var(--color-admin-soft-bg);
+    color: var(--color-text-primary);
+    box-shadow: 0 0 12px var(--color-admin-soft-bg);
 }
 
 .search-input {
@@ -771,30 +771,30 @@ h1 {
 }
 
 .search-input :deep(.el-input__wrapper) {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-hover);
+    border-color: var(--color-border);
     box-shadow: none;
 }
 
 .search-input :deep(.el-input__wrapper:hover) {
-    border-color: rgba(34, 197, 94, 0.4);
+    border-color: var(--color-admin-soft-bg);
 }
 
 .search-input :deep(.el-input__wrapper.is-focus) {
-    border-color: rgba(34, 197, 94, 0.6);
-    box-shadow: 0 0 12px rgba(34, 197, 94, 0.2);
+    border-color: var(--color-admin-soft-bg);
+    box-shadow: 0 0 12px var(--color-admin-soft-bg);
 }
 
 .search-input :deep(.el-input__inner) {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
 }
 
 .search-input :deep(.el-input__inner::placeholder) {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
 }
 
 .search-input :deep(.el-icon) {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
 }
 
 .table-container {
@@ -829,36 +829,36 @@ h1 {
 
 .pagination-container :deep(.el-pagination) {
     background: transparent;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
 }
 
 .pagination-container :deep(.el-pagination button) {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.8);
+    background: var(--color-bg-hover);
+    color: var(--color-text-tertiary);
 }
 
 .pagination-container :deep(.el-pagination button:hover) {
-    background: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
+    background: var(--color-admin-soft-bg);
+    color: var(--color-admin);
 }
 
 .pagination-container :deep(.el-pager li) {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.8);
+    background: var(--color-bg-hover);
+    color: var(--color-text-tertiary);
 }
 
 .pagination-container :deep(.el-pager li:hover) {
-    background: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
+    background: var(--color-admin-soft-bg);
+    color: var(--color-admin);
 }
 
 .pagination-container :deep(.el-pager li.is-active) {
-    background: rgba(34, 197, 94, 0.3);
-    color: #4ade80;
+    background: var(--color-admin-soft-bg);
+    color: var(--color-admin);
 }
 
 .roles-table {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--color-bg-admin-mid);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -868,10 +868,10 @@ h1 {
 }
 
 .roles-table :deep(.el-table__header-wrapper th) {
-    background: #064e3b;
-    color: #fff;
+    background: rgba(22, 163, 74, 0.18);
+    color: var(--color-text-primary);
     font-weight: 600;
-    border-bottom: 1px solid rgba(34, 197, 94, 0.5);
+    border-bottom: 1px solid var(--color-admin-soft-border);
     border-top: none !important;
 }
 
@@ -880,24 +880,24 @@ h1 {
 }
 
 .roles-table :deep(.el-table__body-wrapper tr) {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-bg-admin-mid);
 }
 
 .roles-table :deep(.el-table__body-wrapper td) {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.85);
+    border-bottom: 1px solid var(--color-border-subtle);
+    color: var(--color-text-tertiary);
 }
 
 .roles-table :deep(.el-table__body-wrapper tr:hover > td) {
-    background: rgba(34, 197, 94, 0.1);
+    background: var(--color-admin-soft-bg);
 }
 
 .roles-table :deep(.el-table__row--striped td) {
-    background: rgba(255, 255, 255, 0.02) !important;
+    background: var(--color-bg-admin-deep) !important;
 }
 
 .roles-table :deep(.el-table__row--striped:hover > td) {
-    background: rgba(34, 197, 94, 0.1) !important;
+    background: var(--color-admin-soft-bg) !important;
 }
 
 .avatar {
@@ -905,26 +905,26 @@ h1 {
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--color-border);
 }
 
 .avatar-placeholder {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
+    background: linear-gradient(145deg, var(--color-brand) 0%, #e63946 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
     font-weight: bold;
-    color: #fff;
+    color: var(--color-text-primary);
     margin: 0 auto;
 }
 
 .time-text {
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
 }
 
 .type-tag {
@@ -945,9 +945,9 @@ h1 {
 
 .edit-btn {
     padding: 4px 10px;
-    background: rgba(240, 179, 68, 0.12) !important;
-    border: 1px solid rgba(240, 179, 68, 0.25) !important;
-    color: #f0b344 !important;
+    background: var(--color-brand-soft-bg) !important;
+    border: 1px solid var(--color-brand-soft-border) !important;
+    color: var(--color-brand) !important;
     font-size: 0.8rem;
     border-radius: 4px;
     cursor: pointer;
@@ -957,15 +957,15 @@ h1 {
 }
 
 .edit-btn:hover {
-    background: rgba(240, 179, 68, 0.22) !important;
-    border-color: rgba(240, 179, 68, 0.4) !important;
+    background: var(--color-brand-soft-border) !important;
+    border-color: var(--color-brand-glow-strong) !important;
 }
 
 .delete-btn {
     padding: 4px 10px;
-    background: rgba(230, 57, 70, 0.12) !important;
-    border: 1px solid rgba(230, 57, 70, 0.25) !important;
-    color: #e63946 !important;
+    background: rgba(214, 57, 70, 0.1) !important;
+    border: 1px solid rgba(214, 57, 70, 0.3) !important;
+    color: var(--color-brand-secondary) !important;
     font-size: 0.8rem;
     font-weight: 500;
     border-radius: 4px;
@@ -975,13 +975,14 @@ h1 {
 }
 
 .delete-btn:hover {
-    background: rgba(230, 57, 70, 0.22) !important;
-    border-color: rgba(230, 57, 70, 0.4) !important;
+    background: var(--color-brand-secondary) !important;
+    border-color: var(--color-brand-secondary) !important;
+    color: #fff !important;
 }
 
 :deep(mark) {
-    background: rgba(240, 179, 68, 0.4);
-    color: #fff;
+    background: var(--color-brand-glow-strong);
+    color: var(--color-text-primary);
     padding: 0 2px;
     border-radius: 2px;
 }
@@ -1055,22 +1056,22 @@ h1 {
 }
 
 .role-form :deep(.el-form-item__label) {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
 }
 
 .role-form :deep(.el-input__wrapper) {
-    background: rgba(0, 0, 0, 0.4) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
+    background: var(--color-shadow-md-base) !important;
+    border-color: var(--color-border-input) !important;
 }
 
 .role-form :deep(.el-textarea__inner) {
-    background: rgba(0, 0, 0, 0.4) !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    background: var(--color-shadow-md-base) !important;
+    border-color: var(--color-border-input) !important;
+    color: var(--color-text-secondary) !important;
 }
 
 .role-form :deep(.el-radio__label) {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
 }
 
 /* 类型选择器 */
@@ -1087,13 +1088,13 @@ h1 {
     cursor: pointer;
     font-size: 14px;
     transition: all 0.2s;
-    color: rgba(255, 255, 255, 0.5);
-    border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-placeholder);
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-hover);
 }
 
 .type-selector .type-tag:hover {
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: var(--color-text-disabled);
 }
 
 .type-selector .type-tag.active {
@@ -1139,8 +1140,8 @@ h1 {
 }
 
 .avatar-uploader :deep(.el-upload-dragger) {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px dashed rgba(255, 255, 255, 0.2);
+    background: var(--color-shadow-sm-base);
+    border: 1px dashed var(--color-border-strong);
     border-radius: 8px;
     width: 100%;
     height: 100%;
@@ -1152,12 +1153,12 @@ h1 {
 }
 
 .avatar-uploader :deep(.el-upload-dragger:hover) {
-    border-color: #4ade80;
+    border-color: var(--color-admin);
 }
 
 .avatar-uploader :deep(.el-upload-dragger.is-dragover) {
-    background: rgba(34, 197, 94, 0.15);
-    border-color: #4ade80;
+    background: var(--color-admin-soft-bg);
+    border-color: var(--color-admin);
 }
 
 .avatar-upload-content {
@@ -1171,14 +1172,14 @@ h1 {
 
 .avatar-upload-text {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     line-height: 1.2;
     text-align: center;
 }
 
 .avatar-uploader-icon {
     font-size: 24px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
 }
 
 .avatar-preview {
@@ -1217,8 +1218,8 @@ h1 {
     right: 2px;
     width: 18px;
     height: 18px;
-    background: rgba(230, 57, 70, 0.9);
-    color: #fff;
+    background: var(--color-brand-secondary-soft);
+    color: var(--color-text-primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1246,8 +1247,8 @@ h1 {
 }
 
 .image-uploader :deep(.el-upload-dragger) {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px dashed rgba(255, 255, 255, 0.2);
+    background: var(--color-shadow-sm-base);
+    border: 1px dashed var(--color-border-strong);
     border-radius: 6px;
     width: 100%;
     height: 100%;
@@ -1259,12 +1260,12 @@ h1 {
 }
 
 .image-uploader :deep(.el-upload-dragger:hover) {
-    border-color: #4ade80;
+    border-color: var(--color-admin);
 }
 
 .image-uploader :deep(.el-upload-dragger.is-dragover) {
-    background: rgba(34, 197, 94, 0.15);
-    border-color: #4ade80;
+    background: var(--color-admin-soft-bg);
+    border-color: var(--color-admin);
 }
 
 .image-upload-content {
@@ -1278,14 +1279,14 @@ h1 {
 
 .image-upload-text {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     line-height: 1.2;
     text-align: center;
 }
 
 .image-uploader-icon {
     font-size: 20px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
 }
 
 /* 常用语列表 */
@@ -1300,15 +1301,15 @@ h1 {
     display: flex;
     align-items: center;
     gap: 4px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     padding: 4px 8px;
     max-width: 200px;
 }
 
 .phrase-text {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
@@ -1317,20 +1318,20 @@ h1 {
 }
 
 .phrase-text:hover {
-    color: #4ade80;
+    color: var(--color-admin);
 }
 
 .phrase-input {
     background: transparent;
     border: none;
     outline: none;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     font-size: 14px;
     width: 160px;
 }
 
 .phrase-delete {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     cursor: pointer;
     font-size: 14px;
     line-height: 1;
@@ -1345,18 +1346,18 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border: 1px dashed var(--color-border-strong);
     border-radius: 4px;
     padding: 4px 12px;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     font-size: 14px;
     transition: all 0.2s;
 }
 
 .phrase-add:hover {
-    border-color: #4ade80;
-    color: #4ade80;
+    border-color: var(--color-admin);
+    color: var(--color-admin);
 }
 
 </style>
@@ -1364,6 +1365,6 @@ h1 {
 <!-- 全局覆盖 Element Plus 斑马条纹 -->
 <style>
 .roles-table.el-table--striped .el-table__body tr.el-table__row--striped td {
-    background: rgba(255, 255, 255, 0.02) !important;
+    background: var(--color-border-faint) !important;
 }
 </style>

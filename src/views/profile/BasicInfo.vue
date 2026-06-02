@@ -350,15 +350,15 @@ const saveAll = async () => {
 }
 
 .info-card {
-    background: rgba(20, 30, 55, 0.52);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 10px;
     padding: 24px;
 }
 
 .loading {
     text-align: center;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     padding: 40px 0;
 }
 
@@ -368,11 +368,11 @@ const saveAll = async () => {
     justify-content: space-between;
     margin-bottom: 20px;
     padding-bottom: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .card-title {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1rem;
     font-weight: 600;
     margin: 0;
@@ -397,15 +397,15 @@ const saveAll = async () => {
     height: 88px;
     border-radius: 50%;
     overflow: hidden;
-    border: 3px solid #f0b344;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    border: 3px solid var(--color-brand);
+    box-shadow: 0 4px 16px var(--color-shadow-sm-base);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .avatar-wrapper:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(240, 179, 68, 0.3);
+    box-shadow: 0 6px 20px var(--color-brand-soft-border);
 }
 
 .avatar-wrapper img {
@@ -417,13 +417,13 @@ const saveAll = async () => {
 .avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
+    background: linear-gradient(145deg, var(--color-brand) 0%, #e63946 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     font-weight: bold;
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .avatar-actions {
@@ -433,7 +433,7 @@ const saveAll = async () => {
 }
 
 .avatar-hint {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     font-size: 0.85rem;
     margin: 0;
 }
@@ -443,10 +443,10 @@ const saveAll = async () => {
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: rgba(240, 179, 68, 0.1);
-    border: 1px solid rgba(240, 179, 68, 0.25);
+    background: var(--color-brand-soft-bg);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 6px;
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -458,13 +458,13 @@ const saveAll = async () => {
 }
 
 .upload-btn:hover {
-    background: rgba(240, 179, 68, 0.2);
-    border-color: rgba(240, 179, 68, 0.4);
+    background: var(--color-brand-soft-border);
+    border-color: var(--color-brand-glow-strong);
 }
 
 /* 头像上传弹窗 */
 .basic-info .upload-modal .el-dialog {
-    background: #1a2642;
+    background: var(--color-bg-panel-alt);
     border-radius: 12px;
     width: 680px;
     max-width: 90vw;
@@ -492,8 +492,8 @@ const saveAll = async () => {
 }
 
 .basic-info .avatar-upload :deep(.el-upload-dragger) {
-    background: rgba(74, 158, 255, 0.08);
-    border: 2px dashed rgba(74, 158, 255, 0.65);
+    background: var(--color-info-soft);
+    border: 2px dashed var(--color-info-soft);
     border-radius: 8px;
     padding: 0;
     transition: all 0.2s;
@@ -507,8 +507,8 @@ const saveAll = async () => {
 
 .basic-info .avatar-upload :deep(.el-upload-dragger:hover),
 .basic-info .avatar-upload :deep(.el-upload-dragger.is-dragover) {
-    border-color: rgba(74, 158, 255, 0.9);
-    background: rgba(74, 158, 255, 0.2);
+    border-color: var(--color-info-soft);
+    background: var(--color-info-soft);
 }
 
 .basic-info .upload-content {
@@ -525,19 +525,19 @@ const saveAll = async () => {
     max-height: 48px;
     min-width: 36px;
     min-height: 36px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     margin-bottom: 12px;
 }
 
 .basic-info .upload-content p {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     margin: 0;
     font-size: 0.95rem;
 }
 
 .basic-info .upload-hint {
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     margin-top: 6px;
 }
 
@@ -555,7 +555,7 @@ const saveAll = async () => {
 .basic-info .preview-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--color-overlay);
     backdrop-filter: blur(4px);
     display: flex;
     flex-direction: column;
@@ -566,18 +566,18 @@ const saveAll = async () => {
 }
 
 .basic-info .upload-preview:hover .preview-overlay {
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--color-shadow-md-base);
 }
 
 .basic-info .preview-overlay svg {
     width: 40px;
     height: 40px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     margin-bottom: 10px;
 }
 
 .basic-info .preview-overlay p {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     margin: 0;
     font-size: 0.9rem;
 }
@@ -599,7 +599,7 @@ const saveAll = async () => {
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--color-shadow-sm-base);
     border-radius: 6px;
     max-width: 60%;
     min-width: 0;
@@ -621,13 +621,13 @@ const saveAll = async () => {
 .basic-info .file-info svg {
     width: 16px;
     height: 16px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     flex-shrink: 0;
 }
 
 .basic-info .file-name {
     display: block;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     font-size: 0.85rem;
     text-align: left;
     white-space: nowrap;
@@ -637,8 +637,8 @@ const saveAll = async () => {
 
 /* 移动端上传区域 */
 .basic-info .mobile-upload {
-    background: rgba(74, 158, 255, 0.08);
-    border: 2px dashed rgba(74, 158, 255, 0.65);
+    background: var(--color-info-soft);
+    border: 2px dashed var(--color-info-soft);
     border-radius: 8px;
     padding: 48px 32px;
     text-align: center;
@@ -647,19 +647,19 @@ const saveAll = async () => {
 }
 
 .basic-info .mobile-upload:hover {
-    border-color: rgba(74, 158, 255, 0.9);
-    background: rgba(74, 158, 255, 0.15);
+    border-color: var(--color-info-soft);
+    background: var(--color-info-soft);
 }
 
 .basic-info .mobile-upload svg {
     width: 48px;
     height: 48px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     margin-bottom: 16px;
 }
 
 .basic-info .mobile-upload p {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     margin: 0;
     font-size: 1rem;
 }
@@ -675,31 +675,31 @@ const saveAll = async () => {
 }
 
 .basic-info .cancel-btn-lg {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.85);
+    background: var(--color-border-divider);
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-tertiary);
 }
 
 .basic-info .cancel-btn-lg:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.25);
-    color: #fff;
+    background: var(--color-border-input);
+    border-color: var(--color-border-strong);
+    color: var(--color-text-primary);
 }
 
 .basic-info .upload-btn-lg {
-    background: linear-gradient(145deg, #f0b344 0%, #d4962e 100%);
+    background: linear-gradient(145deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
     border: none;
-    color: #fff;
-    box-shadow: 0 2px 12px rgba(240, 179, 68, 0.35);
+    color: var(--color-text-primary);
+    box-shadow: 0 2px 12px var(--color-brand-soft-border);
 }
 
 .basic-info .upload-btn-lg:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(240, 179, 68, 0.45);
+    box-shadow: 0 4px 16px var(--color-brand-glow-strong);
 }
 
 .basic-info .upload-btn-lg:disabled {
-    background: rgba(240, 179, 68, 0.4);
+    background: var(--color-brand-glow-strong);
     box-shadow: none;
 }
 
@@ -798,10 +798,10 @@ const saveAll = async () => {
     width: 36px;
     height: 36px;
     padding: 0;
-    background: rgba(240, 179, 68, 0.1);
-    border: 1px solid rgba(240, 179, 68, 0.25);
+    background: var(--color-brand-soft-bg);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 6px;
-    color: #f0b344;
+    color: var(--color-brand);
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -812,8 +812,8 @@ const saveAll = async () => {
 }
 
 .edit-all-btn:hover {
-    background: rgba(240, 179, 68, 0.2);
-    border-color: rgba(240, 179, 68, 0.4);
+    background: var(--color-brand-soft-border);
+    border-color: var(--color-brand-glow-strong);
 }
 
 /* 信息网格 */
@@ -835,7 +835,7 @@ const saveAll = async () => {
 }
 
 .info-label {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     font-size: 0.85rem;
 }
 
@@ -847,7 +847,7 @@ const saveAll = async () => {
 
 .info-value {
     flex: 1;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     font-size: 0.95rem;
     padding: 10px 0;
 }
@@ -863,7 +863,7 @@ const saveAll = async () => {
     gap: 12px;
     margin-top: 24px;
     padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--color-border-subtle);
 }
 
 .cancel-btn,
@@ -877,26 +877,26 @@ const saveAll = async () => {
 }
 
 .cancel-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
 }
 
 .cancel-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: var(--color-border);
+    color: var(--color-text-primary);
 }
 
 .save-btn {
-    background: linear-gradient(145deg, #f0b344 0%, #d4962e 100%);
+    background: linear-gradient(145deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
     border: none;
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.3);
+    color: var(--color-text-primary);
+    box-shadow: 0 2px 8px var(--color-brand-soft-border);
 }
 
 .save-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.4);
+    box-shadow: 0 4px 12px var(--color-brand-glow-strong);
 }
 
 @media (max-width: 600px) {
@@ -921,25 +921,25 @@ const saveAll = async () => {
 /* Element Plus 覆盖样式 */
 .basic-info .el-input__wrapper,
 .basic-info .el-textarea__wrapper {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     box-shadow: none;
     border-radius: 6px;
 }
 
 .basic-info .el-input__inner,
 .basic-info .el-textarea__inner {
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .basic-info .el-input__wrapper:hover,
 .basic-info .el-textarea__wrapper:hover {
-    border-color: rgba(240, 179, 68, 0.4);
+    border-color: var(--color-brand-glow-strong);
 }
 
 .basic-info .el-input__wrapper.is-focus,
 .basic-info .el-textarea__wrapper.is-focus {
-    border-color: #f0b344;
-    box-shadow: 0 0 0 2px rgba(240, 179, 68, 0.15);
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 2px var(--color-brand-soft-bg);
 }
 </style>

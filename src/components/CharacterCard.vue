@@ -72,40 +72,40 @@ const accentColor = computed(() => categoryInfo[props.category]?.color || '#f0b3
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(30, 45, 80, 0.6);
+    background: var(--color-bg-input);
     border-radius: 8px;
     padding: 16px 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--color-border-divider);
     cursor: pointer;
     transition: all 0.2s ease;
     min-width: 320px;
     scroll-snap-align: start;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 2px 8px var(--color-shadow-sm-base),
+    inset 0 1px 0 var(--color-bg-hover);
 }
 
 .character-card:hover {
     background: rgba(40, 58, 100, 0.7);
     border-color: var(--accent-color);
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(240, 179, 68, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px var(--color-shadow-md-base),
+    0 0 20px var(--color-brand-soft-bg),
+    inset 0 1px 0 var(--color-border-divider);
 }
 
 .character-card:active {
     transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 4px var(--color-shadow-md-base),
+    inset 0 2px 4px var(--color-shadow-xs-base);
 }
 
 /*noinspection CssUnusedSymbol*/
 .character-card.active {
-    background: linear-gradient(135deg, rgba(240, 179, 68, 0.15) 0%, rgba(230, 57, 70, 0.15) 100%);
+    background: linear-gradient(135deg, var(--color-brand-soft-bg) 0%, var(--color-brand-secondary-soft) 100%);
     border-color: var(--accent-color);
     box-shadow: 0 0 0 1px var(--accent-color),
-    0 4px 20px rgba(240, 179, 68, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 4px 20px var(--color-brand-soft-border),
+    inset 0 1px 0 var(--color-border);
 }
 
 .card-left {
@@ -125,7 +125,7 @@ const accentColor = computed(() => categoryInfo[props.category]?.color || '#f0b3
     height: 56px;
     border-radius: 50%;
     border: 2px solid var(--accent-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px var(--color-shadow-sm-base);
 }
 
 .avatar-placeholder {
@@ -135,7 +135,7 @@ const accentColor = computed(() => categoryInfo[props.category]?.color || '#f0b3
     justify-content: center;
     font-size: 1.4rem;
     font-weight: bold;
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .info {
@@ -150,7 +150,7 @@ const accentColor = computed(() => categoryInfo[props.category]?.color || '#f0b3
 }
 
 .info .desc {
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--color-text-muted);
     margin: 0;
     font-size: 0.85rem;
     line-height: 1.4;
@@ -172,25 +172,25 @@ const accentColor = computed(() => categoryInfo[props.category]?.color || '#f0b3
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 4px var(--color-shadow-sm-base),
+    inset 0 1px 0 var(--color-border-strong);
 }
 
 .action-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 8px var(--color-shadow-md-base),
+    inset 0 1px 0 var(--color-border-strong);
 }
 
 .action-btn:active {
     transform: translateY(1px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 2px var(--color-shadow-md-base),
+    inset 0 2px 4px var(--color-shadow-xs-base);
 }
 
 .story-btn {
-    background: linear-gradient(180deg, #4a9eff 0%, #2d7cd6 100%);
-    color: #fff;
+    background: linear-gradient(180deg, var(--color-info) 0%, #2d7cd6 100%);
+    color: var(--color-text-primary);
 }
 
 .story-btn:hover {
@@ -198,11 +198,11 @@ const accentColor = computed(() => categoryInfo[props.category]?.color || '#f0b3
 }
 
 .photo-btn {
-    background: linear-gradient(180deg, #f0b344 0%, #d4962e 100%);
-    color: #fff;
+    background: linear-gradient(180deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
+    color: var(--color-text-primary);
 }
 
 .photo-btn:hover {
-    background: linear-gradient(180deg, #ffbe4a 0%, #e4a630 100%);
+    background: linear-gradient(180deg, var(--color-brand-hover) 0%, var(--color-brand-active) 100%);
 }
 </style>

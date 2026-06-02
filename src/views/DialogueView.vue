@@ -125,7 +125,7 @@
                                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                                         </svg>
                                     </button>
-                                    <button class="action-btn" title="重新生成" @click="handleRegenerate(msg.mid)">
+                                    <button class="action-btn" :disabled="streamStatus !== 'idle'" title="重新生成" @click="handleRegenerate(msg.mid)">
                                         <svg fill="none" height="14" stroke="currentColor" stroke-width="2"
                                              viewBox="0 0 24 24" width="14">
                                             <path d="M21 2v6h-6"/>
@@ -1458,12 +1458,12 @@ onUnmounted(() => {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(145deg, #141e37 0%, #0f1a2a 100%);
+    background: linear-gradient(145deg, var(--color-bg-deep-alt) 0%, var(--color-bg-deep) 100%);
     overflow: hidden;
     max-width: 1200px;
     margin: 8px auto;
     width: 100%;
-    border: 1px solid rgba(240, 179, 68, 0.2);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 8px;
     box-sizing: border-box;
 }
@@ -1486,8 +1486,8 @@ onUnmounted(() => {
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    background: linear-gradient(180deg, rgba(20, 30, 55, 0.96), rgba(15, 26, 42, 0.92));
-    border-right: 1px solid rgba(240, 179, 68, 0.15);
+    background: linear-gradient(180deg, var(--color-bg-elevated), var(--color-bg-elevated));
+    border-right: 1px solid var(--color-brand-soft-bg);
 }
 
 .sidebar-header {
@@ -1496,7 +1496,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 8px;
-    border-bottom: 1px solid rgba(240, 179, 68, 0.1);
+    border-bottom: 1px solid var(--color-brand-soft-bg);
 }
 
 .sidebar-tabs {
@@ -1510,12 +1510,12 @@ onUnmounted(() => {
     flex: 1;
     min-width: 0;
     padding: 8px 8px;
-    background: rgba(12, 22, 38, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-deep);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     text-align: center;
     transition: all 0.2s;
     white-space: nowrap;
@@ -1524,29 +1524,29 @@ onUnmounted(() => {
 }
 
 .sidebar-tab:hover {
-    border-color: rgba(240, 179, 68, 0.3);
-    color: rgba(255, 255, 255, 0.85);
+    border-color: var(--color-brand-soft-border);
+    color: var(--color-text-tertiary);
 }
 
 .sidebar-tab.active {
-    background: linear-gradient(135deg, rgba(240, 179, 68, 0.2), rgba(14, 165, 233, 0.15));
-    border-color: #f0b344;
-    color: #f0b344;
+    background: linear-gradient(135deg, var(--color-brand-soft-bg), var(--color-brand-soft-border));
+    border-color: var(--color-brand);
+    color: var(--color-brand);
 }
 
 .sidebar-add-btn {
     width: 28px;
     height: 28px;
     flex-shrink: 0;
-    background: rgba(12, 22, 38, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-deep);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 0;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     transition: all 0.2s;
 }
 
@@ -1556,9 +1556,9 @@ onUnmounted(() => {
 }
 
 .sidebar-add-btn:hover {
-    border-color: #f0b344;
-    color: #f0b344;
-    background: rgba(240, 179, 68, 0.1);
+    border-color: var(--color-brand);
+    color: var(--color-brand);
+    background: var(--color-brand-soft-bg);
 }
 
 /* 侧边栏角色列表 */
@@ -1590,15 +1590,15 @@ onUnmounted(() => {
 }
 
 .sidebar-char-list.scrollbar-visible {
-    scrollbar-color: rgba(240, 179, 68, 0.45) transparent;
+    scrollbar-color: var(--color-brand-glow-strong) transparent;
 }
 
 .sidebar-char-list.scrollbar-visible::-webkit-scrollbar-thumb {
-    background: rgba(240, 179, 68, 0.45);
+    background: var(--color-brand-glow-strong);
 }
 
 .sidebar-char-list.scrollbar-visible::-webkit-scrollbar-thumb:hover {
-    background: rgba(240, 179, 68, 0.68);
+    background: var(--color-brand-glow-strong);
 }
 
 .sidebar-loading,
@@ -1608,7 +1608,7 @@ onUnmounted(() => {
     justify-content: center;
     min-height: 64px;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.58);
+    color: var(--color-text-placeholder);
     text-align: center;
     padding: 10px 8px;
 }
@@ -1622,21 +1622,21 @@ onUnmounted(() => {
     cursor: pointer;
     transition: all 0.2s;
     margin-bottom: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.02);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--color-border-divider);
+    background: var(--color-border-faint);
+    box-shadow: 0 1px 3px var(--color-shadow-xs-base);
 }
 
 .sidebar-char-item:hover {
-    background: rgba(240, 179, 68, 0.08);
-    border-color: rgba(240, 179, 68, 0.25);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand-soft-border);
+    box-shadow: 0 2px 6px var(--color-shadow-xs-base);
 }
 
 .sidebar-char-item.active {
-    background: linear-gradient(135deg, rgba(240, 179, 68, 0.15), rgba(14, 165, 233, 0.1));
-    border-color: rgba(240, 179, 68, 0.4);
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.15);
+    background: linear-gradient(135deg, var(--color-brand-soft-bg), var(--color-brand-soft-border));
+    border-color: var(--color-brand-glow-strong);
+    box-shadow: 0 2px 8px var(--color-brand-soft-bg);
 }
 
 .sidebar-char-avatar {
@@ -1645,7 +1645,7 @@ onUnmounted(() => {
     flex-shrink: 0;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid rgba(240, 179, 68, 0.3);
+    border: 2px solid var(--color-brand-soft-border);
 }
 
 .sidebar-char-avatar img {
@@ -1657,13 +1657,13 @@ onUnmounted(() => {
 .sidebar-char-avatar .avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #f0b344, #e63946);
+    background: var(--gradient-brand);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .sidebar-char-info {
@@ -1676,7 +1676,7 @@ onUnmounted(() => {
 .sidebar-char-name {
     font-size: 0.9rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
 }
 
 /* ==================== 右侧对话区 ==================== */
@@ -1696,12 +1696,12 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(145deg, #141e37 0%, #0f1a2a 100%);
-    border-bottom: 1px solid rgba(240, 179, 68, 0.15);
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-brand-soft-border);
 }
 
 .page-title {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0;
@@ -1709,18 +1709,18 @@ onUnmounted(() => {
 
 .switch-btn {
     padding: 8px 16px;
-    background: rgba(12, 22, 38, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-deep);
+    border: 1px solid var(--color-border);
     border-radius: 20px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .switch-btn:hover {
-    border-color: #f0b344;
-    color: #f0b344;
+    border-color: var(--color-brand);
+    color: var(--color-brand);
 }
 
 /* PC端隐藏移动端元素 */
@@ -1737,8 +1737,8 @@ onUnmounted(() => {
 .char-info-strip {
     flex-shrink: 0;
     padding: 10px 12px;
-    background: linear-gradient(145deg, #141e37 0%, #0f1a2a 100%);
-    border-bottom: 1px solid rgba(240, 179, 68, 0.15);
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-brand-soft-border);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -1764,21 +1764,21 @@ onUnmounted(() => {
 }
 
 .avatar-placeholder {
-    background: linear-gradient(135deg, #f0b344, #e63946);
+    background: var(--gradient-brand);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #fff;
-    border: 2px solid #f0b344;
-    box-shadow: 0 0 20px rgba(240, 179, 68, 0.3);
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-brand);
+    box-shadow: 0 0 20px var(--color-brand-soft-border);
 }
 
 .avatar-wrapper img {
     display: block;
-    border: 2px solid #f0b344;
-    box-shadow: 0 0 20px rgba(240, 179, 68, 0.3);
+    border: 2px solid var(--color-brand);
+    box-shadow: 0 0 20px var(--color-brand-soft-border);
     object-fit: cover;
 }
 
@@ -1789,14 +1789,14 @@ onUnmounted(() => {
     top: 100%;
     left: 0;
     margin-top: 8px;
-    background: #152035;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-panel-alt);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 8px;
     flex-direction: column;
     gap: 6px;
     z-index: 100;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px var(--color-shadow-md-base);
     min-width: 120px;
 }
 
@@ -1807,9 +1807,9 @@ onUnmounted(() => {
     left: 16px;
     width: 10px;
     height: 10px;
-    background: #152035;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-panel-alt);
+    border-left: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-border);
     transform: rotate(45deg);
 }
 
@@ -1818,7 +1818,7 @@ onUnmounted(() => {
     background: transparent;
     border: none;
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     font-size: 0.85rem;
     text-align: left;
     cursor: pointer;
@@ -1827,8 +1827,8 @@ onUnmounted(() => {
 }
 
 .dropdown-btn:hover {
-    background: rgba(240, 179, 68, 0.15);
-    color: #f0b344;
+    background: var(--color-brand-soft-bg);
+    color: var(--color-brand);
 }
 
 .info-text {
@@ -1838,12 +1838,12 @@ onUnmounted(() => {
 .info-text h3 {
     font-size: 1rem;
     margin: 0 0 3px 0;
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .info-text p {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--color-text-muted-strong);
     margin: 0;
 }
 
@@ -1854,18 +1854,18 @@ onUnmounted(() => {
 
 .strip-btn {
     padding: 8px 16px;
-    background: #152035;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-panel-alt);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .strip-btn:hover {
-    border-color: #f0b344;
-    color: #f0b344;
+    border-color: var(--color-brand);
+    color: var(--color-brand);
 }
 
 /* 欢迎状态 */
@@ -1891,8 +1891,8 @@ onUnmounted(() => {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background: #152035;
-    border: 2px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-panel-alt);
+    border: 2px solid var(--color-border-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1904,7 +1904,7 @@ onUnmounted(() => {
     position: absolute;
     inset: -12px;
     border-radius: 50%;
-    border: 1px dashed rgba(240, 179, 68, 0.2);
+    border: 1px dashed var(--color-brand-soft-border);
     animation: spin 30s linear infinite;
 }
 
@@ -1921,7 +1921,7 @@ onUnmounted(() => {
 
 .welcome-text {
     font-size: 0.95rem;
-    color: #64748b;
+    color: var(--color-text-muted-strong);
     max-width: 300px;
     line-height: 1.6;
 }
@@ -1935,13 +1935,13 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    background: radial-gradient(ellipse at 50% 30%, rgba(240, 179, 68, 0.03), transparent 60%);
+    background: radial-gradient(ellipse at 50% 30%, var(--color-brand-faint), transparent 60%);
 }
 
 .history-loading {
     width: 100%;
     text-align: center;
-    color: rgba(255, 255, 255, 0.56);
+    color: var(--color-text-placeholder);
     font-size: 0.85rem;
     padding: 24px 0;
 }
@@ -1979,37 +1979,37 @@ onUnmounted(() => {
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #f0b344, #e63946);
+    background: var(--gradient-brand);
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #fff;
+    color: var(--color-text-primary);
     margin-top: 2px;
 }
 
 .msg-avatar.ai {
-    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    background: linear-gradient(135deg, var(--color-purple), var(--color-indigo));
 }
 
 .msg-bubble {
-    background: #152035;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-panel-alt);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 16px;
     padding: 14px 18px;
 }
 
 .msg-row.user .msg-bubble {
-    background: linear-gradient(135deg, rgba(240, 179, 68, 0.12), rgba(14, 165, 233, 0.1));
-    border-color: rgba(240, 179, 68, 0.2);
+    background: linear-gradient(135deg, var(--color-brand-soft-bg), var(--color-brand-soft-border));
+    border-color: var(--color-brand-soft-border);
 }
 
 .msg-content {
     word-break: break-word;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
 }
 
 .msg-content :deep(p) {
@@ -2031,7 +2031,7 @@ onUnmounted(() => {
 }
 
 .msg-content :deep(a) {
-    color: #89c3ff;
+    color: var(--color-info-soft);
     text-decoration: underline;
 }
 
@@ -2042,14 +2042,14 @@ onUnmounted(() => {
 .msg-content :deep(blockquote) {
     margin: 8px 0;
     padding: 6px 12px;
-    border-left: 3px solid rgba(240, 179, 68, 0.45);
-    color: rgba(255, 255, 255, 0.72);
-    background: rgba(0, 0, 0, 0.18);
+    border-left: 3px solid var(--color-brand-glow-strong);
+    color: var(--color-text-muted);
+    background: var(--color-shadow-xs-base);
     border-radius: 6px;
 }
 
 .msg-content :deep(code) {
-    background: rgba(0, 0, 0, 0.32);
+    background: var(--color-shadow-md-base);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.86em;
@@ -2057,8 +2057,8 @@ onUnmounted(() => {
 }
 
 .msg-content :deep(pre) {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border-divider);
     border-radius: 8px;
     padding: 10px 12px;
     overflow-x: auto;
@@ -2089,10 +2089,10 @@ onUnmounted(() => {
 .action-btn {
     width: 28px;
     height: 28px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.56);
+    color: var(--color-text-placeholder);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2100,17 +2100,23 @@ onUnmounted(() => {
 }
 
 .action-btn:hover {
-    color: #f0b344;
-    background: rgba(240, 179, 68, 0.15);
-    border-color: rgba(240, 179, 68, 0.3);
+    color: var(--color-brand);
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand-soft-border);
+}
+
+.action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* 底部输入 */
 .input-bar {
     flex-shrink: 0;
     padding: 10px 12px;
-    background: rgba(6, 9, 15, 0.95);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-admin-deep);
+    border-top: 1px solid var(--color-border-subtle);
 }
 
 .input-row {
@@ -2122,8 +2128,8 @@ onUnmounted(() => {
 .input-placeholder {
     flex: 1;
     height: 50px;
-    background: #152035;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-panel-alt);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 25px;
     display: flex;
     align-items: center;
@@ -2132,7 +2138,7 @@ onUnmounted(() => {
 }
 
 .input-placeholder:focus-within {
-    border-color: #f0b344;
+    border-color: var(--color-brand);
 }
 
 .input-placeholder input {
@@ -2141,23 +2147,23 @@ onUnmounted(() => {
     background: transparent;
     border: none;
     outline: none;
-    color: #fff;
+    color: var(--color-text-primary);
     font-size: 0.95rem;
 }
 
 .input-placeholder input:disabled {
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--color-text-disabled);
     cursor: not-allowed;
 }
 
 .input-placeholder input::placeholder {
-    color: #64748b;
+    color: var(--color-text-muted-strong);
 }
 
 .send-btn {
     width: 46px;
     height: 46px;
-    background: linear-gradient(135deg, #f0b344, #d4962e);
+    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-active));
     border: none;
     border-radius: 10px;
     cursor: pointer;
@@ -2165,7 +2171,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     transition: all 0.25s;
-    box-shadow: 0 4px 20px rgba(240, 179, 68, 0.3);
+    box-shadow: 0 4px 20px var(--color-brand-soft-border);
 }
 
 .send-btn:hover {
@@ -2180,7 +2186,7 @@ onUnmounted(() => {
 }
 
 .send-arrow {
-    color: #fff;
+    color: var(--color-text-primary);
     font-size: 1.55rem;
     font-weight: 700;
     line-height: 1;
@@ -2191,7 +2197,7 @@ onUnmounted(() => {
 .char-selector-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(6, 9, 15, 0.85);
+    background: var(--color-bg-admin-deep);
     backdrop-filter: blur(8px);
     z-index: 200;
     display: flex;
@@ -2211,14 +2217,15 @@ onUnmounted(() => {
     width: 90%;
     max-width: 800px;
     max-height: 70vh;
-    background: #0d1420;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
     border-radius: 20px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     transform: translateY(20px) scale(0.95);
     transition: transform 0.3s ease;
+    box-shadow: 0 16px 48px var(--color-shadow-md);
 }
 
 .char-selector-overlay.visible .char-panel {
@@ -2228,7 +2235,7 @@ onUnmounted(() => {
 .panel-header {
     flex-shrink: 0;
     padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--color-border-subtle);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2237,27 +2244,27 @@ onUnmounted(() => {
 .panel-title {
     font-size: 1rem;
     font-weight: 600;
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .panel-close {
     width: 32px;
     height: 32px;
-    background: #152035;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-panel-alt);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
-    color: #64748b;
+    color: var(--color-text-muted-strong);
     transition: all 0.2s;
 }
 
 .panel-close:hover {
-    border-color: #f0b344;
-    color: #f0b344;
+    border-color: var(--color-brand);
+    color: var(--color-brand);
 }
 
 .panel-cats {
@@ -2265,29 +2272,30 @@ onUnmounted(() => {
     padding: 16px 24px;
     display: flex;
     gap: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .panel-cat {
     padding: 8px 16px;
-    background: #152035;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-border);
     border-radius: 16px;
     cursor: pointer;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-secondary);
     transition: all 0.2s;
 }
 
 .panel-cat:hover {
-    border-color: #f0b344;
-    color: #fff;
+    border-color: var(--color-brand);
+    color: var(--color-text-primary);
 }
 
 .panel-cat.active {
-    background: linear-gradient(135deg, rgba(240, 179, 68, 0.2), rgba(14, 165, 233, 0.15));
-    border-color: #f0b344;
-    color: #f0b344;
+    background: var(--gradient-brand);
+    border-color: var(--color-brand);
+    color: #fff;
+    font-weight: 600;
 }
 
 .panel-body {
@@ -2305,7 +2313,7 @@ onUnmounted(() => {
     justify-content: center;
     min-height: 120px;
     text-align: center;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     font-size: 0.85rem;
 }
 
@@ -2316,8 +2324,8 @@ onUnmounted(() => {
 }
 
 .char-card {
-    background: #152035;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 16px;
     cursor: pointer;
@@ -2329,28 +2337,29 @@ onUnmounted(() => {
 }
 
 .char-card:hover {
-    border-color: #f0b344;
+    border-color: var(--color-brand);
+    background: var(--color-brand-soft-bg);
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px var(--color-shadow-md-base);
 }
 
 .char-card.active {
-    border-color: #f0b344;
-    background: linear-gradient(145deg, rgba(240, 179, 68, 0.12), transparent);
-    box-shadow: 0 0 0 2px #f0b344;
+    border-color: var(--color-brand);
+    background: linear-gradient(145deg, var(--color-brand-soft-bg), transparent);
+    box-shadow: 0 0 0 2px var(--color-brand);
 }
 
 .char-avatar-block {
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #f0b344, #e63946);
+    background: var(--gradient-brand);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 1.1rem;
-    border: 2px solid #f0b344;
+    border: 2px solid var(--color-brand);
     overflow: hidden;
 }
 
@@ -2363,7 +2372,7 @@ onUnmounted(() => {
 .char-name {
     font-weight: 600;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
 }
 
 /* 移动端适配 - 隐藏侧边栏，使用原来的布局 */

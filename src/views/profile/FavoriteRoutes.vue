@@ -309,8 +309,8 @@ const goToTravel = () => {
     align-items: center;
     gap: 16px;
     padding: 20px 24px;
-    background: rgba(20, 30, 55, 0.52);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 10px;
     flex: 1;
 }
@@ -325,8 +325,8 @@ const goToTravel = () => {
 }
 
 .stat-icon.blue {
-    background: rgba(74, 158, 255, 0.16);
-    color: #4a9eff;
+    background: var(--color-brand-soft-bg);
+    color: var(--color-brand);
 }
 
 .stat-icon svg {
@@ -341,21 +341,21 @@ const goToTravel = () => {
 }
 
 .stat-value {
-    color: #fff;
+    color: var(--color-text-primary);
     font-size: 1.75rem;
     font-weight: 700;
     line-height: 1;
 }
 
 .stat-label {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     font-size: 0.85rem;
 }
 
 /* 收藏列表 */
 .routes-section {
-    background: rgba(20, 30, 55, 0.52);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 10px;
     padding: 24px;
 }
@@ -366,18 +366,18 @@ const goToTravel = () => {
     justify-content: space-between;
     margin-bottom: 16px;
     padding-bottom: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .section-title {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1rem;
     font-weight: 600;
     margin: 0;
 }
 
 .route-count {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     font-size: 0.85rem;
 }
 
@@ -392,27 +392,27 @@ const goToTravel = () => {
     align-items: center;
     gap: 14px;
     padding: 16px;
-    background: rgba(240, 179, 68, 0.05);
-    border: 1px solid rgba(240, 179, 68, 0.12);
+    background: var(--color-brand-soft-bg);
+    border: 1px solid var(--color-brand-soft-bg);
     border-radius: 10px;
     transition: all 0.2s ease;
 }
 
 .route-item:hover {
-    background: rgba(240, 179, 68, 0.08);
-    border-color: rgba(240, 179, 68, 0.2);
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand-soft-border);
     transform: translateX(4px);
 }
 
 .route-icon {
     width: 42px;
     height: 42px;
-    background: rgba(240, 179, 68, 0.12);
+    background: var(--color-brand-soft-bg);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #f0b344;
+    color: var(--color-brand);
     flex-shrink: 0;
 }
 
@@ -430,7 +430,7 @@ const goToTravel = () => {
 }
 
 .route-name {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     font-size: 0.95rem;
     font-weight: 500;
     white-space: nowrap;
@@ -439,17 +439,17 @@ const goToTravel = () => {
 }
 
 .route-meta {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     font-size: 0.8rem;
 }
 
 .remove-btn {
     width: 36px;
     height: 36px;
-    background: rgba(230, 57, 70, 0.1);
-    border: 1px solid rgba(230, 57, 70, 0.2);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-brand-secondary);
     border-radius: 8px;
-    color: #e63946;
+    color: var(--color-brand-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -464,8 +464,9 @@ const goToTravel = () => {
 }
 
 .remove-btn:hover {
-    background: rgba(230, 57, 70, 0.2);
-    border-color: rgba(230, 57, 70, 0.35);
+    background: var(--color-brand-secondary);
+    border-color: var(--color-brand-secondary);
+    color: #fff;
     transform: scale(1.05);
 }
 
@@ -482,7 +483,7 @@ const goToTravel = () => {
 .empty-icon {
     width: 80px;
     height: 80px;
-    background: rgba(240, 179, 68, 0.08);
+    background: var(--color-brand-soft-bg);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -493,18 +494,18 @@ const goToTravel = () => {
 .empty-icon svg {
     width: 36px;
     height: 36px;
-    color: rgba(240, 179, 68, 0.5);
+    color: var(--color-brand-glow-strong);
 }
 
 .empty-title {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
     font-size: 1.1rem;
     font-weight: 600;
     margin: 0 0 8px 0;
 }
 
 .empty-desc {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     font-size: 0.9rem;
     margin: 0 0 24px 0;
     max-width: 280px;
@@ -515,15 +516,15 @@ const goToTravel = () => {
     align-items: center;
     gap: 8px;
     padding: 12px 28px;
-    background: linear-gradient(145deg, #f0b344 0%, #d4962e 100%);
+    background: linear-gradient(145deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
     border: none;
     border-radius: 8px;
-    color: #fff;
+    color: var(--color-text-primary);
     font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.3);
+    box-shadow: 0 2px 8px var(--color-brand-soft-border);
 }
 
 .browse-btn svg {
@@ -533,7 +534,7 @@ const goToTravel = () => {
 
 .browse-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(240, 179, 68, 0.4);
+    box-shadow: 0 4px 14px var(--color-brand-glow-strong);
 }
 
 /* 操作按钮 */
@@ -561,26 +562,27 @@ const goToTravel = () => {
 }
 
 .edit-btn {
-    background: rgba(240, 179, 68, 0.1);
-    border-color: rgba(240, 179, 68, 0.2);
-    color: #f0b344;
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand-soft-border);
+    color: var(--color-brand-active);
 }
 
 .edit-btn:hover {
-    background: rgba(240, 179, 68, 0.2);
-    border-color: rgba(240, 179, 68, 0.35);
+    background: var(--color-brand-soft-border);
+    border-color: var(--color-brand-soft-border);
+    color: var(--color-brand-active);
     transform: scale(1.05);
 }
 
 .remove-btn {
-    background: rgba(230, 57, 70, 0.1);
-    border-color: rgba(230, 57, 70, 0.2);
-    color: #e63946;
+    background: rgba(214, 57, 70, 0.1);
+    border-color: rgba(214, 57, 70, 0.3);
+    color: var(--color-brand-secondary);
 }
 
 .remove-btn:hover {
-    background: rgba(230, 57, 70, 0.2);
-    border-color: rgba(230, 57, 70, 0.35);
+    background: var(--color-brand-secondary-soft);
+    border-color: var(--color-brand-secondary-soft);
     transform: scale(1.05);
 }
 
@@ -600,14 +602,14 @@ const goToTravel = () => {
     gap: 10px;
     height: 100%;
     padding: 40px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
 }
 
 .loading-spinner {
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-top-color: #f0b344;
+    border: 2px solid var(--color-border-strong);
+    border-top-color: var(--color-brand);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -637,15 +639,15 @@ const goToTravel = () => {
 }
 
 .form-item label {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
     font-size: 0.9rem;
     font-weight: 500;
 }
 
 .form-item :deep(.el-textarea__inner) {
-    background: rgba(15, 26, 42, 0.88);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
+    background: var(--color-bg-elevated);
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
     resize: none;
     height: 100%;
     min-height: 220px;
@@ -656,13 +658,13 @@ const goToTravel = () => {
 }
 
 .form-item :deep(.el-input__wrapper) {
-    background: rgba(15, 26, 42, 0.88);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-elevated);
+    border-color: var(--color-border);
     box-shadow: none;
 }
 
 .form-item :deep(.el-input__inner) {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
 }
 
 .modal-view {
@@ -674,18 +676,18 @@ const goToTravel = () => {
 
 .view-title {
     margin: 0;
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1.2rem;
     font-weight: 600;
 }
 
 .view-meta {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     font-size: 0.85rem;
 }
 
 .view-content {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     line-height: 1.7;
     font-size: 0.95rem;
     flex: 1;
@@ -714,7 +716,7 @@ const goToTravel = () => {
 .view-content :deep(h1),
 .view-content :deep(h2),
 .view-content :deep(h3) {
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--color-text-primary);
     margin: 1em 0 0.5em;
 }
 
@@ -729,14 +731,14 @@ const goToTravel = () => {
 }
 
 .view-content :deep(code) {
-    background: rgba(240, 179, 68, 0.1);
+    background: var(--color-brand-soft-bg);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.9em;
 }
 
 .view-content :deep(pre) {
-    background: rgba(15, 26, 42, 0.88);
+    background: var(--color-bg-elevated);
     padding: 12px;
     border-radius: 8px;
     overflow-x: auto;
@@ -754,14 +756,14 @@ const goToTravel = () => {
 }
 
 .modal-footer :deep(.cancel-btn) {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.85);
+    background: var(--color-border-divider);
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-tertiary);
 }
 
 .modal-footer :deep(.cancel-btn:hover) {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: var(--color-border-input);
+    border-color: var(--color-border-strong);
 }
 
 :deep(.route-modal-overlay),
@@ -786,34 +788,34 @@ const goToTravel = () => {
 
 /* Element Plus 弹窗覆盖 */
 :deep(.el-dialog) {
-    background: rgba(20, 30, 55, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     max-width: 600px;
 }
 
 :deep(.el-dialog__header) {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--color-border-subtle);
     padding: 16px 20px;
 }
 
 :deep(.el-dialog__title) {
-    color: #f0b344;
+    color: var(--color-brand);
     font-weight: 600;
 }
 
 :deep(.el-dialog__body) {
     padding: 20px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
 }
 
 :deep(.el-dialog__footer) {
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--color-border-subtle);
     padding: 16px 20px;
 }
 
 :deep(.delete-dialog) .el-dialog__body p {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
     margin: 0;
     line-height: 1.6;
 }

@@ -286,11 +286,11 @@ onUnmounted(() => {
     flex-direction: column;
     height: 100%;
     min-height: 0;
-    background: rgba(20, 30, 55, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-divider);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    box-shadow: inset 0 1px 0 var(--color-bg-subtle);
 }
 
 .chat-messages {
@@ -302,7 +302,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    background: rgba(0, 0, 0, 0.22);
+    background: var(--color-shadow-sm-base);
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
 }
@@ -321,15 +321,15 @@ onUnmounted(() => {
 }
 
 .chat-messages.scrollbar-visible {
-    scrollbar-color: rgba(240, 179, 68, 0.45) transparent;
+    scrollbar-color: var(--color-brand-glow-strong) transparent;
 }
 
 .chat-messages.scrollbar-visible::-webkit-scrollbar-thumb {
-    background: rgba(240, 179, 68, 0.45);
+    background: var(--color-brand-glow-strong);
 }
 
 .chat-messages.scrollbar-visible::-webkit-scrollbar-thumb:hover {
-    background: rgba(240, 179, 68, 0.68);
+    background: var(--color-brand-glow-strong);
 }
 
 .message-row {
@@ -347,21 +347,21 @@ onUnmounted(() => {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: rgba(240, 179, 68, 0.14);
-    border: 1px solid rgba(240, 179, 68, 0.25);
+    background: var(--color-brand-soft-bg);
+    border: 1px solid var(--color-brand-soft-border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.73rem;
-    color: #f0b344;
+    color: var(--color-brand);
     font-weight: 700;
     flex-shrink: 0;
 }
 
 .message-row.user .message-avatar {
-    background: rgba(74, 158, 255, 0.14);
-    border-color: rgba(74, 158, 255, 0.25);
-    color: #88c2ff;
+    background: var(--color-info);
+    border-color: var(--color-info);
+    color: #fff;
 }
 
 .message-main {
@@ -372,22 +372,22 @@ onUnmounted(() => {
 }
 
 .message-bubble {
-    background: rgba(30, 45, 80, 0.64);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-panel);
+    border: 1px solid var(--color-border-divider);
     border-radius: 12px;
     padding: 12px 14px;
     font-size: 0.9rem;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
 }
 
 .message-row.user .message-bubble {
     background: linear-gradient(
         135deg,
-        rgba(240, 179, 68, 0.12),
-        rgba(14, 165, 233, 0.1)
+        var(--color-brand-soft-bg),
+        var(--color-brand-soft-border)
     );
-    border-color: rgba(240, 179, 68, 0.25);
+    border-color: var(--color-brand-soft-border);
 }
 
 .message-bubble :deep(p) {
@@ -405,15 +405,15 @@ onUnmounted(() => {
 }
 
 .message-bubble :deep(code) {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--color-shadow-sm-base);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.85em;
 }
 
 .message-bubble :deep(pre) {
-    background: rgba(0, 0, 0, 0.28);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border-divider);
     border-radius: 8px;
     padding: 10px 12px;
     overflow-x: auto;
@@ -439,10 +439,10 @@ onUnmounted(() => {
 .action-btn {
     width: 28px;
     height: 28px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.56);
+    color: var(--color-text-placeholder);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -450,9 +450,9 @@ onUnmounted(() => {
 }
 
 .action-btn:hover {
-    color: #f0b344;
-    background: rgba(240, 179, 68, 0.15);
-    border-color: rgba(240, 179, 68, 0.3);
+    color: var(--color-brand);
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand-soft-border);
 }
 
 .chat-status {
@@ -461,8 +461,8 @@ onUnmounted(() => {
     gap: 8px;
     padding: 8px 14px;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.56);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--color-text-placeholder);
+    border-top: 1px solid var(--color-bg-hover);
 }
 
 .status-dot {
@@ -472,13 +472,13 @@ onUnmounted(() => {
 }
 
 .status-dot.thinking {
-    background: #f0b344;
+    background: var(--color-brand);
     animation: pulse 1.1s infinite;
 }
 
 .status-dot.streaming {
-    background: #63d179;
-    box-shadow: 0 0 8px rgba(99, 209, 121, 0.5);
+    background: var(--color-success-light);
+    box-shadow: 0 0 8px var(--color-success-light);
 }
 
 @keyframes pulse {
@@ -495,17 +495,17 @@ onUnmounted(() => {
     align-items: flex-end;
     gap: 8px;
     padding: 12px;
-    background: rgba(15, 26, 42, 0.86);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-elevated);
+    border-top: 1px solid var(--color-border-subtle);
 }
 
 .chat-input textarea {
     flex: 1;
-    background: rgba(30, 45, 80, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 10px 12px;
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--color-text-primary);
     font-size: 0.9rem;
     line-height: 1.5;
     resize: none;
@@ -515,11 +515,11 @@ onUnmounted(() => {
 }
 
 .chat-input textarea:focus {
-    border-color: rgba(240, 179, 68, 0.42);
+    border-color: var(--color-brand-glow-strong);
 }
 
 .chat-input textarea::placeholder {
-    color: rgba(255, 255, 255, 0.38);
+    color: var(--color-text-disabled);
 }
 
 .chat-input textarea:disabled {
@@ -531,8 +531,8 @@ onUnmounted(() => {
     height: 40px;
     border-radius: 8px;
     border: none;
-    background: linear-gradient(145deg, #f0b344 0%, #e7a22f 100%);
-    color: #0f1a2a;
+    background: linear-gradient(145deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
+    color: var(--color-bg-deep);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -542,7 +542,7 @@ onUnmounted(() => {
 
 .chat-input button:hover:not(:disabled) {
     transform: scale(1.04);
-    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.3);
+    box-shadow: 0 4px 12px var(--color-brand-soft-border);
 }
 
 .chat-input button:disabled {

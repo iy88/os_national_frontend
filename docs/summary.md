@@ -384,6 +384,69 @@
 
 ---
 
+## 主题系统（深色 / 浅色模式）
+
+### 架构
+
+```
+[系统 / 手动选择]                  [CSS 变量层]                  [组件]
+                                                  ┌──────────────────────────┐
+matchMedia('prefers-color-scheme: dark')   ──►  │ html[data-theme="dark"]   │ ──► 全部 var(--color-*)
+                                                  │ html[data-theme="light"]  │
+localStorage('theme-mode')    ──► Pinia store   └──────────────────────────┘
+   'light' | 'dark' | 'system'     (toggle(), setMode())
+                                                            ▲
+                                                            │
+                              <button @click="theme.toggle()">  Header.vue
+                                                            │  AdminHeader.vue
+                                                            │  (桌面 + 移动 sidebar 各一处)
+```
+
+- `data-theme` 放在 `<html>` 上（Element Plus 的 `dark/css-vars.css` 监听 `html.dark`，EP 的暗色变量和自定义 token 体系共存）
+- `:root[data-theme="dark"]` 和 `:root[data-theme="light"]` 提供两套 token
+
+### 关键文件
+
+| 路径 | 说明 |
+|---|---|
+| `src/styles/tokens.css` | 全局设计令牌；`:root[data-theme="dark"]` / `:root[data-theme="light"]` 各一套 |
+| `src/stores/theme.js` | Pinia store；`mode` / `effective` / `setMode()` / `toggle()` / `init()` |
+| `index.html` | `<head>` 注入 FOUC 防护脚本（在 CSS 加载前基于 localStorage + matchMedia 预设 `data-theme`） |
+| `src/main.js` | 引入 `tokens.css` 早于 EP CSS；挂载后调用 `useThemeStore().init()` 绑定 matchMedia |
+
+### Token 体系（节选）
+
+- **Surface**：`--color-bg-base` / `--color-bg-elevated` / `--color-bg-panel` / `--color-bg-deep` / `--color-bg-admin` / `--color-bg-input`
+- **Text**：`--color-text-primary` / `-secondary` / `-muted` / `-placeholder` / `-tertiary` / `-on-brand`
+- **Border**：`--color-border` / `-subtle` / `-divider` / `-strong`
+- **Brand**：`--color-brand` (金) / `--color-brand-secondary` (红) / `--gradient-brand` / `-brand-soft-bg` / `-brand-soft-border` / `-brand-glow-strong`
+- **Status**：`--color-info` / `--color-purple` / `--color-pink` / `--color-orange` / `--color-cyan`
+- **Admin**：`--color-admin` (绿) / `--color-admin-soft-bg` / `--color-bg-admin-mid` / `-bg-admin-deep`
+- **Map（按主题差异）**：`--color-map-province-fill` / `-stroke` / `-hover-fill` / `-hover-stroke`
+  - 深色模式：金色 + 暗底
+  - 浅色模式：白底 + 金色边线
+
+### 用户偏好持久化
+
+- `localStorage` key：`theme-mode`，值 `'light' | 'dark' | 'system'`
+- 默认 `system` —— 跟随 `window.matchMedia('(prefers-color-scheme: dark)')`
+- 监听 matchMedia 的 `change` 事件，运行时实时跟随系统切换
+
+### 切换按钮入口
+
+- 公开端 `Header.vue`：桌面端导航栏右侧、移动端 sidebar 内
+- 管理端 `AdminHeader.vue`：桌面端右侧、移动端 sidebar 内
+- 按钮图标随当前 `effective` 主题切换：深色显示太阳（点击切到浅色），浅色显示月亮
+
+### 颜色规约
+
+- 角色分类的语义色（金 #f0b344 / 红 #e63946 / 青 #2a9d8f）保持不变，跨主题通用
+- Element Plus 暗色 CSS 变量（`--el-*`）在深色模式覆写为金色主题；浅色模式恢复 EP 默认
+- 组件不再写 hex / rgba，统一 `var(--color-*)`
+- 高对比图标模式：饱和底色 + 白色图标（stat 卡片、用户头像、删除按钮等）
+
+---
+
 ## 关键设计模式
 
 ### SSE 流竞争防护
@@ -452,6 +515,8 @@ Element Plus 组件已配置为深色主题，全局滚动条样式已定义（�
 
 ## 最近更新
 
+- 2026-06-03: 新增深色/浅色模式切换（Pinia theme store + tokens.css + FOUC 防护），Header/AdminHeader 桌面+移动端均加切换按钮；全站 22 个文件的硬编码颜色迁移到 CSS 变量；迭代修复地图边线、表格 header、el-select 下拉、stat 图标、聊天气泡头像、admin 表等跨主题对比度问题
+- 2026-06-03: 助手/路线规划页面的 LLM 消息"重新生成"按钮在流式输出期间 disable，防止重复 regen
 - 2026-04-19: 新增管理后台（AdminLogin、ManageIndex、Roles 角色管理页面）
 - 2026-04-19: 角色管理支持新增/编辑弹窗，常用语动态编辑，头像/图片拖拽上传
 - 2026-04-19: 添加 404 兜底路由，优化管理后台默认跳转

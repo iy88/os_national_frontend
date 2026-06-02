@@ -522,8 +522,8 @@ ${text}
     transform: translateY(-50%);
     width: 44px;
     height: 60px;
-    background: rgba(20, 30, 55, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-divider);
     border-right: none;
     border-radius: 12px 0 0 12px;
     cursor: pointer;
@@ -532,16 +532,16 @@ ${text}
     align-items: center;
     justify-content: center;
     gap: 2px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     font-size: 0.65rem;
     transition: all 0.2s ease;
     z-index: 110;
-    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.3);
+    box-shadow: -4px 0 16px var(--color-shadow-sm-base);
 }
 
 .chat-toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: #f0b344;
+    background: var(--color-border-subtle);
+    color: var(--color-brand);
 }
 
 .toggle-icon {
@@ -559,7 +559,7 @@ ${text}
     right: 8px;
     width: 8px;
     height: 8px;
-    background: #f0b344;
+    background: var(--color-brand);
     border-radius: 50%;
 }
 
@@ -571,12 +571,12 @@ ${text}
     width: 28vw;
     min-width: 320px;
     height: 100%;
-    background: #0f1a2a;
-    border-left: 1px solid rgba(240, 179, 68, 0.15);
+    background: var(--color-bg-elevated);
+    border-left: 1px solid var(--color-brand-soft-bg);
     display: flex;
     flex-direction: column;
     z-index: 100;
-    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+    box-shadow: -8px 0 32px var(--color-shadow-md-base);
     transform: translateX(100%);
     transition: transform var(--assistant-transition-duration-desktop) var(--assistant-transition-easing);
     backface-visibility: hidden;
@@ -599,7 +599,7 @@ ${text}
     top: auto;
     bottom: 0;
     border-left: none;
-    border-top: 1px solid rgba(240, 179, 68, 0.15);
+    border-top: 1px solid var(--color-brand-soft-bg);
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
     transition-duration: var(--assistant-transition-duration-mobile);
@@ -618,9 +618,9 @@ ${text}
     flex-direction: row;
     gap: 6px;
     border-radius: 10px 10px 0 0;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid var(--color-border-divider);
     border-bottom: none;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 -4px 16px var(--color-shadow-sm-base);
 }
 
 .chat-sidebar.mobile .planners-bar {
@@ -662,8 +662,8 @@ ${text}
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: rgba(30, 45, 80, 0.6);
-    border: 2px solid rgba(240, 179, 68, 0.3);
+    background: var(--color-bg-input);
+    border: 2px solid var(--color-brand-soft-border);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -675,7 +675,7 @@ ${text}
     position: absolute;
     inset: -10px;
     border-radius: 50%;
-    border: 1px dashed rgba(240, 179, 68, 0.2);
+    border: 1px dashed var(--color-brand-soft-border);
     animation: spin 30s linear infinite;
 }
 
@@ -691,7 +691,7 @@ ${text}
 }
 
 .welcome-text {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     font-size: 0.9rem;
     max-width: 240px;
     line-height: 1.6;
@@ -704,15 +704,15 @@ ${text}
     align-items: center;
     gap: 12px;
     padding: 14px 16px;
-    background: rgba(30, 45, 80, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-input);
+    border-bottom: 1px solid var(--color-border-subtle);
     flex-shrink: 0;
 }
 
 .chat-icon {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, #f0b344, #e63946);
+    background: var(--gradient-brand);
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -726,14 +726,14 @@ ${text}
 }
 
 .chat-info h3 {
-    color: #fff;
+    color: var(--color-text-primary);
     font-size: 0.9rem;
     font-weight: 600;
     margin: 0 0 2px 0;
 }
 
 .chat-info p {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
     font-size: 0.7rem;
     margin: 0;
 }
@@ -741,35 +741,35 @@ ${text}
 .close-btn {
     width: 28px;
     height: 28px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     font-size: 0.8rem;
     transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-    background: rgba(230, 57, 70, 0.2);
-    border-color: rgba(230, 57, 70, 0.4);
-    color: #e63946;
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand);
+    color: var(--color-brand);
 }
 
 .planners-toggle-btn {
     width: 28px;
     height: 28px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     transition: all 0.2s ease;
 }
 
@@ -782,9 +782,9 @@ ${text}
 }
 
 .planners-toggle-btn:hover {
-    background: rgba(240, 179, 68, 0.2);
-    border-color: rgba(240, 179, 68, 0.4);
-    color: #f0b344;
+    background: var(--color-brand-soft-border);
+    border-color: var(--color-brand-glow-strong);
+    color: var(--color-brand);
 }
 
 /* 快速规划选项栏 */
@@ -793,8 +793,8 @@ ${text}
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     padding: 12px;
-    background: rgba(30, 45, 80, 0.6);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--color-bg-input);
+    border-bottom: 1px solid var(--color-border-subtle);
     flex-shrink: 0;
     overflow: hidden;
     max-height: 220px;
@@ -819,7 +819,7 @@ ${text}
 
 .planner-item label {
     font-size: 0.6rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-disabled);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -829,20 +829,20 @@ ${text}
 }
 
 .planner-item :deep(.el-input__wrapper) {
-    background: rgba(0, 0, 0, 0.3) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: var(--color-shadow-sm-base) !important;
+    border: 1px solid var(--color-border) !important;
     box-shadow: none !important;
     border-radius: 6px !important;
     padding: 0 8px !important;
 }
 
 .planner-item :deep(.el-input__inner) {
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: var(--color-text-secondary) !important;
     font-size: 0.75rem !important;
 }
 
 .planner-item :deep(.el-select__caret) {
-    color: rgba(255, 255, 255, 0.4) !important;
+    color: var(--color-text-disabled) !important;
 }
 
 /* 城市详情弹窗 */
@@ -857,16 +857,16 @@ ${text}
 }
 
 .info-section {
-    background: rgba(0, 0, 0, 0.15);
+    background: var(--color-shadow-xs-base);
     padding: 14px;
     border-radius: 6px;
     margin-bottom: 14px;
-    border-left: 3px solid #f0b344;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    border-left: 3px solid var(--color-brand);
+    box-shadow: inset 0 1px 0 var(--color-border-faint);
 }
 
 .info-section h3 {
-    color: #f0b344;
+    color: var(--color-brand);
     margin: 0 0 10px 0;
     font-size: 0.95rem;
     font-weight: 600;
@@ -880,30 +880,30 @@ ${text}
 
 .info-section li {
     padding: 5px 0;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
     font-size: 0.88rem;
 }
 
 .player-card, .hero-card {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--color-shadow-xs-base);
     padding: 10px 12px;
     border-radius: 6px;
     margin-bottom: 8px;
 }
 
 .player-card strong, .hero-card strong {
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .player-card small, .hero-card small {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
     font-size: 0.8rem;
 }
 
 .player-card p, .hero-card p {
     margin: 5px 0 0 0;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
 }
 
 .tasks-grid {
@@ -913,40 +913,40 @@ ${text}
 }
 
 .task-card {
-    background: linear-gradient(145deg, rgba(240, 179, 68, 0.08) 0%, rgba(230, 57, 70, 0.08) 100%);
+    background: linear-gradient(145deg, var(--color-brand-soft-bg) 0%, var(--color-brand-soft-border) 100%);
     padding: 12px;
     border-radius: 6px;
-    border: 1px solid rgba(240, 179, 68, 0.2);
+    border: 1px solid var(--color-brand-soft-border);
 }
 
 .task-card strong {
-    color: #fff;
+    color: var(--color-text-primary);
     font-weight: 500;
 }
 
 .task-card p {
     margin: 5px 0;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
 }
 
 .task-reward {
     display: inline-block;
-    background: linear-gradient(145deg, #2a9d8f 0%, #238b7e 100%);
+    background: linear-gradient(145deg, var(--color-teal) 0%, var(--color-teal-dark) 100%);
     padding: 3px 10px;
     border-radius: 4px;
     font-size: 0.78rem;
     margin-top: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px var(--color-shadow-xs-base);
 }
 
 .route-item {
     padding: 8px 12px;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--color-shadow-xs-base);
     border-radius: 6px;
     margin-bottom: 8px;
     font-size: 0.88rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
 }
 
 /* 移动端适配 */
@@ -983,11 +983,11 @@ ${text}
 
 <style>
 .city-detail-modal.el-dialog {
-    background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
-    border: 1px solid rgba(240, 179, 68, 0.25);
+    background: linear-gradient(145deg, var(--color-bg-panel) 0%, var(--color-bg-deep) 100%);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 10px;
     max-width: calc(100vw - 24px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px var(--color-shadow-md-base);
     margin: 0 !important;
     margin-top: 0 !important;
     top: auto !important;
@@ -1004,18 +1004,18 @@ ${text}
 }
 
 .city-detail-modal .el-dialog__header {
-    border-bottom: 1px solid rgba(240, 179, 68, 0.15);
+    border-bottom: 1px solid var(--color-brand-soft-bg);
     padding: 18px 20px;
 }
 
 .city-detail-modal .el-dialog__title {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .city-detail-modal .el-dialog__headerbtn .el-dialog__close {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
 }
 
 .city-detail-modal .el-dialog__body {
@@ -1026,49 +1026,49 @@ ${text}
 
 .city-detail-modal .el-input__wrapper,
 .city-detail-modal .el-select .el-input__wrapper {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     box-shadow: none;
     border-radius: 6px;
 }
 
 .city-detail-modal .el-input__inner,
 .city-detail-modal .el-select-dropdown__item {
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .city-detail-modal .el-select-dropdown {
-    background: #1e2f55;
-    border: 1px solid rgba(240, 179, 68, 0.2);
+    background: var(--color-bg-panel);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 6px;
 }
 
 .city-detail-modal .el-select-dropdown__item {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
 }
 
 .city-detail-modal .el-select-dropdown__item.hover,
 .city-detail-modal .el-select-dropdown__item:hover {
-    background: rgba(240, 179, 68, 0.15);
+    background: var(--color-brand-soft-bg);
 }
 
 .city-detail-modal .el-input-number .el-input__wrapper {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     box-shadow: none;
     border-radius: 6px;
 }
 
 /* Select dropdown popup */
 .el-select-dropdown {
-    background: #1e2f55 !important;
-    border: 1px solid rgba(240, 179, 68, 0.2) !important;
+    background: var(--color-bg-elevated) !important;
+    border: 1px solid var(--color-brand-soft-border) !important;
     border-radius: 6px !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 4px 16px var(--color-shadow-sm-base) !important;
 }
 
 .el-select-dropdown__item {
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: var(--color-text-secondary) !important;
     font-size: 14px;
     line-height: 1 !important;
     padding-top: 10px !important;
@@ -1077,23 +1077,23 @@ ${text}
 
 .el-select-dropdown__item.hover,
 .el-select-dropdown__item:hover {
-    background: rgba(240, 179, 68, 0.15) !important;
-    color: #fff !important;
+    background: var(--color-brand-soft-bg) !important;
+    color: var(--color-text-primary) !important;
 }
 
 .el-select-dropdown__item.selected {
-    color: #f0b344 !important;
+    color: var(--color-brand) !important;
     font-weight: 600;
 }
 
 .el-popper.is-light {
-    background: #1e2f55;
-    border-color: rgba(240, 179, 68, 0.2);
+    background: var(--color-bg-elevated);
+    border-color: var(--color-brand-soft-border);
 }
 
 .el-popper .el-popper__arrow::before {
-    background: #1e2f55;
-    border-color: rgba(240, 179, 68, 0.2);
+    background: var(--color-bg-elevated);
+    border-color: var(--color-brand-soft-border);
 }
 
 /* Select dropdown 内部结构 - 确保透明背景 */
@@ -1118,19 +1118,19 @@ ${text}
 }
 
 .el-select-dropdown {
-    background: #1e2f55 !important;
+    background: var(--color-bg-elevated) !important;
 }
 
 .el-select-dropdown__popper {
-    background: #1e2f55 !important;
+    background: var(--color-bg-elevated) !important;
 }
 
 /* 选中项背景 - 关键修复 */
 .el-select-dropdown__item.selected,
 .el-select-dropdown__item.is-selected,
 .el-select-dropdown__item[selected] {
-    background-color: rgba(240, 179, 68, 0.2) !important;
-    color: #f0b344 !important;
+    background-color: var(--color-brand-soft-border) !important;
+    color: var(--color-brand) !important;
 }
 
 /* 移动端适配 */

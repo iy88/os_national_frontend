@@ -1,0 +1,257 @@
+/* ============================================================================
+   Design Tokens — 全局深/浅色主题变量
+   通过 :root[data-theme="dark|light"] 切换。data-theme 在 <html> 上。
+   ============================================================================ */
+
+:root[data-theme="dark"] {
+    /* ----- Surface ----- */
+    --color-bg-base: #0d1b2a;
+    --color-bg-elevated: rgba(15, 26, 42, 0.96);
+    --color-bg-deep: #0f1a2a;
+    --color-bg-deep-alt: #141e37;
+    --color-bg-panel: #1e2f55;
+    --color-bg-panel-alt: #152035;
+    --color-bg-panel-gradient: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
+    --color-bg-input: rgba(0, 0, 0, 0.3);
+    --color-bg-input-strong: rgba(0, 0, 0, 0.4);
+    --color-bg-hover: rgba(255, 255, 255, 0.06);
+    --color-bg-subtle: rgba(255, 255, 255, 0.03);
+    --color-bg-admin: #09090b;
+    --color-bg-admin-mid: #1a1a1f;
+    --color-bg-admin-deep: #0d0d10;
+    --color-bg-admin-dialog: linear-gradient(145deg, #1a1a1f 0%, #0d0d10 100%);
+
+    /* ----- Text ----- */
+    --color-text-primary: #ffffff;
+    --color-text-secondary: rgba(255, 255, 255, 0.9);
+    --color-text-tertiary: rgba(255, 255, 255, 0.85);
+    --color-text-muted: rgba(255, 255, 255, 0.7);
+    --color-text-faint: rgba(255, 255, 255, 0.6);
+    --color-text-disabled: rgba(255, 255, 255, 0.5);
+    --color-text-placeholder: rgba(255, 255, 255, 0.5);
+    --color-text-on-brand: #1a1a1a;
+
+    /* ----- Border ----- */
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-border-subtle: rgba(255, 255, 255, 0.06);
+    --color-border-strong: rgba(255, 255, 255, 0.2);
+    --color-border-divider: rgba(255, 255, 255, 0.08);
+    --color-border-input: rgba(255, 255, 255, 0.12);
+    --color-border-faint: rgba(255, 255, 255, 0.02);
+
+    /* ----- Shadow / Overlay ----- */
+    --color-overlay: rgba(0, 0, 0, 0.5);
+    --color-overlay-strong: rgba(0, 0, 0, 0.6);
+    --color-shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.25);
+    --color-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --color-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --color-shadow-sm-base: rgba(0, 0, 0, 0.3);
+    --color-shadow-md-base: rgba(0, 0, 0, 0.4);
+    --color-shadow-xs-base: rgba(0, 0, 0, 0.2);
+
+    /* ----- Brand (深浅色保持品牌色不变) ----- */
+    --color-brand: #f0b344;
+    --color-brand-hover: #ffbe4a;
+    --color-brand-active: #d4962e;
+    --color-brand-faint: rgba(240, 179, 68, 0.02);
+    --color-brand-secondary: #e63946;
+    --color-brand-secondary-soft: rgba(230, 57, 70, 0.7);
+    --color-brand-soft-bg: rgba(240, 179, 68, 0.1);
+    --color-brand-soft-border: rgba(240, 179, 68, 0.3);
+    --color-brand-glow: rgba(240, 179, 68, 0.3);
+    --color-brand-glow-strong: rgba(240, 179, 68, 0.4);
+
+    /* ----- Map (dark: 黄色 / light: 白底浅蓝) ----- */
+    --color-map-province-fill: var(--color-brand-soft-bg);
+    --color-map-province-stroke: var(--color-brand-glow-strong);
+    --color-map-province-hover-fill: var(--color-brand-soft-border);
+    --color-map-province-hover-stroke: var(--color-brand-glow-strong);
+    --color-map-bg: var(--color-bg-deep);
+
+    /* ----- Admin Accent (绿色) ----- */
+    --color-admin: #4ade80;
+    --color-admin-hover: #22c55e;
+    --color-admin-soft: rgba(34, 197, 94, 0.5);
+    --color-admin-soft-bg: rgba(34, 197, 94, 0.12);
+    --color-admin-soft-bg-hover: rgba(34, 197, 94, 0.2);
+    --color-admin-soft-border: rgba(34, 197, 94, 0.25);
+    --color-admin-soft-border-hover: rgba(34, 197, 94, 0.3);
+    --color-admin-glow: rgba(34, 197, 94, 0.2);
+
+    /* ----- Status colors ----- */
+    --color-info: #3b82f6;
+    --color-info-soft: #88c2ff;
+    --color-purple: #a855f7;
+    --color-indigo: #6366f1;
+    --color-cyan: #22d3ee;
+    --color-pink: #ec4899;
+    --color-orange: #f97316;
+    --color-orange-soft: rgba(249, 115, 22, 0.12);
+    --color-green-dark: #064e3b;
+    --color-success-light: #63d179;
+    --color-danger: #f87171;
+    --color-danger-soft: rgba(255, 107, 107, 0.8);
+    --color-danger-strong: #ff4444;
+    --color-teal: #2a9d8f;
+    --color-teal-dark: #238b7e;
+    --color-text-muted-strong: #64748b;
+
+    /* ----- Gradients ----- */
+    --gradient-brand: linear-gradient(135deg, #f0b344 0%, #e63946 100%);
+    --gradient-brand-vertical: linear-gradient(180deg, #f0b344 0%, #d4962e 100%);
+    --gradient-brand-hover: linear-gradient(180deg, #ffbe4a 0%, #e4a630 100%);
+    --gradient-panel: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
+    --gradient-panel-admin: linear-gradient(145deg, #1a1a1f 0%, #0d0d10 100%);
+    --gradient-body:
+        radial-gradient(circle at 70% 60%, rgba(74, 158, 255, 0.08) 0%, transparent 36%),
+        linear-gradient(180deg, #141e37 0%, #0f1a2a 100%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    --gradient-body-size: auto, auto, 50px 50px, 50px 50px;
+    --gradient-body-deep: linear-gradient(180deg, #141e37 0%, #0f1a2a 100%);
+    --gradient-brand-soft: linear-gradient(145deg, rgba(240, 179, 68, 0.2) 0%, rgba(230, 57, 70, 0.15) 100%);
+    --gradient-brand-soft-info: linear-gradient(135deg, var(--color-brand-soft-bg) 0%, rgba(14, 165, 233, 0.1) 100%);
+    --gradient-admin-soft: linear-gradient(145deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+    --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+
+    /* ----- Element Plus 暗色 token 覆写 ----- */
+    --el-color-primary: #f0b344;
+    --el-bg-color-overlay: #1e2f55;
+    --el-fill-color-light: rgba(240, 179, 68, 0.12);
+    --el-text-color-regular: rgba(255, 255, 255, 0.9);
+    --el-border-color-hover: rgba(240, 179, 68, 0.4);
+    --el-fill-color: rgba(0, 0, 0, 0.4);
+    --el-bg-color: #0d1b2a;
+    --el-text-color-primary: #ffffff;
+    --el-text-color-placeholder: rgba(255, 255, 255, 0.5);
+
+    /* ----- Scrollbar ----- */
+    --color-scrollbar-track: rgba(255, 255, 255, 0.05);
+    --color-scrollbar-thumb: rgba(240, 179, 68, 0.4);
+    --color-scrollbar-thumb-hover: rgba(240, 179, 68, 0.6);
+}
+
+:root[data-theme="light"] {
+    /* ----- Surface ----- */
+    --color-bg-base: #f5f5f7;
+    --color-bg-elevated: rgba(255, 255, 255, 0.92);
+    --color-bg-deep: #eef0f4;
+    --color-bg-deep-alt: #e8eaf0;
+    --color-bg-panel: #ffffff;
+    --color-bg-panel-alt: #f0f0f3;
+    --color-bg-panel-gradient: linear-gradient(145deg, #ffffff 0%, #eef0f4 100%);
+    --color-bg-input: #ffffff;
+    --color-bg-input-strong: #ffffff;
+    --color-bg-hover: rgba(0, 0, 0, 0.04);
+    --color-bg-subtle: rgba(0, 0, 0, 0.02);
+    --color-bg-admin: #fafafa;
+    --color-bg-admin-mid: #ffffff;
+    --color-bg-admin-deep: #f4f4f6;
+    --color-bg-admin-dialog: linear-gradient(145deg, #ffffff 0%, #f4f4f6 100%);
+
+    /* ----- Text ----- */
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: rgba(0, 0, 0, 0.85);
+    --color-text-tertiary: rgba(0, 0, 0, 0.75);
+    --color-text-muted: rgba(0, 0, 0, 0.6);
+    --color-text-faint: rgba(0, 0, 0, 0.5);
+    --color-text-disabled: rgba(0, 0, 0, 0.4);
+    --color-text-placeholder: rgba(0, 0, 0, 0.4);
+    --color-text-on-brand: #1a1a1a;
+
+    /* ----- Border ----- */
+    --color-border: rgba(0, 0, 0, 0.12);
+    --color-border-subtle: rgba(0, 0, 0, 0.06);
+    --color-border-strong: rgba(0, 0, 0, 0.2);
+    --color-border-divider: rgba(0, 0, 0, 0.08);
+    --color-border-input: rgba(0, 0, 0, 0.12);
+    --color-border-faint: rgba(0, 0, 0, 0.02);
+
+    /* ----- Shadow / Overlay ----- */
+    --color-overlay: rgba(0, 0, 0, 0.35);
+    --color-overlay-strong: rgba(0, 0, 0, 0.5);
+    --color-shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --color-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --color-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+    --color-shadow-sm-base: rgba(0, 0, 0, 0.08);
+    --color-shadow-md-base: rgba(0, 0, 0, 0.12);
+    --color-shadow-xs-base: rgba(0, 0, 0, 0.05);
+
+    /* ----- Brand ----- */
+    --color-brand: #f0b344;
+    --color-brand-hover: #ffbe4a;
+    --color-brand-active: #d4962e;
+    --color-brand-faint: rgba(240, 179, 68, 0.05);
+    --color-brand-secondary: #d63946;
+    --color-brand-secondary-soft: rgba(214, 57, 70, 0.85);
+    --color-brand-soft-bg: rgba(240, 179, 68, 0.12);
+    --color-brand-soft-border: rgba(240, 179, 68, 0.4);
+    --color-brand-glow: rgba(240, 179, 68, 0.25);
+    --color-brand-glow-strong: rgba(240, 179, 68, 0.35);
+
+    /* ----- Map (light: 白底金边) ----- */
+    --color-map-province-fill: #ffffff;
+    --color-map-province-stroke: rgba(240, 179, 68, 0.55);
+    --color-map-province-hover-fill: rgba(240, 179, 68, 0.12);
+    --color-map-province-hover-stroke: rgba(240, 179, 68, 0.9);
+    --color-map-bg: var(--color-bg-deep);
+
+    /* ----- Admin Accent (绿色) ----- */
+    --color-admin: #16a34a;
+    --color-admin-hover: #15803d;
+    --color-admin-soft: rgba(22, 163, 74, 0.4);
+    --color-admin-soft-bg: rgba(22, 163, 74, 0.1);
+    --color-admin-soft-bg-hover: rgba(22, 163, 74, 0.18);
+    --color-admin-soft-border: rgba(22, 163, 74, 0.25);
+    --color-admin-soft-border-hover: rgba(22, 163, 74, 0.3);
+    --color-admin-glow: rgba(22, 163, 74, 0.15);
+
+    /* ----- Status colors ----- */
+    --color-info: #3b82f6;
+    --color-info-soft: #88c2ff;
+    --color-purple: #a855f7;
+    --color-indigo: #6366f1;
+    --color-cyan: #22d3ee;
+    --color-pink: #ec4899;
+    --color-orange: #f97316;
+    --color-orange-soft: rgba(249, 115, 22, 0.12);
+    --color-green-dark: rgba(22, 163, 74, 0.08);
+    --color-success-light: #63d179;
+    --color-danger: #f87171;
+    --color-danger-soft: rgba(255, 107, 107, 0.8);
+    --color-danger-strong: #ff4444;
+    --color-teal: #2a9d8f;
+    --color-teal-dark: #238b7e;
+    --color-text-muted-strong: #64748b;
+
+    /* ----- Gradients ----- */
+    --gradient-brand: linear-gradient(135deg, #f0b344 0%, #e63946 100%);
+    --gradient-brand-vertical: linear-gradient(180deg, #f0b344 0%, #d4962e 100%);
+    --gradient-brand-hover: linear-gradient(180deg, #ffbe4a 0%, #e4a630 100%);
+    --gradient-panel: linear-gradient(145deg, #ffffff 0%, #eef0f4 100%);
+    --gradient-panel-admin: linear-gradient(145deg, #ffffff 0%, #f4f4f6 100%);
+    --gradient-body:
+        linear-gradient(180deg, #f8f8fa 0%, #eef0f4 100%);
+    --gradient-body-size: auto;
+    --gradient-body-deep: linear-gradient(180deg, #f8f8fa 0%, #eef0f4 100%);
+    --gradient-brand-soft: linear-gradient(145deg, rgba(240, 179, 68, 0.2) 0%, rgba(230, 57, 70, 0.15) 100%);
+    --gradient-brand-soft-info: linear-gradient(135deg, var(--color-brand-soft-bg) 0%, rgba(14, 165, 233, 0.1) 100%);
+    --gradient-admin-soft: linear-gradient(145deg, rgba(22, 163, 74, 0.15) 0%, rgba(22, 163, 74, 0.08) 100%);
+    --gradient-purple: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+
+    /* ----- Element Plus 浅色 token (重置为默认) ----- */
+    --el-color-primary: #409eff;
+    --el-bg-color-overlay: #ffffff;
+    --el-fill-color-light: #f4f4f5;
+    --el-text-color-regular: #606266;
+    --el-border-color-hover: #c0c4cc;
+    --el-fill-color: #f0f0f0;
+    --el-bg-color: #ffffff;
+    --el-text-color-primary: #303133;
+    --el-text-color-placeholder: #a8abb2;
+
+    /* ----- Scrollbar ----- */
+    --color-scrollbar-track: rgba(0, 0, 0, 0.05);
+    --color-scrollbar-thumb: rgba(240, 179, 68, 0.5);
+    --color-scrollbar-thumb-hover: rgba(240, 179, 68, 0.7);
+}

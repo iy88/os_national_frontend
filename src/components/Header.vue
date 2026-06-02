@@ -25,45 +25,75 @@
                     沉浸对话
                 </button>
             </div>
-            <!-- 登录后显示头像下拉 -->
-            <div
-                v-if="authReady && isLoggedIn"
-                class="user-dropdown"
-                @mouseenter="handleDesktopMouseEnter"
-                @mouseleave="handleDesktopMouseLeave"
-            >
-                <div class="user-trigger">
-                    <button aria-label="用户头像" class="avatar-btn" type="button">
-                        <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
-                        <div v-else class="avatar-placeholder">
-                            {{ userInfo?.username?.charAt(0) || 'U' }}
-                        </div>
-                    </button>
-                    <span :title="userInfo?.username || ''" class="username-text">{{
-                            userInfo?.username || '用户'
-                        }}</span>
+            <div class="header-right">
+                <!-- 主题切换 -->
+                <button
+                    :aria-label="theme.effective === 'dark' ? '切换到浅色模式' : '切换到深色模式'"
+                    :title="theme.effective === 'dark' ? '切换到浅色模式' : '切换到深色模式'"
+                    class="theme-toggle-btn"
+                    type="button"
+                    @click="theme.toggle()"
+                >
+                    <svg
+                        v-if="theme.effective === 'dark'"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                    </svg>
+                    <svg
+                        v-else
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+                <!-- 登录后显示头像下拉 -->
+                <div
+                    v-if="authReady && isLoggedIn"
+                    class="user-dropdown"
+                    @mouseenter="handleDesktopMouseEnter"
+                    @mouseleave="handleDesktopMouseLeave"
+                >
+                    <div class="user-trigger">
+                        <button aria-label="用户头像" class="avatar-btn" type="button">
+                            <img v-if="avatarUrl" :alt="userInfo?.username" :src="avatarUrl"/>
+                            <div v-else class="avatar-placeholder">
+                                {{ userInfo?.username?.charAt(0) || 'U' }}
+                            </div>
+                        </button>
+                        <span :title="userInfo?.username || ''" class="username-text">{{
+                                userInfo?.username || '用户'
+                            }}</span>
+                    </div>
+                    <div v-show="dropdownOpen" class="dropdown-menu">
+                        <button class="dropdown-item" @click="goToProfile">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            个人中心
+                        </button>
+                        <button class="dropdown-item logout" @click="handleLogout">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" x2="9" y1="12" y2="12"/>
+                            </svg>
+                            退出登录
+                        </button>
+                    </div>
                 </div>
-                <div v-show="dropdownOpen" class="dropdown-menu">
-                    <button class="dropdown-item" @click="goToProfile">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        个人中心
-                    </button>
-                    <button class="dropdown-item logout" @click="handleLogout">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                            <polyline points="16 17 21 12 16 7"/>
-                            <line x1="21" x2="9" y1="12" y2="12"/>
-                        </svg>
-                        退出登录
-                    </button>
-                </div>
+                <button v-if="authReady && !isLoggedIn" class="login-btn" @click="handleLoginClick">
+                    登录/注册
+                </button>
             </div>
-            <button v-if="authReady && !isLoggedIn" class="login-btn" @click="handleLoginClick">
-                登录/注册
-            </button>
         </div>
 
         <!-- 移动端导航 -->
@@ -76,6 +106,33 @@
                 </svg>
             </button>
             <h1 class="mobile-logo">城竞共生</h1>
+            <!-- 移动端主题切换 -->
+            <button
+                :aria-label="theme.effective === 'dark' ? '切换到浅色模式' : '切换到深色模式'"
+                class="theme-toggle-btn mobile"
+                type="button"
+                @click="theme.toggle()"
+            >
+                <svg
+                    v-if="theme.effective === 'dark'"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                >
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                </svg>
+                <svg
+                    v-else
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                >
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
             <!-- 移动端已登录显示头像下拉 -->
             <div v-if="authReady && isLoggedIn" class="user-dropdown mobile">
                 <button class="avatar-btn small" @click.stop="toggleMobileDropdown">
@@ -159,6 +216,28 @@
                     </svg>
                     沉浸对话
                 </button>
+                <button class="sidebar-btn theme-toggle-sidebar-btn" @click="theme.toggle()">
+                    <svg
+                        v-if="theme.effective === 'dark'"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                    </svg>
+                    <svg
+                        v-else
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <span>{{ theme.effective === 'dark' ? '浅色模式' : '深色模式' }}</span>
+                </button>
             </div>
         </div>
     </header>
@@ -168,10 +247,12 @@
 import {computed, onMounted, onUnmounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useUserStore} from '../stores/user'
+import {useThemeStore} from '../stores/theme'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const theme = useThemeStore()
 
 const emit = defineEmits(['open-login'])
 
@@ -295,13 +376,13 @@ const handleLogout = () => {
 <style scoped>
 .app-header {
     --desktop-dropdown-reserve: 86px;
-    background: rgba(15, 26, 42, 0.96);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border-divider);
     padding: 10px 0;
     position: sticky;
     top: 0;
     z-index: 260;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--color-shadow-sm);
 }
 
 .header-content {
@@ -312,6 +393,7 @@ const handleLogout = () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
 }
 
 .logo-section {
@@ -328,14 +410,14 @@ const handleLogout = () => {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    background: linear-gradient(135deg, #f0b344 0%, #e63946 100%);
+    background: var(--gradient-brand);
     font-size: 0.88rem;
 }
 
 .logo {
     font-size: 1.05rem;
     font-weight: 700;
-    color: #f0b344;
+    color: var(--color-brand);
     margin: 0;
     letter-spacing: 0.2px;
 }
@@ -348,12 +430,18 @@ const handleLogout = () => {
     transform: translateX(-50%);
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .tab-btn {
     padding: 8px 16px;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.58);
+    color: var(--color-text-faint);
     font-size: 0.84rem;
     font-weight: 500;
     cursor: pointer;
@@ -361,8 +449,8 @@ const handleLogout = () => {
 }
 
 .tab-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.9);
+    background: var(--color-bg-hover);
+    color: var(--color-text-secondary);
 }
 
 .tab-btn:active {
@@ -370,35 +458,67 @@ const handleLogout = () => {
 }
 
 .tab-btn.active {
-    background: rgba(240, 179, 68, 0.1);
-    color: #f0b344;
-    border-color: rgba(240, 179, 68, 0.3);
+    background: var(--color-brand-soft-bg);
+    color: var(--color-brand);
+    border-color: var(--color-brand-soft-border);
 }
 
 .login-btn {
     padding: 10px 22px;
-    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
+    background: var(--gradient-brand);
     border: none;
     border-radius: 6px;
-    color: #fff;
+    color: var(--color-text-on-brand);
     font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.3),
+    box-shadow: 0 2px 8px var(--color-brand-glow),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .login-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(240, 179, 68, 0.4),
+    box-shadow: 0 4px 14px var(--color-brand-glow-strong),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .login-btn:active {
     transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(240, 179, 68, 0.3),
+    box-shadow: 0 1px 4px var(--color-brand-glow),
     inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 主题切换按钮 - 桌面 */
+.theme-toggle-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-brand-soft-border);
+    border-radius: 50%;
+    color: var(--color-brand);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.theme-toggle-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px var(--color-brand-glow);
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.98);
 }
 
 /* 用户头像下拉菜单 */
@@ -426,7 +546,7 @@ const handleLogout = () => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: rgba(255, 255, 255, 0.86);
+    color: var(--color-text-tertiary);
     font-size: 0.9rem;
     line-height: 1;
 }
@@ -437,24 +557,24 @@ const handleLogout = () => {
     padding: 0;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid #f0b344;
+    border: 2px solid var(--color-brand);
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.25);
+    box-shadow: 0 2px 8px var(--color-brand-glow);
 }
 
 .avatar-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.35);
+    box-shadow: 0 4px 12px var(--color-brand-glow-strong);
 }
 
 .user-trigger:hover .avatar-btn {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(240, 179, 68, 0.35);
+    box-shadow: 0 4px 12px var(--color-brand-glow-strong);
 }
 
 .user-trigger:hover .username-text {
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .avatar-btn img {
@@ -466,13 +586,13 @@ const handleLogout = () => {
 .avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
+    background: var(--gradient-brand);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
     font-weight: bold;
-    color: #fff;
+    color: var(--color-text-on-brand);
 }
 
 .dropdown-menu {
@@ -481,11 +601,11 @@ const handleLogout = () => {
     left: 50%;
     transform: translateX(-50%);
     min-width: 160px;
-    background: rgba(30, 45, 80, 0.98);
-    border: 1px solid rgba(240, 179, 68, 0.2);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 8px;
     padding: 6px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--color-shadow-md);
     z-index: 320;
     animation: dropdownFadeIn 0.15s ease;
 }
@@ -498,9 +618,9 @@ const handleLogout = () => {
     transform: translateX(-50%) rotate(45deg);
     width: 10px;
     height: 10px;
-    background: rgba(30, 45, 80, 0.98);
-    border-left: 1px solid rgba(240, 179, 68, 0.2);
-    border-top: 1px solid rgba(240, 179, 68, 0.2);
+    background: var(--color-bg-elevated);
+    border-left: 1px solid var(--color-brand-soft-border);
+    border-top: 1px solid var(--color-brand-soft-border);
 }
 
 @keyframes dropdownFadeIn {
@@ -548,7 +668,7 @@ const handleLogout = () => {
     background: transparent;
     border: none;
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -557,24 +677,24 @@ const handleLogout = () => {
 .dropdown-item svg {
     width: 18px;
     height: 18px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
 }
 
 .dropdown-item:hover {
-    background: rgba(240, 179, 68, 0.12);
-    color: #fff;
+    background: var(--color-brand-soft-bg);
+    color: var(--color-text-primary);
 }
 
 .dropdown-item:hover svg {
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .dropdown-item.logout {
-    color: #e63946;
+    color: var(--color-brand-secondary);
 }
 
 .dropdown-item.logout svg {
-    color: rgba(230, 57, 70, 0.7);
+    color: var(--color-brand-secondary-soft);
 }
 
 .dropdown-item.logout:hover {
@@ -582,7 +702,7 @@ const handleLogout = () => {
 }
 
 .dropdown-item.logout:hover svg {
-    color: #e63946;
+    color: var(--color-brand-secondary);
 }
 
 /* 移动端导航 */
@@ -592,26 +712,37 @@ const handleLogout = () => {
     align-items: center;
     justify-content: space-between;
     height: 56px;
+    gap: 6px;
 }
 
 .mobile-logo {
     font-size: 1.2rem;
     font-weight: bold;
-    background: linear-gradient(145deg, #f0b344 0%, #e63946 100%);
+    background: var(--gradient-brand);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin: 0;
+    flex: 1;
+    text-align: center;
+}
+
+.theme-toggle-btn.mobile {
+    width: 38px;
+    height: 38px;
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-brand-soft-border);
+    border-radius: 10px;
 }
 
 .hamburger-btn,
 .user-btn {
     width: 44px;
     height: 44px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(240, 179, 68, 0.3);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 10px;
-    color: #f0b344;
+    color: var(--color-brand);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -627,8 +758,8 @@ const handleLogout = () => {
 
 .hamburger-btn:hover,
 .user-btn:hover {
-    background: rgba(240, 179, 68, 0.15);
-    border-color: rgba(240, 179, 68, 0.3);
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand-soft-border);
 }
 
 /* 侧边栏遮罩 */
@@ -638,7 +769,7 @@ const handleLogout = () => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--color-overlay-strong);
     z-index: 200;
     animation: fadeIn 0.2s ease;
 }
@@ -659,12 +790,12 @@ const handleLogout = () => {
     left: 0;
     width: 280px;
     height: 100vh;
-    background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
-    border-right: 1px solid rgba(240, 179, 68, 0.2);
+    background: var(--gradient-panel);
+    border-right: 1px solid var(--color-brand-soft-border);
     z-index: 201;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--color-shadow-md);
 }
 
 .sidebar.open {
@@ -676,11 +807,11 @@ const handleLogout = () => {
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid rgba(240, 179, 68, 0.15);
+    border-bottom: 1px solid var(--color-brand-soft-bg);
 }
 
 .sidebar-title {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1.1rem;
     font-weight: 600;
 }
@@ -688,10 +819,10 @@ const handleLogout = () => {
 .close-btn {
     width: 36px;
     height: 36px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-hover);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -706,8 +837,8 @@ const handleLogout = () => {
 
 .close-btn:hover {
     background: rgba(230, 57, 70, 0.2);
-    border-color: rgba(230, 57, 70, 0.4);
-    color: #e63946;
+    border-color: var(--color-brand-secondary);
+    color: var(--color-brand-secondary);
 }
 
 .sidebar-content {
@@ -722,10 +853,10 @@ const handleLogout = () => {
     align-items: center;
     gap: 12px;
     padding: 14px 18px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-text-tertiary);
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
@@ -735,23 +866,30 @@ const handleLogout = () => {
 .sidebar-btn svg {
     width: 22px;
     height: 22px;
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .sidebar-btn:hover {
-    background: rgba(240, 179, 68, 0.1);
-    border-color: rgba(240, 179, 68, 0.3);
+    background: var(--color-brand-soft-bg);
+    border-color: var(--color-brand-soft-border);
     transform: translateX(4px);
 }
 
 .sidebar-btn.active {
-    background: linear-gradient(145deg, rgba(240, 179, 68, 0.2) 0%, rgba(230, 57, 70, 0.15) 100%);
-    border-color: rgba(240, 179, 68, 0.4);
-    color: #fff;
+    background: var(--gradient-brand-soft);
+    border-color: var(--color-brand-soft-border);
+    color: var(--color-text-primary);
 }
 
 .sidebar-btn.active svg {
-    color: #f0b344;
+    color: var(--color-brand);
+}
+
+.theme-toggle-sidebar-btn {
+    margin-top: 12px;
+    border-top: 1px solid var(--color-border-subtle);
+    border-top-style: dashed;
+    padding-top: 18px;
 }
 
 @media (max-width: 768px) {

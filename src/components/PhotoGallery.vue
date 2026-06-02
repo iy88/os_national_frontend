@@ -207,9 +207,9 @@ watch(() => props.modelValue, (val) => {
     width: 38px;
     height: 38px;
     border-radius: 6px;
-    background: linear-gradient(180deg, rgba(240, 179, 68, 0.15) 0%, rgba(240, 179, 68, 0.08) 100%);
-    border: 1px solid rgba(240, 179, 68, 0.3);
-    color: #f0b344;
+    background: linear-gradient(180deg, var(--color-brand-soft-bg) 0%, var(--color-brand-soft-bg) 100%);
+    border: 1px solid var(--color-brand-soft-border);
+    color: var(--color-brand);
     font-size: 1.1rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -220,10 +220,10 @@ watch(() => props.modelValue, (val) => {
 }
 
 .nav-btn:hover:not(:disabled) {
-    background: linear-gradient(180deg, #f0b344 0%, #d4962e 100%);
-    color: #fff;
+    background: linear-gradient(180deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
+    color: var(--color-text-primary);
     border-color: transparent;
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.3);
+    box-shadow: 0 2px 8px var(--color-brand-soft-border);
 }
 
 .nav-btn:disabled {
@@ -237,10 +237,10 @@ watch(() => props.modelValue, (val) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--color-shadow-sm-base);
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-bg-hover);
 }
 
 .photo-track {
@@ -257,7 +257,7 @@ watch(() => props.modelValue, (val) => {
 }
 
 .photo-counter {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-tertiary);
     font-size: 0.95rem;
 }
 
@@ -279,7 +279,7 @@ watch(() => props.modelValue, (val) => {
     width: 24px;
     height: 4px;
     border-radius: 2px;
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--color-border-strong);
     cursor: pointer;
     transition: all 0.3s ease;
     flex-shrink: 0;
@@ -288,46 +288,46 @@ watch(() => props.modelValue, (val) => {
 /*noinspection CssUnusedSymbol*/
 .indicator.active {
     width: 36px;
-    background: #f0b344;
-    box-shadow: 0 0 10px rgba(240, 179, 68, 0.5);
+    background: var(--color-brand);
+    box-shadow: 0 0 10px var(--color-brand-glow-strong);
 }
 
 .no-photos {
     text-align: center;
     padding: 40px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-faint);
 }
 </style>
 
 <!--suppress CssUnusedSymbol -->
 <style>
 .photo-gallery-modal.el-dialog {
-    background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
-    border: 1px solid rgba(240, 179, 68, 0.25);
+    background: linear-gradient(145deg, var(--color-bg-panel) 0%, var(--color-bg-deep) 100%);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px var(--color-shadow-md-base);
     margin-top: 0 !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
 }
 
 .photo-gallery-modal .el-dialog__header {
-    border-bottom: 1px solid rgba(240, 179, 68, 0.12);
+    border-bottom: 1px solid var(--color-brand-soft-bg);
     padding: 18px 20px;
 }
 
 .photo-gallery-modal .el-dialog__title {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .photo-gallery-modal .el-dialog__headerbtn .el-dialog__close {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
 }
 
 .photo-gallery-modal .el-dialog__headerbtn:hover .el-dialog__close {
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .photo-gallery-modal .el-dialog__body {

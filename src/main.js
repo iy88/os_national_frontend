@@ -1,11 +1,13 @@
 import {createApp} from 'vue'
 import {createPinia} from 'pinia'
 import ElementPlus, {ElMessage} from 'element-plus'
+import './styles/tokens.css'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
 import App from './App.vue'
 import router from './router'
+import {useThemeStore} from './stores/theme'
 
 const GLOBAL_MESSAGE_DURATION = 1000
 const MESSAGE_TYPES = ['success', 'warning', 'info', 'error']
@@ -47,3 +49,6 @@ app.use(router)
 app.use(ElementPlus)
 
 app.mount('#app')
+
+// 初始化主题：绑定 matchMedia 监听，应用持久化的用户偏好
+useThemeStore().init()

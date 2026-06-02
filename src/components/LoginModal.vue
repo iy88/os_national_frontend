@@ -314,13 +314,13 @@ const onDialogClosed = () => {
 
 .switch-mode {
     text-align: center;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
     margin-bottom: 14px;
     font-size: 0.9rem;
 }
 
 .switch-mode span {
-    color: #f0b344;
+    color: var(--color-brand);
     cursor: pointer;
     margin-left: 5px;
 }
@@ -331,17 +331,17 @@ const onDialogClosed = () => {
 
 .submit-btn {
     width: 100%;
-    background: linear-gradient(180deg, #f0b344 0%, #d4962e 100%);
+    background: linear-gradient(180deg, var(--color-brand) 0%, var(--color-brand-active) 100%);
     border: none;
     border-radius: 6px;
     padding: 12px 20px;
     font-size: 0.95rem;
     font-weight: 500;
-    box-shadow: 0 2px 8px rgba(240, 179, 68, 0.3);
+    box-shadow: 0 2px 8px var(--color-brand-soft-border);
 }
 
 .submit-btn:hover {
-    background: linear-gradient(180deg, #ffbe4a 0%, #e4a630 100%);
+    background: linear-gradient(180deg, var(--color-brand-hover) 0%, var(--color-brand-active) 100%);
 }
 
 .verification-row {
@@ -354,9 +354,9 @@ const onDialogClosed = () => {
 }
 
 .send-code-btn {
-    background: rgba(240, 179, 68, 0.1);
-    border: 1px solid rgba(240, 179, 68, 0.25);
-    color: #f0b344;
+    background: var(--color-brand-soft-bg);
+    border: 1px solid var(--color-brand-soft-border);
+    color: var(--color-brand);
     border-radius: 6px;
     padding: 0 16px;
     height: 32px;
@@ -364,8 +364,8 @@ const onDialogClosed = () => {
 }
 
 .send-code-btn:hover:not(:disabled) {
-    background: rgba(240, 179, 68, 0.2);
-    border-color: rgba(240, 179, 68, 0.4);
+    background: var(--color-brand-soft-border);
+    border-color: var(--color-brand-glow-strong);
 }
 
 .send-code-btn:disabled {
@@ -390,40 +390,40 @@ const onDialogClosed = () => {
 }
 
 .loading-icon circle {
-    stroke: #f0b344 !important;
+    stroke: var(--color-brand) !important;
 }
 
 .loading-notification span {
-    color: #f0b344 !important;
+    color: var(--color-brand) !important;
 }
 
 .login-modal.el-dialog {
-    background: linear-gradient(145deg, #1e2f55 0%, #0f1a2a 100%);
-    border: 1px solid rgba(240, 179, 68, 0.25);
+    background: linear-gradient(145deg, var(--color-bg-panel) 0%, var(--color-bg-deep) 100%);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px var(--color-shadow-md-base);
     margin-top: 0 !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
 }
 
 .login-modal .el-dialog__header {
-    border-bottom: 1px solid rgba(240, 179, 68, 0.12);
+    border-bottom: 1px solid var(--color-brand-soft-bg);
     padding: 18px 20px;
 }
 
 .login-modal .el-dialog__title {
-    color: #f0b344;
+    color: var(--color-brand);
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .login-modal .el-dialog__headerbtn .el-dialog__close {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--color-text-muted);
 }
 
 .login-modal .el-dialog__headerbtn:hover .el-dialog__close {
-    color: #f0b344;
+    color: var(--color-brand);
 }
 
 .login-modal .el-dialog__body {
@@ -431,62 +431,62 @@ const onDialogClosed = () => {
 }
 
 .login-modal .el-form-item__label {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     font-size: 0.9rem;
 }
 
 .login-modal .el-input__wrapper {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     box-shadow: none;
     border-radius: 6px;
 }
 
 .login-modal .el-input__inner {
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .login-modal .el-input__inner::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-placeholder);
 }
 
 .login-modal .el-input__wrapper:hover {
-    border-color: rgba(240, 179, 68, 0.4);
+    border-color: var(--color-brand-glow-strong);
 }
 
 .login-modal .el-input__wrapper.is-focus {
-    border-color: #f0b344;
-    box-shadow: 0 0 0 2px rgba(240, 179, 68, 0.15);
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 2px var(--color-brand-soft-bg);
 }
 
 .login-modal .el-select .el-input__wrapper {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     box-shadow: none;
 }
 
 .login-modal .el-select-dropdown {
-    background: #1e2f55;
-    border: 1px solid rgba(240, 179, 68, 0.2);
+    background: var(--color-bg-panel);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 6px;
 }
 
 .login-modal .el-select-dropdown__item {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-secondary);
     font-size: 0.9rem;
 }
 
 .login-modal .el-select-dropdown__item.hover,
 .login-modal .el-select-dropdown__item:hover {
-    background: rgba(240, 179, 68, 0.15);
+    background: var(--color-brand-soft-bg);
 }
 
 .login-modal .el-textarea__inner {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     box-shadow: none;
     border-radius: 6px;
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .login-modal .el-input-number {
@@ -494,8 +494,8 @@ const onDialogClosed = () => {
 }
 
 .login-modal .el-input-number .el-input__wrapper {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-shadow-sm-base);
+    border: 1px solid var(--color-border);
     box-shadow: none;
 }
 

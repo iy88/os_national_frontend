@@ -606,11 +606,11 @@ onUnmounted(() => {
     position: relative;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(180deg, #141e37 0%, #0f1a2a 100%);
+    background: linear-gradient(180deg, var(--color-bg-deep-alt) 0%, var(--color-bg-deep) 100%);
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--color-border-subtle);
+    box-shadow: 0 4px 16px var(--color-shadow-xs-base),
+    inset 0 1px 0 var(--color-bg-subtle);
     overflow: hidden;
 }
 
@@ -624,9 +624,7 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     position: relative;
-    background: radial-gradient(circle at 30% 40%, rgba(240, 179, 68, 0.1) 0%, transparent 42%),
-    radial-gradient(circle at 70% 60%, rgba(74, 158, 255, 0.08) 0%, transparent 36%),
-    linear-gradient(180deg, #141e37 0%, #0f1a2a 100%);
+    background: var(--color-bg-deep);
     cursor: grab;
     user-select: none;
 }
@@ -635,8 +633,8 @@ onUnmounted(() => {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-image: linear-gradient(var(--color-border-faint) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border-faint) 1px, transparent 1px);
     background-size: 50px 50px;
     pointer-events: none;
 }
@@ -653,15 +651,15 @@ onUnmounted(() => {
 }
 
 .province-path {
-    fill: rgba(240, 179, 68, 0.08);
-    stroke: rgba(240, 179, 68, 0.4);
+    fill: var(--color-map-province-fill);
+    stroke: var(--color-map-province-stroke);
     stroke-width: 0.5;
     transition: fill 0.2s ease;
 }
 
 .province-path:hover {
-    fill: rgba(240, 179, 68, 0.25);
-    stroke: rgba(240, 179, 68, 0.6);
+    fill: var(--color-map-province-hover-fill);
+    stroke: var(--color-map-province-hover-stroke);
 }
 
 .city-marker {
@@ -669,19 +667,19 @@ onUnmounted(() => {
 }
 
 .city-marker .marker-dot {
-    fill: #ff6b6b;
-    filter: drop-shadow(0 0 4px rgba(255, 107, 107, 0.8));
+    fill: var(--color-danger);
+    filter: drop-shadow(0 0 4px var(--color-danger-soft));
     transition: all 0.2s ease;
 }
 
 .city-marker:hover .marker-dot {
-    fill: #ff4444;
-    filter: drop-shadow(0 0 8px rgba(255, 107, 107, 1));
+    fill: var(--color-danger-strong);
+    filter: drop-shadow(0 0 8px var(--color-danger));
 }
 
 .city-marker .pulse-ring {
     fill: none;
-    stroke: #ff6b6b;
+    stroke: var(--color-danger);
     stroke-width: 1;
     opacity: 0.5;
     animation: pulse 2s infinite;
@@ -698,11 +696,11 @@ onUnmounted(() => {
 }
 
 .city-marker .city-label {
-    fill: #fff;
+    fill: var(--color-text-primary);
     font-size: 12px;
     font-weight: 500;
     text-anchor: middle;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px 3px var(--color-overlay-strong);
     pointer-events: none;
     opacity: 0.9;
 }
@@ -729,22 +727,22 @@ onUnmounted(() => {
     right: 16px;
     width: 44px;
     height: 44px;
-    background: rgba(30, 45, 80, 0.9);
-    border: 1px solid rgba(240, 179, 68, 0.3);
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-brand-soft-border);
     border-radius: 8px;
-    color: #f0b344;
+    color: var(--color-brand);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px var(--color-shadow-sm-base);
     z-index: 10;
 }
 
 .reset-btn:hover {
-    background: rgba(240, 179, 68, 0.2);
-    border-color: #f0b344;
+    background: var(--color-brand-soft-border);
+    border-color: var(--color-brand);
     transform: scale(1.05);
 }
 
@@ -763,14 +761,15 @@ onUnmounted(() => {
     bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.75);
-    color: rgba(255, 255, 255, 0.8);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 13px;
     pointer-events: none;
     animation: fadeInOut 3s ease-in-out;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px var(--color-shadow-sm-base);
     z-index: 220;
 }
 
