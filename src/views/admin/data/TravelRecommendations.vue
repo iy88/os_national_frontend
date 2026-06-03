@@ -593,7 +593,7 @@ h1 {
 }
 </style>
 
-<!-- 预览弹窗样式（非 scoped：el-dialog 通过 Teleport 渲染到 <body>，scoped 规则无法命中） -->
+<!-- 预览弹窗样式（非 scoped，对齐 TravelView 城市详情弹窗） -->
 <style>
 .preview-modal .el-dialog {
     height: 80vh;
@@ -617,7 +617,7 @@ h1 {
 .preview-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 18px;
     color: var(--color-text-secondary);
     font-size: 0.9rem;
     line-height: 1.6;
@@ -628,18 +628,19 @@ h1 {
 }
 
 .info-section {
-    background: var(--color-bg-admin-deep);
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
+    background: var(--color-shadow-xs-base);
+    padding: 14px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    border-left: 3px solid var(--color-brand);
+    box-shadow: inset 0 1px 0 var(--color-border-faint);
 }
 
 .info-section h3 {
-    color: var(--color-text-primary);
+    color: var(--color-brand);
+    margin: 0 0 10px 0;
     font-size: 0.95rem;
     font-weight: 600;
-    margin-bottom: 10px;
 }
 
 .info-section ul {
@@ -649,90 +650,84 @@ h1 {
 }
 
 .info-section ul li {
-    padding: 4px 0;
-    border-bottom: 1px dashed var(--color-border-subtle);
-    color: var(--color-text-secondary);
-}
-
-.info-section ul li:last-child {
-    border-bottom: none;
+    padding: 5px 0;
+    color: var(--color-text-tertiary);
+    font-size: 0.88rem;
 }
 
 .player-card,
 .hero-card {
-    background: var(--color-bg-admin-mid);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+    background: var(--color-shadow-xs-base);
     padding: 10px 12px;
+    border-radius: 6px;
     margin-bottom: 8px;
 }
 
 .player-card strong,
 .hero-card strong {
-    color: var(--color-admin);
-    font-size: 0.9rem;
+    color: var(--color-brand);
 }
 
 .player-card small,
 .hero-card small {
-    color: var(--color-text-disabled);
-    font-size: 0.75rem;
+    color: var(--color-text-faint);
+    font-size: 0.8rem;
 }
 
 .player-card p,
 .hero-card p {
-    margin: 6px 0 0;
+    margin: 5px 0 0 0;
     color: var(--color-text-muted);
     font-size: 0.85rem;
 }
 
 .tasks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
 }
 
 .task-card {
-    background: var(--color-bg-admin-mid);
+    background: var(--color-shadow-xs-base);
+    padding: 12px;
+    border-radius: 6px;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
-    padding: 10px 12px;
 }
 
 .task-card strong {
-    color: var(--color-brand);
-    display: block;
-    margin-bottom: 4px;
+    color: var(--color-text-primary);
+    font-weight: 500;
 }
 
 .task-card p {
     color: var(--color-text-muted);
     font-size: 0.85rem;
-    margin: 4px 0;
+    margin: 5px 0;
 }
 
 .task-reward {
     display: inline-block;
-    margin-top: 6px;
-    padding: 2px 8px;
-    background: var(--color-admin-soft-bg);
-    color: var(--color-admin);
+    background: linear-gradient(145deg, var(--color-teal) 0%, var(--color-teal-dark) 100%);
+    color: #fff;
+    padding: 3px 10px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
+    margin-top: 5px;
+    box-shadow: 0 1px 3px var(--color-shadow-xs-base);
 }
 
 .route-item {
-    background: var(--color-bg-admin-mid);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
     padding: 8px 12px;
-    margin-bottom: 6px;
-    color: var(--color-text-secondary);
+    background: var(--color-shadow-xs-base);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    color: var(--color-text-tertiary);
 }
 
 .preview-content .empty-tip {
     text-align: center;
-    color: var(--color-text-disabled);
+    color: var(--color-text-faint);
     font-size: 0.85rem;
     padding: 8px 0;
     margin: 0;
