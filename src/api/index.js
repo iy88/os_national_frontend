@@ -495,4 +495,60 @@ export const adminDashboard = () => {
     return apiClient.get('/admin/dashboard')
 }
 
+// ============ Travel Recommendation 旅行推荐接口 ============
+
+// 获取所有启用的旅行推荐（首页地图 + 城市详情共用）
+export const getTravelRecommendations = () => {
+    return apiClient.get('/travel/recommendation')
+}
+
+// 获取单条旅行推荐详情
+export const getTravelRecommendationDetail = (recId) => {
+    return apiClient.get(`/travel/recommendation/${recId}`)
+}
+
+// ============ Travel Recommendation 管理员接口 ============
+
+// 主表 CRUD
+export const adminListTravelRecs = (params) => {
+    return apiClient.get('/admin/travel/recommendation', {params})
+}
+
+export const adminGetTravelRec = (id) => {
+    return apiClient.get(`/admin/travel/recommendation/${id}`)
+}
+
+export const adminCreateTravelRec = (data) => {
+    return apiClient.post('/admin/travel/recommendation', data)
+}
+
+export const adminUpdateTravelRec = (id, data) => {
+    return apiClient.put(`/admin/travel/recommendation/${id}`, data)
+}
+
+export const adminDeleteTravelRec = (id) => {
+    return apiClient.delete(`/admin/travel/recommendation/${id}`)
+}
+
+// 7 个子表 CRUD（保留备用，本次 UI 不直接调用，统一通过主表 PUT 提交）
+const TRAVEL_REC_SUB_RESOURCES = [
+    'players', 'heroes', 'esports_info', 'foods', 'travel_tips', 'tasks', 'recommended_routes'
+]
+
+export const adminListTravelRecSub = (rid, resource) => {
+    return apiClient.get(`/admin/travel/recommendation/${rid}/${resource}`)
+}
+
+export const adminCreateTravelRecSub = (rid, resource, data) => {
+    return apiClient.post(`/admin/travel/recommendation/${rid}/${resource}`, data)
+}
+
+export const adminUpdateTravelRecSub = (rid, resource, itemId, data) => {
+    return apiClient.put(`/admin/travel/recommendation/${rid}/${resource}/${itemId}`, data)
+}
+
+export const adminDeleteTravelRecSub = (rid, resource, itemId) => {
+    return apiClient.delete(`/admin/travel/recommendation/${rid}/${resource}/${itemId}`)
+}
+
 export default apiClient

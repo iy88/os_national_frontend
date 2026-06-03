@@ -39,6 +39,10 @@ export default defineConfig({
                 target: apiTarget,
                 changeOrigin: true
             },
+            '/travel/': {
+                target: apiTarget,
+                changeOrigin: true
+            },
             '/admin/': {
                 target: apiTarget,
                 changeOrigin: true

@@ -68,8 +68,14 @@
 </template>
 
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref} from 'vue'
-import citiesData from '../data/cities.json'
+import {computed, nextTick, onMounted, onUnmounted, ref} from 'vue'
+
+const props = defineProps({
+    cities: {
+        type: Array,
+        default: () => []
+    }
+})
 
 const emit = defineEmits(['select-city'])
 
@@ -142,18 +148,6 @@ let lastContainerWidth = 0
 let lastContainerHeight = 0
 const RESIZE_THRESHOLD_PX = 4
 
-// 城市标记数据（从 cities.json 导入）
-const cityMarkersData = Object.entries(citiesData).reduce((acc, [key, city]) => {
-    if (city.center) {
-        acc[key] = {
-            name: city.displayName,
-            lon: city.center[0],
-            lat: city.center[1]
-        }
-    }
-    return acc
-}, {})
-
 // 地理坐标转SVG坐标
 const geoToSvg = (lon, lat) => {
     const x = 7.242 * lon - 366.12
@@ -161,10 +155,14 @@ const geoToSvg = (lon, lat) => {
     return {x, y}
 }
 
-// 计算城市标记坐标
-const cityMarkers = Object.entries(cityMarkersData).map(([key, info]) => {
-    const {x, y} = geoToSvg(info.lon, info.lat)
-    return {city: key, name: info.name, x, y}
+// 城市标记数据（由 props 传入，结构：{id, name, displayName, center: [lon, lat]}）
+const cityMarkers = computed(() => {
+    return (props.cities || [])
+        .filter(city => city.center && Array.isArray(city.center) && city.center.length === 2)
+        .map(city => {
+            const {x, y} = geoToSvg(city.center[0], city.center[1])
+            return {city: city.id, name: city.displayName, x, y}
+        })
 })
 
 // 省份路径数据

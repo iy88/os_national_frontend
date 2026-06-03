@@ -6,7 +6,7 @@
             class="map-section"
         >
             <div class="map-host">
-                <CityMap @select-city="showCityDetail"/>
+                <CityMap :cities="cityList" @select-city="showCityDetail"/>
             </div>
         </section>
 
@@ -201,26 +201,30 @@
 </template>
 
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref} from 'vue'
+import {computed, nextTick, onMounted, onUnmounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import CityMap from '../components/CityMap.vue'
 import ChatBox from '../components/ChatBox.vue'
-import citiesData from '../data/cities.json'
 import {useStreamTimers} from '../composables/useStreamTimers'
 import {favoriteRoute, sendChatMessage} from '../api'
 import {ElMessage} from 'element-plus'
 import {useUserStore} from '../stores/user'
+import {useRecommendationStore} from '../stores/recommendation'
 
-// 城市数据列表（直接使用 cities.json）
-const cityDataList = citiesData
+const recommendationStore = useRecommendationStore()
 
-// 城市名称映射（key -> displayName）
-const cityMap = Object.entries(citiesData).reduce((acc, [key, city]) => {
-    if (city.displayName) {
-        acc[key] = city.displayName
+// 旅行推荐数据（store 提供）
+const cityList = computed(() => recommendationStore.list)
+const cityDataList = computed(() => recommendationStore.byId)
+const cityMap = computed(() => recommendationStore.displayNameMap)
+
+const loadRecommendations = async () => {
+    try {
+        await recommendationStore.fetchAll()
+    } catch (e) {
+        ElMessage.error(e?.message || '获取旅行推荐失败')
     }
-    return acc
-}, {})
+}
 
 const SIDEBAR_WIDTH = 420
 const getIsDesktopLayout = () => {
@@ -331,6 +335,7 @@ onMounted(() => {
     updateDialogWidth()
     window.addEventListener('resize', updateLayoutMode)
     window.addEventListener('resize', updateDialogWidth)
+    loadRecommendations()
 })
 
 onUnmounted(() => {
@@ -342,7 +347,8 @@ onUnmounted(() => {
 const travelMessages = ref([])
 
 const showCityDetail = (cityKey) => {
-    currentCity.value = cityDataList[cityKey]
+    const id = Number(cityKey)
+    currentCity.value = cityDataList.value[id] || cityDataList.value[cityKey] || null
     showCityModal.value = true
     nextTick(() => {
         const dialogBody = document.querySelector('.city-detail-modal .el-dialog__body')
@@ -365,7 +371,7 @@ const sendTravelMessage = (text) => {
     // 清理之前的 SSE 连接
     cancelStreaming()
 
-    const cityName = selectedCity.value ? cityMap[selectedCity.value] : ''
+    const cityName = selectedCity.value ? cityMap.value[selectedCity.value] : ''
     const hasPlanningInfo = cityName || travelDays.value || travelPeople.value || travelRelationship.value
 
     let promptTemplate
@@ -913,10 +919,10 @@ ${text}
 }
 
 .task-card {
-    background: linear-gradient(145deg, var(--color-brand-soft-bg) 0%, var(--color-brand-soft-border) 100%);
+    background: var(--color-shadow-xs-base);
     padding: 12px;
     border-radius: 6px;
-    border: 1px solid var(--color-brand-soft-border);
+    border: 1px solid var(--color-border);
 }
 
 .task-card strong {
@@ -933,6 +939,7 @@ ${text}
 .task-reward {
     display: inline-block;
     background: linear-gradient(145deg, var(--color-teal) 0%, var(--color-teal-dark) 100%);
+    color: #fff;
     padding: 3px 10px;
     border-radius: 4px;
     font-size: 0.78rem;

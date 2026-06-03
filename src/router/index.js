@@ -76,6 +76,18 @@ const routes = [
         name: 'admin-roles',
         component: Roles
     },
+    {
+        path: '/manage/data/travel-recommendations',
+        name: 'admin-travel-recs',
+        component: () => import('../views/admin/data/TravelRecommendations.vue'),
+        meta: {requiresAuth: true, authType: 'admin'}
+    },
+    {
+        path: '/manage/data/travel-recommendations/form/:id?',
+        name: 'admin-travel-rec-form',
+        component: () => import('../views/admin/data/TravelRecommendationForm.vue'),
+        meta: {requiresAuth: true, authType: 'admin'}
+    },
     // 404 兜底路由（必须放在最后）
     {
         path: '/:pathMatch(.*)*',

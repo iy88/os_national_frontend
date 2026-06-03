@@ -127,27 +127,15 @@
                     </svg>
                     角色管理
                 </button>
-                <button class="sidebar-btn theme-toggle-sidebar-btn" @click="theme.toggle()">
-                    <svg
-                        v-if="theme.effective === 'dark'"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        viewBox="0 0 24 24"
-                    >
-                        <circle cx="12" cy="12" r="4"/>
-                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                <button
+                    :class="['sidebar-btn', { active: activeTab === 'travel-recs' }]"
+                    @click="goToTravelRecs"
+                >
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
                     </svg>
-                    <svg
-                        v-else
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        viewBox="0 0 24 24"
-                    >
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                    </svg>
-                    <span>{{ theme.effective === 'dark' ? '浅色模式' : '深色模式' }}</span>
+                    推荐管理
                 </button>
             </div>
         </div>
@@ -183,6 +171,7 @@ const userInfo = computed(() => userStore.userInfo)
 const avatarUrl = computed(() => userStore.avatarUrl)
 
 const activeTab = computed(() => {
+    if (route.path.startsWith('/manage/data/travel-recommendations')) return 'travel-recs'
     if (route.path.startsWith('/manage/data/roles')) return 'roles'
     if (route.path.startsWith('/manage/index')) return 'index'
     return 'index'
@@ -266,6 +255,11 @@ const goToIndex = () => {
 const goToRoles = () => {
     mobileSidebarOpen.value = false
     router.push('/manage/data/roles')
+}
+
+const goToTravelRecs = () => {
+    mobileSidebarOpen.value = false
+    router.push('/manage/data/travel-recommendations')
 }
 
 onMounted(() => {

@@ -40,6 +40,16 @@
                         </svg>
                         <span>角色管理</span>
                     </button>
+                    <button
+                        :class="['sidebar-item', { active: activeManageTab === 'travel-recs' }]"
+                        @click="$router.push('/manage/data/travel-recommendations')"
+                    >
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span>推荐管理</span>
+                    </button>
                 </nav>
                 <div class="admin-content">
                     <router-view/>
@@ -63,18 +73,17 @@ const userStore = useUserStore()
 // 避免首屏闪烁：setup 时直接读取浏览器地址栏路径，绕过异步路由守卫导致的 route.path 延迟更新
 const initialPath = typeof window !== 'undefined' ? window.location.pathname : route.path
 const isManageRoute = ref(initialPath.startsWith('/manage'))
-const activeManageTab = ref(
-    initialPath.startsWith('/manage/data/roles') ? 'roles' : 'index'
-)
+const computeActiveManageTab = (path) => {
+    if (path.startsWith('/manage/data/travel-recommendations')) return 'travel-recs'
+    if (path.startsWith('/manage/data/roles')) return 'roles'
+    return 'index'
+}
+const activeManageTab = ref(computeActiveManageTab(initialPath))
 
 // 路由变化时更新
 watch(() => route.path, (path) => {
     isManageRoute.value = path.startsWith('/manage')
-    if (path.startsWith('/manage/data/roles')) {
-        activeManageTab.value = 'roles'
-    } else {
-        activeManageTab.value = 'index'
-    }
+    activeManageTab.value = computeActiveManageTab(path)
 })
 
 const sidebarOpen = ref(false)
@@ -519,19 +528,19 @@ body:has(.app-container.is-admin) {
 
 /* 后台页面 Select / Pagination 下拉框 - 覆盖用户端的金色主题 */
 body:has(.app-container.is-admin) .el-select-dropdown__popper {
-    background: var(--color-bg-panel) !important;
+    background: var(--color-bg-admin-mid) !important;
     border: 1px solid var(--color-admin-soft-border) !important;
     border-radius: 8px !important;
     box-shadow: var(--color-shadow-md) !important;
 }
 
 body:has(.app-container.is-admin) .el-select-dropdown__popper .el-popper__arrow::before {
-    background: var(--color-bg-panel) !important;
+    background: var(--color-bg-admin-mid) !important;
     border-color: var(--color-admin-soft-border) !important;
 }
 
 body:has(.app-container.is-admin) .el-select-dropdown {
-    background: var(--color-bg-panel) !important;
+    background: var(--color-bg-admin-mid) !important;
     border: 1px solid var(--color-admin-soft-border) !important;
     box-shadow: var(--color-shadow-md) !important;
 }
