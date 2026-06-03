@@ -16,7 +16,7 @@ export const authEvents = {
 
 // 所有请求使用相对路径，走 Vite proxy 或生产环境同源
 const apiClient = axios.create({
-    baseURL: '',
+    baseURL: '/api',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
@@ -120,7 +120,7 @@ export const updateProfile = (data) => {
 
 // 上传头像 (multipart/form-data)
 const uploadClient = axios.create({
-    baseURL: '',
+    baseURL: '/api',
     timeout: 30000
 })
 
@@ -208,7 +208,7 @@ export const sendChatMessageStream = (content, sid = null, mid = null, regenerat
         }
     }
 
-    fetch('/agent/travel-route-plan/message', {
+    fetch('/api/agent/travel-route-plan/message', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -356,7 +356,7 @@ export const sendRoleplayMessageStream = (rid, content = null, mid = null, regen
         }
     }
 
-    fetch(`/agent/roleplay/message/send/${rid}`, {
+    fetch(`/api/agent/roleplay/message/send/${rid}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

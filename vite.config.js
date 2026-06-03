@@ -15,35 +15,7 @@ export default defineConfig({
         host: '0.0.0.0',
         port: 5173,
         proxy: {
-            '/email/': {
-                target: apiTarget,
-                changeOrigin: true
-            },
-            '/user/': {
-                target: apiTarget,
-                changeOrigin: true
-            },
-            '/file/': {
-                target: apiTarget,
-                changeOrigin: true
-            },
-            '/health': {
-                target: apiTarget,
-                changeOrigin: true
-            },
-            '/route/': {
-                target: apiTarget,
-                changeOrigin: true
-            },
-            '/agent/': {
-                target: apiTarget,
-                changeOrigin: true
-            },
-            '/travel/': {
-                target: apiTarget,
-                changeOrigin: true
-            },
-            '/admin/': {
+            '/api/': {
                 target: apiTarget,
                 changeOrigin: true
             }

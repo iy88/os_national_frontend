@@ -215,7 +215,7 @@
                             :key="img"
                             class="image-item"
                         >
-                            <img :src="`/file/image/fetch?token=${img}`"/>
+                            <img :src="`/api/file/image/fetch?token=${img}`"/>
                             <span class="delete-badge" @click="deleteExistingImage(img)">×</span>
                         </div>
                         <!-- 新上传图片预览 -->
@@ -409,7 +409,7 @@ const openEditModal = async (row) => {
             existingImages.value = data.images_token || []
             originalAvatarToken.value = data.avatar_token || null
             avatarPreview.value = data.avatar_token
-                ? `/file/image/fetch?token=${data.avatar_token}`
+                ? `/api/file/image/fetch?token=${data.avatar_token}`
                 : null
         } else {
             ElMessage.error(result?.message || '获取角色详情失败')
@@ -559,7 +559,7 @@ const fetchCharacters = async () => {
                 // 当查询特定类型时，类型已知；当查询 all 时使用后端返回的 type
                 type: apiType === 'all' ? (item.type || apiType) : apiType,
                 avatar: item.avatar_token
-                    ? `/file/image/fetch?token=${item.avatar_token}`
+                    ? `/api/file/image/fetch?token=${item.avatar_token}`
                     : null
             }))
             total.value = result.total

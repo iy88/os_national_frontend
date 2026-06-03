@@ -11,7 +11,7 @@ export const useUserStore = defineStore('user', () => {
     // 头像URL计算属性
     const avatarUrl = computed(() => {
         if (userInfo.value?.avatarToken) {
-            return `/file/avatar/fetch?token=${userInfo.value.avatarToken}`
+            return `/api/file/avatar/fetch?token=${userInfo.value.avatarToken}`
         }
         return null
     })

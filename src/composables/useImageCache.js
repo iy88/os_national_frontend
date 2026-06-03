@@ -9,7 +9,7 @@ export function useImageCache() {
       return cache.get(key).url
     }
     if (avatarToken) {
-      const url = `/file/image/fetch?token=${avatarToken}`
+      const url = `/api/file/image/fetch?token=${avatarToken}`
       cache.set(key, { url, loading: true, error: false })
       const img = new Image()
       img.onload = () => { if (cache.has(key)) cache.get(key).loading = false }

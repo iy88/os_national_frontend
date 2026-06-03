@@ -347,7 +347,7 @@ const mapRoleplayCharacter = (item, categoryKey) => {
         roleplayType: roleplayTypeMap[categoryKey],
         name,
         avatar: item?.avatar_token
-            ? `/file/image/fetch?token=${item.avatar_token}`
+            ? `/api/file/image/fetch?token=${item.avatar_token}`
             : createPlaceholderSvg(name, color),
         story: buildMockStory(name, categoryKey),
         photos: buildMockPhotos(name, color),
@@ -782,10 +782,10 @@ const loadCharacterDetail = async (character, requestToken) => {
             story: buildMockStory(character.name, character.categoryKey, {bio, phrases}),
             detailLoaded: true,
             photos: Array.isArray(detail.images_token)
-                ? detail.images_token.map(token => `/file/image/fetch?token=${token}`)
+                ? detail.images_token.map(token => `/api/file/image/fetch?token=${token}`)
                 : character.photos,
             avatar: detail.avatar_token
-                ? `/file/image/fetch?token=${detail.avatar_token}`
+                ? `/api/file/image/fetch?token=${detail.avatar_token}`
                 : character.avatar,
             phrases
         }

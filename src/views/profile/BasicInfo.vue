@@ -492,8 +492,8 @@ const saveAll = async () => {
 }
 
 .basic-info .avatar-upload :deep(.el-upload-dragger) {
-    background: var(--color-info-soft);
-    border: 2px dashed var(--color-info-soft);
+    background: var(--color-bg-hover);
+    border: 2px dashed var(--color-border);
     border-radius: 8px;
     padding: 0;
     transition: all 0.2s;
@@ -507,8 +507,8 @@ const saveAll = async () => {
 
 .basic-info .avatar-upload :deep(.el-upload-dragger:hover),
 .basic-info .avatar-upload :deep(.el-upload-dragger.is-dragover) {
-    border-color: var(--color-info-soft);
-    background: var(--color-info-soft);
+    border-color: var(--color-brand);
+    background: var(--color-brand-soft-bg);
 }
 
 .basic-info .upload-content {
