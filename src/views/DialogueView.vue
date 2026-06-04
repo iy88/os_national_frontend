@@ -86,6 +86,17 @@
                     <div class="strip-actions desktop-only">
                         <button class="strip-btn" @click="openStory(activeCharacter)">📖 故事</button>
                         <button class="strip-btn" @click="openPhotos(activeCharacter)">📷 照片</button>
+                        <el-popconfirm
+                            cancel-button-text="取消"
+                            confirm-button-text="清空"
+                            title="确定要清空历史记录吗？"
+                            width="240"
+                            @confirm="handleClearHistory"
+                        >
+                            <template #reference>
+                                <button class="strip-btn strip-btn-danger">🗑️ 清空历史</button>
+                            </template>
+                        </el-popconfirm>
                     </div>
                 </div>
 
@@ -236,6 +247,7 @@ import PhotoGallery from '../components/PhotoGallery.vue'
 import {useStreamTimers} from '../composables/useStreamTimers'
 import {useImageCache} from '../composables/useImageCache'
 import {
+    clearRoleplayHistory,
     getRoleplayCharacterDetail,
     getRoleplayCharacterList,
     getRoleplayMessageList,
@@ -1029,6 +1041,29 @@ const openStory = (character) => {
 const openPhotos = (character) => {
     selectedCharacter.value = character
     showPhotosModal.value = true
+}
+
+// 清空历史记录
+const handleClearHistory = async () => {
+    if (!activeCharacter.value) return
+    try {
+        const result = await clearRoleplayHistory(activeCharacter.value.rid)
+        if (result?.success) {
+            ElMessage.success('历史记录已清空')
+            // 重新拉对话记录
+            if (activeCharacter.value) {
+                const res = await getRoleplayMessageList(activeCharacter.value.rid)
+                if (res?.success) {
+                    messages.value = res.messages || []
+                    nextTick(() => scrollToBottom())
+                }
+            }
+        } else {
+            ElMessage.error(result?.message || '清空失败')
+        }
+    } catch (error) {
+        ElMessage.error('清空失败: ' + (error?.message || ''))
+    }
 }
 
 const scrollToBottom = () => {
@@ -1866,6 +1901,11 @@ onUnmounted(() => {
 .strip-btn:hover {
     border-color: var(--color-brand);
     color: var(--color-brand);
+}
+
+.strip-btn-danger:hover {
+    border-color: var(--color-brand-secondary);
+    color: var(--color-brand-secondary);
 }
 
 /* 欢迎状态 */

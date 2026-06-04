@@ -61,17 +61,36 @@
                         </template>
                     </div>
                     <div v-if="session.hasIncompleteMessage" class="incomplete-badge"></div>
-                    <button
-                        v-if="editingSid !== session.sid"
-                        class="edit-title-btn"
-                        title="编辑标题"
-                        @click.stop="handleEditTitle(session)"
-                    >
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                    </button>
+                    <div v-if="editingSid !== session.sid" class="session-menu" @click.stop>
+                        <button
+                            class="menu-trigger"
+                            :class="{ active: openMenuSid === session.sid }"
+                            title="更多"
+                            @click.stop="handleToggleMenu(session.sid)"
+                        >
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="5" r="1"/>
+                                <circle cx="12" cy="12" r="1"/>
+                                <circle cx="12" cy="19" r="1"/>
+                            </svg>
+                        </button>
+                        <div v-if="openMenuSid === session.sid" class="menu-popup">
+                            <button class="menu-item" @click="handleMenuEdit(session)">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                编辑名称
+                            </button>
+                            <button class="menu-item danger" @click="handleMenuDelete(session)">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                                删除
+                            </button>
+                        </div>
+                    </div>
                     <button
                         v-else
                         class="edit-title-btn confirm"
@@ -117,17 +136,36 @@
                         </template>
                     </div>
                     <div v-if="session.hasIncompleteMessage" class="incomplete-badge"></div>
-                    <button
-                        v-if="editingSid !== session.sid"
-                        class="edit-title-btn"
-                        title="编辑标题"
-                        @click.stop="handleEditTitle(session)"
-                    >
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                    </button>
+                    <div v-if="editingSid !== session.sid" class="session-menu" @click.stop>
+                        <button
+                            class="menu-trigger"
+                            :class="{ active: openMenuSid === session.sid }"
+                            title="更多"
+                            @click.stop="handleToggleMenu(session.sid)"
+                        >
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="5" r="1"/>
+                                <circle cx="12" cy="12" r="1"/>
+                                <circle cx="12" cy="19" r="1"/>
+                            </svg>
+                        </button>
+                        <div v-if="openMenuSid === session.sid" class="menu-popup">
+                            <button class="menu-item" @click="handleMenuEdit(session)">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                编辑名称
+                            </button>
+                            <button class="menu-item danger" @click="handleMenuDelete(session)">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                                删除
+                            </button>
+                        </div>
+                    </div>
                     <button
                         v-else
                         class="edit-title-btn confirm"
@@ -173,17 +211,36 @@
                         </template>
                     </div>
                     <div v-if="session.hasIncompleteMessage" class="incomplete-badge"></div>
-                    <button
-                        v-if="editingSid !== session.sid"
-                        class="edit-title-btn"
-                        title="编辑标题"
-                        @click.stop="handleEditTitle(session)"
-                    >
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                    </button>
+                    <div v-if="editingSid !== session.sid" class="session-menu" @click.stop>
+                        <button
+                            class="menu-trigger"
+                            :class="{ active: openMenuSid === session.sid }"
+                            title="更多"
+                            @click.stop="handleToggleMenu(session.sid)"
+                        >
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="5" r="1"/>
+                                <circle cx="12" cy="12" r="1"/>
+                                <circle cx="12" cy="19" r="1"/>
+                            </svg>
+                        </button>
+                        <div v-if="openMenuSid === session.sid" class="menu-popup">
+                            <button class="menu-item" @click="handleMenuEdit(session)">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                编辑名称
+                            </button>
+                            <button class="menu-item danger" @click="handleMenuDelete(session)">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                                删除
+                            </button>
+                        </div>
+                    </div>
                     <button
                         v-else
                         class="edit-title-btn confirm"
@@ -206,7 +263,8 @@
 
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
-import {editChatSessionTitle} from "../api";
+import {ElMessage, ElMessageBox} from "element-plus";
+import {clearRouteSession, editChatSessionTitle} from "../api";
 
 const props = defineProps({
     sessions: {
@@ -239,7 +297,51 @@ const handleSelect = (sid) => {
     if (editingSid.value !== null && editingSid.value !== sid) {
         handleTitleCancel();
     }
+    openMenuSid.value = null;
     emit("select", sid);
+};
+
+// 三点菜单
+const openMenuSid = ref(null);
+
+const handleToggleMenu = (sid) => {
+    openMenuSid.value = openMenuSid.value === sid ? null : sid;
+};
+
+const handleMenuEdit = (session) => {
+    openMenuSid.value = null;
+    handleEditTitle(session);
+};
+
+// 占位：暂不删除，仅关闭菜单
+const handleMenuDelete = async (session) => {
+    openMenuSid.value = null;
+    try {
+        await ElMessageBox.confirm(
+            `确定要删除会话"${session.title || '新对话'}"吗？该操作会清空所有消息且不可恢复。`,
+            '删除会话',
+            {confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning'}
+        );
+    } catch {
+        return;
+    }
+    try {
+        const result = await clearRouteSession(session.sid);
+        if (result?.success) {
+            ElMessage.success('会话已删除');
+            emit('delete', session.sid);
+        } else {
+            ElMessage.error(result?.message || '删除失败');
+        }
+    } catch (error) {
+        ElMessage.error('删除失败: ' + (error?.message || ''));
+    }
+};
+
+const handleClickOutside = (e) => {
+    if (!e.target.closest('.session-menu')) {
+        openMenuSid.value = null;
+    }
 };
 
 const handleEditTitle = async (session) => {
@@ -364,11 +466,13 @@ const formatDate = (dateStr) => {
 
 onMounted(() => {
     window.addEventListener("pointerup", handleGlobalPointerUp);
+    document.addEventListener("click", handleClickOutside);
 });
 
 onUnmounted(() => {
     clearScrollbarHideTimer();
     window.removeEventListener("pointerup", handleGlobalPointerUp);
+    document.removeEventListener("click", handleClickOutside);
 });
 </script>
 
@@ -575,7 +679,13 @@ onUnmounted(() => {
     flex-shrink: 0;
 }
 
-.edit-title-btn {
+/* 三点下拉菜单 */
+.session-menu {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.menu-trigger {
     width: 26px;
     height: 26px;
     border-radius: 6px;
@@ -586,30 +696,93 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.15s ease;
     flex-shrink: 0;
     opacity: 0;
-    transition: all 0.15s ease;
 }
 
-.session-item:hover .edit-title-btn {
+.session-item:hover .menu-trigger,
+.menu-trigger.active {
     opacity: 1;
 }
 
-.edit-title-btn:hover {
-    background: var(--color-brand-soft-bg);
-    color: var(--color-brand);
+.menu-trigger:hover,
+.menu-trigger.active {
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
 }
 
+.menu-trigger svg {
+    width: 14px;
+    height: 14px;
+}
+
+.menu-popup {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 140px;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    z-index: 10;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--color-text-primary);
+    font-size: 0.85rem;
+    text-align: left;
+    transition: background 0.15s ease;
+}
+
+.menu-item:hover {
+    background: var(--color-bg-hover);
+}
+
+.menu-item.danger {
+    color: var(--color-brand-secondary);
+}
+
+.menu-item svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* 编辑态对号按钮（保留） */
 .edit-title-btn.confirm {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     color: var(--color-admin);
+    transition: all 0.15s ease;
 }
 
 .edit-title-btn.confirm:hover {
-    background: rgba(74, 222, 128, 0.15);
+    background: var(--color-admin-soft-bg);
     color: var(--color-admin);
 }
 
-.edit-title-btn svg {
+.edit-title-btn.confirm svg {
     width: 14px;
     height: 14px;
 }

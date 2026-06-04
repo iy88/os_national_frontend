@@ -303,6 +303,11 @@ export const sendChatMessageStream = (content, sid = null, mid = null, regenerat
 // 发送消息（SSE 流式响应）- 简化为直接使用 sendChatMessageStream
 export const sendChatMessage = sendChatMessageStream
 
+// 清空指定路线规划会话的历史消息 + 会话本身
+export const clearRouteSession = (sid) => {
+    return apiClient.delete(`/agent/travel-route-plan/chat/clear/${sid}`)
+}
+
 // ============ Roleplay 角色扮演接口 ============
 
 // 获取角色列表
@@ -323,6 +328,11 @@ export const getRoleplayCharacterDetail = (rid) => {
 // 获取角色历史消息
 export const getRoleplayMessageList = (rid) => {
     return apiClient.get(`/agent/roleplay/message/list/${rid}`)
+}
+
+// 清空指定角色的对话历史
+export const clearRoleplayHistory = (rid) => {
+    return apiClient.delete(`/agent/roleplay/message/clear/${rid}`)
 }
 
 // 发送角色消息（SSE 流式响应）

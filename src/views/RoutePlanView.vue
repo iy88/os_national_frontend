@@ -376,8 +376,13 @@ const handleNewChat = () => {
     }
 };
 
-const handleDeleteSession = async () => {
-    ElMessage.info("删除功能开发中");
+const handleDeleteSession = async (sid) => {
+    // 删除 API 已在 ConversationSidebar 内调用并成功，父组件只需刷新列表
+    // 如果删除的是当前打开的会话，切回"新对话"态
+    if (sid && conversationStore.currentSessionId === sid) {
+        conversationStore.selectSession(null);
+    }
+    await conversationStore.fetchSessions();
 };
 
 const handleTitleUpdate = ({sid, title}) => {
