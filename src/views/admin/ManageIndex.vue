@@ -117,7 +117,7 @@
                     <div class="bar-item">
                         <div class="bar-label">
                             <span class="type-dot" style="background: #f0b344"></span>
-                            游戏达人
+                            电竞达人
                         </div>
                         <div class="bar-track">
                             <div

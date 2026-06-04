@@ -8,7 +8,7 @@
         <div class="filter-section">
             <el-radio-group v-model="selectedCategory" class="category-tabs">
                 <el-radio-button value="all">全部</el-radio-button>
-                <el-radio-button value="game_expert">游戏达人</el-radio-button>
+                <el-radio-button value="game_expert">电竞达人</el-radio-button>
                 <el-radio-button value="esports_player">电竞选手</el-radio-button>
                 <el-radio-button value="game_hero">游戏英雄</el-radio-button>
             </el-radio-group>
@@ -269,7 +269,7 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {Plus} from '@element-plus/icons-vue'
 
 const categoryMap = {
-    game_expert: {label: '游戏达人', color: '#f0b344'},
+    game_expert: {label: '电竞达人', color: '#f0b344'},
     esports_player: {label: '电竞选手', color: '#e63946'},
     game_hero: {label: '游戏英雄', color: '#2a9d8f'}
 }

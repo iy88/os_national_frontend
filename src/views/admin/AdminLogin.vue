@@ -191,7 +191,7 @@ h2 {
 }
 
 .form-group input::placeholder {
-    color: var(--color-border-strong);
+    color: var(--color-text-placeholder);
 }
 
 .error {
@@ -207,18 +207,18 @@ h2 {
     background: var(--color-admin-hover);
     border: none;
     border-radius: 6px;
-    color: var(--color-text-on-brand);
+    color: #fff;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 20px var(--color-admin-soft-bg);
+    box-shadow: 0 4px 20px rgba(22, 163, 74, 0.35);
 }
 
 .submit-btn:hover:not(:disabled) {
     background: var(--color-admin);
     transform: translateY(-1px);
-    box-shadow: 0 6px 24px var(--color-admin-soft-bg);
+    box-shadow: 0 6px 24px rgba(22, 163, 74, 0.4);
 }
 
 .submit-btn:active {
@@ -239,5 +239,15 @@ h2 {
     h2 {
         font-size: 22px;
     }
+}
+
+/* 浅色模式覆盖：去除深色玻璃效果 */
+</style>
+<style>
+[data-theme="light"] .login-card {
+    background: #ffffff !important;
+    border-color: var(--color-border) !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 </style>
