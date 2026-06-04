@@ -40,7 +40,7 @@ const categoryInfo = {
         color: '#e63946'
     },
     celebrity: {
-        name: '电竞明星',
+        name: '电竞达人',
         icon: '🎮',
         color: '#2a9d8f'
     }
