@@ -60,9 +60,7 @@
                             <div class="session-date">{{ formatTime(session.updatedAt) }}</div>
                         </template>
                     </div>
-                    <div v-if="session.hasIncompleteMessage" class="incomplete-badge">
-                        !
-                    </div>
+                    <div v-if="session.hasIncompleteMessage" class="incomplete-badge"></div>
                     <button
                         v-if="editingSid !== session.sid"
                         class="edit-title-btn"
@@ -118,9 +116,7 @@
                             <div class="session-date">{{ formatTime(session.updatedAt) }}</div>
                         </template>
                     </div>
-                    <div v-if="session.hasIncompleteMessage" class="incomplete-badge">
-                        !
-                    </div>
+                    <div v-if="session.hasIncompleteMessage" class="incomplete-badge"></div>
                     <button
                         v-if="editingSid !== session.sid"
                         class="edit-title-btn"
@@ -176,9 +172,7 @@
                             <div class="session-date">{{ formatDate(session.updatedAt) }}</div>
                         </template>
                     </div>
-                    <div v-if="session.hasIncompleteMessage" class="incomplete-badge">
-                        !
-                    </div>
+                    <div v-if="session.hasIncompleteMessage" class="incomplete-badge"></div>
                     <button
                         v-if="editingSid !== session.sid"
                         class="edit-title-btn"
@@ -571,16 +565,13 @@ onUnmounted(() => {
 }
 
 .incomplete-badge {
-    width: 16px;
-    height: 16px;
-    background: var(--color-brand-secondary);
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background: var(--color-danger);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.64rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
     flex-shrink: 0;
 }
 
