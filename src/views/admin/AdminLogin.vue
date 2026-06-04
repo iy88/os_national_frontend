@@ -179,7 +179,6 @@ h2 {
     background: var(--color-shadow-sm-base);
     border: 1px solid var(--color-border);
     border-radius: 6px;
-    color: #e4e4e7;
     font-size: 15px;
     transition: all 0.2s;
     outline: none;
